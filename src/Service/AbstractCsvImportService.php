@@ -22,6 +22,11 @@ abstract class AbstractCsvImportService implements CsvImportInterface
         $count = 0;
 
         foreach ($this->csvReader->read($file, ';') as $lineNumber => $data) {
+            $data = array_combine(
+                array_map(fn($k) => preg_replace('/^\x{FEFF}/u', '', $k), array_keys($data)),
+                $data
+            );
+
             try {
                 if ($this->handleRow($data, $lineNumber) === true) {
                     $count++;

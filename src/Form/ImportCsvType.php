@@ -16,21 +16,18 @@ class ImportCsvType extends AbstractType
     {
         $builder
             ->add('files', FileType::class, [
-                'label' => 'Fichier CSV :',
+                'label' => 'Fichiers CSV :',
                 'multiple' => true,
                 'mapped' => false,
                 'required' => true,
                 'constraints' => [
                     new All([
                         'constraints' => [
-                            new File([
-                                'mimeTypes' => [
-                                    'text/plain',
-                                    'text/csv',
-                                    'application/vnd.ms-excel',
-                                ],
-                                'mimeTypesMessage' => 'Merci de fournir un fichier CSV valide',
-                            ])
+                            new File(mimeTypes: [
+                                'text/plain',
+                                'text/csv',
+                                'application/vnd.ms-excel',
+                            ], mimeTypesMessage: 'Merci de fournir un fichier CSV valide')
                         ]
                     ])
                 ]

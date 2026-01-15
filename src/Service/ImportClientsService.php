@@ -24,7 +24,7 @@ class ImportClientsService extends AbstractCsvImportService
             return false;
         }
 
-        $entity = (new Clients())
+        $entity = new Clients()
             ->setIdclient($dto->idclient)
             ->setDateExport($dto->dateExport)
             ->setDateCreation($dto->dateCreation)

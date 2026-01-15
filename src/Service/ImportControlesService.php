@@ -24,7 +24,7 @@ class ImportControlesService extends AbstractCsvImportService
             return false;
         }
 
-        $client = (new Controles())
+        $client = new Controles()
             ->setIdcontrole($dto->idcontrole)
             ->setDateExport($dto->dateExport)
             ->setNumPvCtrl($dto->numPvControle)

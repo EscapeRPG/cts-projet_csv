@@ -33,7 +33,7 @@ class ImportClientsControlesService extends AbstractCsvImportService
             return false;
         }
 
-        $entity = (new ClientsControles())
+        $entity = new ClientsControles()
             ->setIdcontrole($controle)
             ->setIdclient($client)
             ->setAgrCentre($dto->agrCentre)

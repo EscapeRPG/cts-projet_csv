@@ -24,7 +24,7 @@ class ImportFacturesService extends AbstractCsvImportService
             return false;
         }
 
-        $entity = (new Factures())
+        $entity = new Factures()
             ->setIdfacture($dto->idfacture)
             ->setDateExport($dto->dateExport)
             ->setNumFacture($dto->numFacture)

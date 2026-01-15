@@ -29,7 +29,7 @@ class ImportCentresClientsService extends AbstractCsvImportService
             return false;
         }
 
-        $entity = (new CentresClients())
+        $entity = new CentresClients()
             ->setIdclient($client)
             ->setAgrCentre($dto->agrCentre);
 

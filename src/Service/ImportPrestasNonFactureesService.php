@@ -30,7 +30,7 @@ class ImportPrestasNonFactureesService extends AbstractCsvImportService
             return false;
         }
 
-        $entity = (new PrestasNonFacturees())
+        $entity = new PrestasNonFacturees()
             ->setIdcontrole($controle)
             ->setDateExport($dto->dateExport)
             ->setDevise($dto->devise)

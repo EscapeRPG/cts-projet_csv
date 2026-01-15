@@ -37,7 +37,7 @@ class ImportControlesFacturesService extends AbstractCsvImportService
             return false;
         }
 
-        $entity = (new ControlesFactures())
+        $entity = new ControlesFactures()
             ->setIdcontrole($controle)
             ->setIdfacture($facture)
             ->setIdclient($client)

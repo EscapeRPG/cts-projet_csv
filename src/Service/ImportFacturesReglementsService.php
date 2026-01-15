@@ -37,7 +37,7 @@ class ImportFacturesReglementsService extends AbstractCsvImportService
             return false;
         }
 
-        $entity = (new FacturesReglements())
+        $entity = new FacturesReglements()
             ->setIdfacture($facture)
             ->setIdreglement($reglement)
             ->setIdclient($client)

@@ -24,7 +24,7 @@ class ImportReglementsService extends AbstractCsvImportService
             return false;
         }
 
-        $entity = (new Reglements())
+        $entity = new Reglements()
             ->setIdreglement($dto->idreglement)
             ->setDateExport($dto->dateExport)
             ->setModeReglt($dto->modeReglt)

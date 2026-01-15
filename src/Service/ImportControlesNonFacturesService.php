@@ -33,7 +33,7 @@ class ImportControlesNonFacturesService extends AbstractCsvImportService
             return false;
         }
 
-        $entity = (new ControlesNonFactures())
+        $entity = new ControlesNonFactures()
             ->setIdcontrole($controle)
             ->setIdclient($client)
             ->setAgrCentre($dto->agrCentre)
