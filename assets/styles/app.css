@@ -1,3 +1,15 @@
+:root {
+    --box-shadow: 2px 2px 10px rgba(0,0,0,0.4);
+}
+
 body {
-    background-color: skyblue;
+    background-color: white;
+}
+
+main {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }

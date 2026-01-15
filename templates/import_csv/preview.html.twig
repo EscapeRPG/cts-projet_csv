@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello ImportCsvController!{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/forms/import.css') }}">
+{% endblock %}
+
+{% block body %}
+
+    <div class="import-wrapper">
+        <h1>Aperçu du fichier CSV</h1>
+
+        <table>
+            <thead>
+            <tr>
+                <th>ID Client</th>
+                <th>Date et Heure d'Export</th>
+                <th>Date de Création</th>
+                <th>Code Client</th>
+                <th>Nom Code Client</th>
+                <th>Code Sage</th>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Adresse 1</th>
+                <th>Adresse 2</th>
+                <th>Code Postal</th>
+                <th>Ville</th>
+                <th>eMail</th>
+                <th>Téléphone</th>
+                <th>Mobile</th>
+                <th>Numéro Tva Intra</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in rows %}
+                <tr>
+                    <td>{{ row.idclient }}</td>
+                    <td>{{ row.dateExport }}</td>
+                    <td>{{ row.dateCreation }}</td>
+                    <td>{{ row.codeClient }}</td>
+                    <td>{{ row.nomCodeClient }}</td>
+                    <td>{{ row.codeSage }}</td>
+                    <td>{{ row.nom }}</td>
+                    <td>{{ row.prenom }}</td>
+                    <td>{{ row.adresse1 }}</td>
+                    <td>{{ row.adresse2 }}</td>
+                    <td>{{ row.cp }}</td>
+                    <td>{{ row.ville }}</td>
+                    <td>{{ row.email }}</td>
+                    <td>{{ row.telephone }}</td>
+                    <td>{{ row.mobile }}</td>
+                    <td>{{ row.numTvaIntra }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

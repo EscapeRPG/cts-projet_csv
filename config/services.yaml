@@ -19,5 +19,15 @@ services:
     App\:
         resource: '../src/'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    App\Import\ImportRouter:
+        arguments:
+            $clientsImport: '@App\Service\ImportClientsService'
+            $centresClientsImport: '@App\Service\ImportCentresClientsService'
+            $clientsControlesImport: '@App\Service\ImportClientsControlesService'
+            $controlesImport: '@App\Service\ImportControlesService'
+            $controlesFacturesImport: '@App\Service\ImportControlesFacturesService'
+            $controlesNonFacturesImport: '@App\Service\ImportControlesNonFacturesService'
+            $facturesImport: '@App\Service\ImportFacturesService'
+            $facturesReglementsImport: '@App\Service\ImportFacturesReglementsService'
+            $reglementsImport: '@App\Service\ImportReglementsService'
+            $prestasNonFactureesImport: '@App\Service\ImportPrestasNonFactureesService'
