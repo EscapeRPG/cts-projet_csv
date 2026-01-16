@@ -1,9 +1,142 @@
 :root {
     --box-shadow: 2px 2px 10px rgba(0,0,0,0.4);
+    --header-bg-color: lightskyblue;
+    --a-color: orange;
+    --a-color-hover: darkorange;
+    --margin-top: 64px;
+    --bg-main-color: white;
 }
 
 body {
     background-color: white;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: calc(100% - 80px);
+    background: var(--header-bg-color);
+    padding: 15px 40px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 99;
+
+    nav {
+        .burger-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 30px;
+            height: 30px;
+            background-color: transparent;
+            border: 2px solid white;
+            transform: rotate(45deg);
+
+            &:hover {
+                #burger {
+                    transform: scale(1);
+                }
+            }
+
+            .burgerBtn {
+                width: 20px;
+                height: 20px;
+                transform: rotate(-45deg);
+            }
+
+            #burger {
+                width: 20px;
+                height: 2px;
+                background-color: white;
+                display: inline-block;
+                position: absolute;
+                top: 50%;
+                transform: scale(0.8);
+
+                &::before, &::after {
+                    content: '';
+                    width: 20px;
+                    height: 2px;
+                    background-color: white;
+                    display: inline-block;
+                    position: absolute;
+                    transform-origin: center;
+                    transition: all 0.5s ease;
+                }
+
+                &::before {
+                    top: -7px;
+                }
+
+                &::after {
+                    top: 7px;
+                }
+
+                &.open {
+                    background: transparent;
+
+                    &::before {
+                        transform: rotate(45deg);
+                        background-color: red;
+                        top: 0;
+                    }
+
+                    &::after {
+                        transform: rotate(-45deg);
+                        background-color: red;
+                        top: 0;
+                    }
+                }
+            }
+        }
+
+        #responsive {
+            position: absolute;
+            top: var(--margin-top);
+            height: calc(100vh - var(--margin-top));
+            left: 0;
+            transform: translateX(-100%);
+            transition: transform .4s ease;
+            background: var(--header-bg-color);
+            margin: 0;
+
+            &.open {
+                transform: translateX(0);
+                white-space: nowrap;
+            }
+
+            ul {
+                margin: 0 auto;
+                padding: 20px;
+                list-style-type: none;
+                border-bottom: 1px solid var(--bg-main-color);
+
+                li {
+                    margin: 5px auto;
+                }
+            }
+
+            a {
+                color: var(--a-color);
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                gap: 7px;
+
+                svg {
+                    width: 20px;
+                }
+
+                &:hover {
+                    color: var(--a-color-hover);
+                    text-decoration: underline;
+                }
+            }
+        }
+    }
 }
 
 main {

@@ -12,9 +12,73 @@
         {% block importmap %}{{ importmap('app') }}{% endblock %}
     {% endblock %}
 </head>
+
 <body>
+<header>
+    <nav data-controller="burger">
+        <div class="burger-container" data-action="click->burger#menu">
+            <div class="burgerBtn">
+                <span id="burger" data-burger-target="burger"></span>
+            </div>
+        </div>
+
+        <div id="responsive" data-burger-target="menu">
+            {% if is_granted('IS_AUTHENTICATED') %}
+                <ul>
+                    <li>
+                        {# <a href="{{ path('app_logout') }}"> #}
+                        Statistiques
+                        {# </a> #}
+                    </li>
+                    <li>
+                        {# <a href="{{ path('app_logout') }}"> #}
+                        Menu #2
+                        {# </a> #}
+                    </li>
+                </ul>
+                <ul>
+                    <li>
+                        <a href="{{ path('app_logout') }}">
+                            Se déconnecter
+                        </a>
+                    </li>
+                </ul>
+            {% else %}
+                <ul>
+                    <li>
+                        <a href="{{ path('app_login') }}">
+                            Se connecter
+                        </a>
+                    </li>
+                </ul>
+            {% endif %}
+
+            {#
+            {% if is_granted('ROLE_ADMIN') %}
+                <ul>
+                    <li>
+                        <a href="{{ path('app_users_list') }}">
+                            Liste des utilisateurs
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_register') }}">
+                            Ajouter un utilisateur
+                        </a>
+                    </li>
+                </ul>
+            {% endif %}
+            #}
+        </div>
+    </nav>
+</header>
+
 <main>
     {% block body %}{% endblock %}
 </main>
+
+<footer>
+
+</footer>
 </body>
 </html>
