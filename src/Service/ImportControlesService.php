@@ -2,49 +2,71 @@
 
 namespace App\Service;
 
-use App\DTO\ControlesDTO;
-use App\Entity\Controles;
-
 class ImportControlesService extends AbstractCsvImportService
 {
-    /**
-     * @throws \Exception
-     */
-    protected function handleRow(array $data, int $lineNumber): bool
+    protected static function getTableName(): string
     {
-        $dto = ControlesDTO::fromArray($data);
+        return 'controles';
+    }
 
-        $exists = $this->em->getRepository(Controles::class)
-            ->findOneBy([
-                'idcontrole' => $dto->idcontrole,
-                'dateExport' => $dto->dateExport
-            ]);
+    protected static function getColumns(): array
+    {
+        return [
+            'idcontrole',
+            'date_export',
+            'num_pv_ctrl',
+            'num_lia_ctrl',
+            'immat_vehicule',
+            'num_serie_vehicule',
+            'date_prise_rdv',
+            'type_rdv',
+            'deb_ctrl',
+            'fin_ctrl',
+            'date_ctrl',
+            'temps_ctrl',
+            'ref_temps',
+            'res_ctrl',
+            'type_ctrl',
+            'modele_vehicule',
+            'annee_circulation',
+        ];
+    }
 
-        if ($exists) {
-            return false;
-        }
+    protected static function getUniqueKeys(): array
+    {
+        return ['idcontrole'];
+    }
 
-        $client = new Controles()
-            ->setIdcontrole($dto->idcontrole)
-            ->setDateExport($dto->dateExport)
-            ->setNumPvCtrl($dto->numPvControle)
-            ->setNumLiaCtrl($dto->numLiaControle)
-            ->setImmatVehicule($dto->immatVehicule)
-            ->setNumSerieVehicule($dto->numSerieVehicule)
-            ->setDatePriseRdv($dto->datePriseRdv)
-            ->setTypeRdv($dto->typeRdv)
-            ->setDebCtrl($dto->debCtrl)
-            ->setFinCtrl($dto->finCtrl)
-            ->setDateCtrl($dto->dateCtrl)
-            ->setTempsCtrl($dto->tempsCtrl)
-            ->setRefTemps($dto->refTemps)
-            ->setResCtrl($dto->resCtrl)
-            ->setTypeCtrl($dto->typeCtrl)
-            ->setModeleVehicule($dto->modeleVehicule)
-            ->setAnneeCirculation($dto->anneeCirculation);
+    protected static function getColumnMapping(): array
+    {
+        return [
+            'idcontrole' => ['idcontrole'],
+            'date_export' => ['date_export'],
+            'num_pv_ctrl' => ['num_pv_ctrl'],
+            'num_lia_ctrl' => ['num_lia_ctrl'],
+            'immat_vehicule' => ['immat_vehicule'],
+            'num_serie_vehicule' => ['num_serie_vehicule'],
+            'date_prise_rdv' => ['date_prise_rdv'],
+            'type_rdv' => ['type_rdv'],
+            'deb_ctrl' => ['deb_ctrl'],
+            'fin_ctrl' => ['fin_ctrl'],
+            'date_ctrl' => ['date_ctrl'],
+            'temps_ctrl' => ['temps_ctrl'],
+            'ref_temps' => ['ref_temps'],
+            'res_ctrl' => ['res_ctrl'],
+            'type_ctrl' => ['type_ctrl'],
+            'modele_vehicule' => ['modele_vehicule'],
+            'annee_circulation' => ['annee_circulation'],
+        ];
+    }
 
-        $this->em->persist($client);
+    protected static function getDateColumns(): array
+    {
+        return ['date_export', 'date_prise_rdv', 'deb_ctrl', 'fin_ctrl', 'date_ctrl'];
+    }
 
-        return true;
+    protected static function getDecimalColumns(): array
+    {
+        return [];
     }
 }

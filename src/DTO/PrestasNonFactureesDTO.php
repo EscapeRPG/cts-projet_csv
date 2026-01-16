@@ -8,7 +8,7 @@ class PrestasNonFactureesDTO
 {
     public function __construct(
         public string             $idcontrole,
-        public \DateTimeImmutable $dateExport,
+        public ?\DateTimeImmutable $dateExport,
         public string             $devise,
         public string             $otcHt,
         public string             $montantTvaOtcHt,
@@ -39,7 +39,7 @@ class PrestasNonFactureesDTO
             devise: $data['devise'],
             otcHt: $data['otc_ht'],
             montantTvaOtcHt: $data['montant_tva_otc'],
-            pourcentageTvaOtc: $data['pourcentage_tva_otc'],
+            pourcentageTvaOtc: $data['_otc'],
             otcTtc: $data['otc_ttc'],
             montantPrestaHt: $data['montant_presta_ht'],
             montantPrestaTtc: $data['montant_presta_ttc'],

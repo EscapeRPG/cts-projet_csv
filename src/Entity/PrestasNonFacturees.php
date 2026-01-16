@@ -7,6 +7,15 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PrestasNonFactureesRepository::class)]
+#[ORM\Table(
+    name: 'prestas_non_facturees',
+    uniqueConstraints: [
+        new ORM\UniqueConstraint(
+            name: 'uniq_presta_controle',
+            columns: ['idcontrole']
+        )
+    ]
+)]
 class PrestasNonFacturees
 {
     #[ORM\Id]
@@ -14,13 +23,8 @@ class PrestasNonFacturees
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'prestasNonFacturees')]
-    #[ORM\JoinColumn(
-        name: 'idcontrole',
-        referencedColumnName: 'idcontrole',
-        nullable: false
-    )]
-    private ?Controles $idcontrole = null;
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?string $idcontrole = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $dateExport = null;
@@ -75,12 +79,12 @@ class PrestasNonFacturees
         return $this->id;
     }
 
-    public function getIdcontrole(): ?Controles
+    public function getIdcontrole(): ?string
     {
         return $this->idcontrole;
     }
 
-    public function setIdcontrole(?Controles $idcontrole): static
+    public function setIdcontrole(string $idcontrole): static
     {
         $this->idcontrole = $idcontrole;
 

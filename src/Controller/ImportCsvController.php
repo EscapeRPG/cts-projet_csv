@@ -8,11 +8,14 @@ use App\Service\ImportCentresClientsService;
 use App\Service\ImportClientsControlesService;
 use App\Service\ImportClientsService;
 use App\Service\ImportControlesFacturesService;
+use App\Service\ImportControlesNonFacturesService;
 use App\Service\ImportControlesService;
 use App\Service\ImportFacturesReglementsService;
 use App\Service\ImportFacturesService;
 use App\Service\ImportPrestasNonFactureesService;
 use App\Service\ImportReglementsService;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -52,7 +55,7 @@ class ImportCsvController extends AbstractController
                 ImportReglementsService::class,
                 ImportPrestasNonFactureesService::class,
                 ImportCentresClientsService::class,
-                ImportFacturesReglementsService::class,
+                ImportControlesNonFacturesService::class,
                 ImportControlesFacturesService::class,
                 ImportFacturesReglementsService::class,
                 ImportClientsControlesService::class
@@ -65,7 +68,6 @@ class ImportCsvController extends AbstractController
                     }
                 }
             }
-
 
             if ($total > 0) {
                 $this->addFlash(

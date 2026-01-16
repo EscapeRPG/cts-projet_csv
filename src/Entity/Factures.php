@@ -3,15 +3,17 @@
 namespace App\Entity;
 
 use App\Repository\FacturesRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: FacturesRepository::class)]
 #[ORM\Table(
+    name: 'factures',
     uniqueConstraints: [
-        new ORM\UniqueConstraint(columns: ['idfacture'])
+        new ORM\UniqueConstraint(
+            name: 'uniq_factures_facture',
+            columns: ['idfacture']
+        )
     ]
 )]
 class Factures
@@ -89,24 +91,6 @@ class Factures
 
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $numeroReleve = null;
-
-    /**
-     * @var Collection<int, ControlesFactures>
-     */
-    #[ORM\OneToMany(targetEntity: ControlesFactures::class, mappedBy: 'idfacture')]
-    private Collection $controlesFactures;
-
-    /**
-     * @var Collection<int, FacturesReglements>
-     */
-    #[ORM\OneToMany(targetEntity: FacturesReglements::class, mappedBy: 'idfacture')]
-    private Collection $facturesReglements;
-
-    public function __construct()
-    {
-        $this->controlesFactures = new ArrayCollection();
-        $this->facturesReglements = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -385,66 +369,6 @@ class Factures
     public function setNumeroReleve(?string $numeroReleve): static
     {
         $this->numeroReleve = $numeroReleve;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, ControlesFactures>
-     */
-    public function getControlesFactures(): Collection
-    {
-        return $this->controlesFactures;
-    }
-
-    public function addControlesFacture(ControlesFactures $controlesFacture): static
-    {
-        if (!$this->controlesFactures->contains($controlesFacture)) {
-            $this->controlesFactures->add($controlesFacture);
-            $controlesFacture->setIdfacture($this);
-        }
-
-        return $this;
-    }
-
-    public function removeControlesFacture(ControlesFactures $controlesFacture): static
-    {
-        if ($this->controlesFactures->removeElement($controlesFacture)) {
-            // set the owning side to null (unless already changed)
-            if ($controlesFacture->getIdfacture() === $this) {
-                $controlesFacture->setIdfacture(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, FacturesReglements>
-     */
-    public function getFacturesReglements(): Collection
-    {
-        return $this->facturesReglements;
-    }
-
-    public function addFacturesReglement(FacturesReglements $facturesReglement): static
-    {
-        if (!$this->facturesReglements->contains($facturesReglement)) {
-            $this->facturesReglements->add($facturesReglement);
-            $facturesReglement->setIdfacture($this);
-        }
-
-        return $this;
-    }
-
-    public function removeFacturesReglement(FacturesReglements $facturesReglement): static
-    {
-        if ($this->facturesReglements->removeElement($facturesReglement)) {
-            // set the owning side to null (unless already changed)
-            if ($facturesReglement->getIdfacture() === $this) {
-                $facturesReglement->setIdfacture(null);
-            }
-        }
 
         return $this;
     }

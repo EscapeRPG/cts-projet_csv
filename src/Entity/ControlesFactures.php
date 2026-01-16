@@ -3,9 +3,19 @@
 namespace App\Entity;
 
 use App\Repository\ControlesFacturesRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ControlesFacturesRepository::class)]
+#[ORM\Table(
+    name: 'controles_factures',
+    uniqueConstraints: [
+        new ORM\UniqueConstraint(
+            name: 'uniq_ctrlfact_controle_facture',
+            columns: ['idcontrole', 'idfacture']
+        )
+    ]
+)]
 class ControlesFactures
 {
     #[ORM\Id]
@@ -13,21 +23,11 @@ class ControlesFactures
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'controlesFactures')]
-    #[ORM\JoinColumn(
-        name: 'idcontrole',
-        referencedColumnName: 'idcontrole',
-        nullable: false
-    )]
-    private ?Controles $idcontrole = null;
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?string $idcontrole = null;
 
-    #[ORM\ManyToOne(inversedBy: 'controlesFactures')]
-    #[ORM\JoinColumn(
-        name: 'idfacture',
-        referencedColumnName: 'idfacture',
-        nullable: false
-    )]
-    private ?Factures $idfacture = null;
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?string $idfacture = null;
 
     #[ORM\Column(length: 8)]
     private ?string $agrCentre = null;
@@ -35,37 +35,32 @@ class ControlesFactures
     #[ORM\Column(length: 8)]
     private ?string $agrControleur = null;
 
-    #[ORM\ManyToOne(inversedBy: 'controlesFactures')]
-    #[ORM\JoinColumn(
-        name: 'idclient',
-        referencedColumnName: 'idclient',
-        nullable: false
-    )]
-    private ?Clients $idclient = null;
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?string $idclient = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getIdcontrole(): ?Controles
+    public function getIdcontrole(): ?string
     {
         return $this->idcontrole;
     }
 
-    public function setIdcontrole(?Controles $idcontrole): static
+    public function setIdcontrole(string $idcontrole): static
     {
         $this->idcontrole = $idcontrole;
 
         return $this;
     }
 
-    public function getIdfacture(): ?Factures
+    public function getIdfacture(): ?string
     {
         return $this->idfacture;
     }
 
-    public function setIdfacture(?Factures $idfacture): static
+    public function setIdfacture(string $idfacture): static
     {
         $this->idfacture = $idfacture;
 
@@ -96,12 +91,12 @@ class ControlesFactures
         return $this;
     }
 
-    public function getIdclient(): ?Clients
+    public function getIdclient(): ?string
     {
         return $this->idclient;
     }
 
-    public function setIdclient(?Clients $idclient): static
+    public function setIdclient(string $idclient): static
     {
         $this->idclient = $idclient;
 

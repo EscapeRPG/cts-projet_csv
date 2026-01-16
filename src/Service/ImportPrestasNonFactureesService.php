@@ -2,70 +2,86 @@
 
 namespace App\Service;
 
-use App\DTO\PrestasNonFactureesDTO;
-use App\Entity\Controles;
-use App\Entity\PrestasNonFacturees;
-
 class ImportPrestasNonFactureesService extends AbstractCsvImportService
 {
-    private array $controlesCache = [];
-
-    /**
-     * @throws \Exception
-     */
-    protected function handleRow(array $data, int $lineNumber): bool
+    protected static function getTableName(): string
     {
-        $dto = PrestasNonFactureesDTO::fromArray($data);
-
-        $controle = $this->getControle($dto->idcontrole);
-
-        // Déjà existant ?
-        $exists = $this->em->getRepository(PrestasNonFacturees::class)
-            ->findOneBy([
-                'idcontrole' => $controle,
-                'dateExport' => $dto->dateExport,
-            ]);
-
-        if ($exists) {
-            return false;
-        }
-
-        $entity = new PrestasNonFacturees()
-            ->setIdcontrole($controle)
-            ->setDateExport($dto->dateExport)
-            ->setDevise($dto->devise)
-            ->setOtcHt($dto->otcHt)
-            ->setMontantTvaOtcHt($dto->montantTvaOtcHt)
-            ->setPourcentageTvaOtc($dto->pourcentageTvaOtc)
-            ->setOtcTtc($dto->otcTtc)
-            ->setMontantPrestaHt($dto->montantPrestaHt)
-            ->setMontantPrestaTtc($dto->montantPrestaTtc)
-            ->setPourcentageTvaPresta($dto->pourcentageTvaPresta)
-            ->setMontantTvaPresta($dto->montantTvaPresta)
-            ->setMontantRemise($dto->montantRemise)
-            ->setPourcentageRemise($dto->pourcentageRemise)
-            ->setTotalHt($dto->totalHt)
-            ->setTotalTtc($dto->totalTtc)
-            ->setPourcentageTva($dto->pourcentageTva)
-            ->setMontantTva($dto->montantTva);
-
-        $this->em->persist($entity);
-
-        return true;
+        return 'prestas_non_facturees';
     }
 
-    protected
-    function resetCaches(): void
+    protected static function getColumns(): array
     {
-        $this->controlesCache = [];
+        return [
+            'idcontrole',
+            'date_export',
+            'devise',
+            'otc_ht',
+            'montant_tva_otc_ht',
+            'pourcentage_tva_otc',
+            'otc_ttc',
+            'montant_presta_ht',
+            'montant_presta_ttc',
+            'pourcentage_tva_presta',
+            'montant_tva_presta',
+            'montant_remise',
+            'pourcentage_remise',
+            'total_ht',
+            'total_ttc',
+            'pourcentage_tva',
+            'montant_tva',
+        ];
     }
 
-    private
-    function getControle(string $idcontrole): Controles
+    protected static function getUniqueKeys(): array
     {
-        return $this->controlesCache[$idcontrole]
-            ??= $this->em->getRepository(Controles::class)
-            ->findOneBy(['idcontrole' => $idcontrole])
-            ?? throw new \RuntimeException("Contrôle $idcontrole introuvable");
+        return ['idcontrole'];
+    }
+
+    protected static function getColumnMapping(): array
+    {
+        return [
+            'idcontrole' => ['idcontrole'],
+            'date_export' => ['date_export'],
+            'devise' => ['devise'],
+            'otc_ht' => ['otc_ht'],
+            'montant_tva_otc_ht' => ['montant_tva_otc_ht', 'montant_tva_otc'],
+            'pourcentage_tva_otc' => ['pourcentage_tva_otc', 'pourcentage_tva', '_otc'],
+            'otc_ttc' => ['otc_ttc'],
+            'montant_presta_ht' => ['montant_presta_ht'],
+            'montant_presta_ttc' => ['montant_presta_ttc'],
+            'pourcentage_tva_presta' => ['pourcentage_tva_presta'],
+            'montant_tva_presta' => ['montant_tva_presta'],
+            'montant_remise' => ['montant_remise'],
+            'pourcentage_remise' => ['pourcentage_remise'],
+            'total_ht' => ['total_ht'],
+            'total_ttc' => ['total_ttc'],
+            'pourcentage_tva' => ['pourcentage_tva'],
+            'montant_tva' => ['montant_tva'],
+        ];
+    }
+
+    protected static function getDateColumns(): array
+    {
+        return ['date_export'];
+    }
+
+    protected static function getDecimalColumns(): array
+    {
+        return [
+            'otc_ht',
+            'montant_tva_otc_ht',
+            'pourcentage_tva_otc',
+            'otc_ttc',
+            'montant_presta_ht',
+            'montant_presta_ttc',
+            'pourcentage_tva_presta',
+            'montant_tva_presta',
+            'montant_remise',
+            'pourcentage_remise',
+            'total_ht',
+            'total_ttc',
+            'pourcentage_tva',
+            'montant_tva'
+        ];
     }
 }

@@ -3,9 +3,19 @@
 namespace App\Entity;
 
 use App\Repository\CentresClientsRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CentresClientsRepository::class)]
+#[ORM\Table(
+    name: 'centres_clients',
+    uniqueConstraints: [
+        new ORM\UniqueConstraint(
+            name: 'uniq_cntrclt_client',
+            columns: ['idclient']
+        )
+    ]
+)]
 class CentresClients
 {
     #[ORM\Id]
@@ -16,9 +26,8 @@ class CentresClients
     #[ORM\Column(length: 8)]
     private ?string $agrCentre = null;
 
-    #[ORM\ManyToOne(inversedBy: 'centresClients')]
-    #[ORM\JoinColumn(name: 'idclient', referencedColumnName: 'idclient', nullable: false)]
-    private ?Clients $idclient = null;
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?string $idclient = null;
 
     public function getId(): ?int
     {
@@ -37,12 +46,12 @@ class CentresClients
         return $this;
     }
 
-    public function getIdclient(): ?Clients
+    public function getIdclient(): ?string
     {
         return $this->idclient;
     }
 
-    public function setIdclient(?Clients $idclient): static
+    public function setIdclient(string $idclient): static
     {
         $this->idclient = $idclient;
 

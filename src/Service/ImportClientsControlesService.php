@@ -2,67 +2,43 @@
 
 namespace App\Service;
 
-use App\DTO\ClientsControlesDTO;
-use App\Entity\Clients;
-use App\Entity\ClientsControles;
-use App\Entity\Controles;
-
 class ImportClientsControlesService extends AbstractCsvImportService
 {
-    private array $controlesCache = [];
-    private array $clientsCache = [];
-
-    /**
-     * @throws \Exception
-     */
-    protected function handleRow(array $data, int $lineNumber): bool
+    protected static function getTableName(): string
     {
-        $dto = ClientsControlesDTO::fromArray($data);
-
-        $controle = $this->getControle($dto->idcontrole);
-        $client = $this->getClient($dto->idclient);
-
-        // Déjà existant ?
-        $exists = $this->em->getRepository(ClientsControles::class)
-            ->findOneBy([
-                'idcontrole' => $controle,
-                'idclient' => $client,
-            ]);
-
-        if ($exists) {
-            return false;
-        }
-
-        $entity = new ClientsControles()
-            ->setIdcontrole($controle)
-            ->setIdclient($client)
-            ->setAgrCentre($dto->agrCentre)
-            ->setAgrControleur($dto->agrControleur);
-
-        $this->em->persist($entity);
-
-        return true;
+        return 'clients_controles';
     }
 
-    protected function resetCaches(): void
+    protected static function getColumns(): array
     {
-        $this->controlesCache = [];
-        $this->clientsCache = [];
+        return [
+            'agr_centre',
+            'agr_controleur',
+            'idclient',
+            'idcontrole',
+        ];
     }
 
-    private function getControle(string $idcontrole): Controles
+    protected static function getUniqueKeys(): array
     {
-        return $this->controlesCache[$idcontrole]
-            ??= $this->em->getRepository(Controles::class)
-            ->findOneBy(['idcontrole' => $idcontrole])
-            ?? throw new \RuntimeException("Contrôle $idcontrole introuvable");
+        return ['idclient', 'idcontrole'];
     }
 
-    private function getClient(string $idclient): Clients
+    protected static function getColumnMapping(): array
     {
-        return $this->clientsCache[$idclient]
-            ??= $this->em->getRepository(Clients::class)
-            ->findOneBy(['idclient' => $idclient])
-            ?? throw new \RuntimeException("Client $idclient introuvable");
+        return [
+            'idclient' => ['idclient'],
+            'idcontrole' => ['idcontrole'],
+        ];
+    }
+
+    protected static function getDateColumns(): array
+    {
+        return [];
+    }
+
+    protected static function getDecimalColumns(): array
+    {
+        return [];
     }
 }

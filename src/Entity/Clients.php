@@ -10,8 +10,12 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClientsRepository::class)]
 #[ORM\Table(
+    name: 'clients',
     uniqueConstraints: [
-        new ORM\UniqueConstraint(columns: ['idclient'])
+        new ORM\UniqueConstraint(
+            name: 'uniq_clt_client',
+            columns: ['idclient']
+        )
     ]
 )]
 class Clients
@@ -69,59 +73,20 @@ class Clients
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $numTvaIntra = null;
 
-    /**
-     * @var Collection<int, CentresClients>
-     */
-    #[ORM\OneToMany(targetEntity: CentresClients::class, mappedBy: 'idclient')]
-    private Collection $centresClients;
-
-    /**
-     * @var Collection<int, ControlesNonFactures>
-     */
-    #[ORM\OneToMany(targetEntity: ControlesNonFactures::class, mappedBy: 'idclient')]
-    private Collection $controlesNonFactures;
-
-    /**
-     * @var Collection<int, ClientsControles>
-     */
-    #[ORM\OneToMany(targetEntity: ClientsControles::class, mappedBy: 'idclient')]
-    private Collection $clientsControles;
-
-    /**
-     * @var Collection<int, ControlesFactures>
-     */
-    #[ORM\OneToMany(targetEntity: ControlesFactures::class, mappedBy: 'idclient')]
-    private Collection $controlesFactures;
-
-    /**
-     * @var Collection<int, FacturesReglements>
-     */
-    #[ORM\OneToMany(targetEntity: FacturesReglements::class, mappedBy: 'idclient')]
-    private Collection $facturesReglements;
-
-    public function __construct()
-    {
-        $this->centresClients = new ArrayCollection();
-        $this->controlesNonFactures = new ArrayCollection();
-        $this->clientsControles = new ArrayCollection();
-        $this->controlesFactures = new ArrayCollection();
-        $this->facturesReglements = new ArrayCollection();
-    }
-
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setIdclient(string $idclient): self
-    {
-        $this->idclient = $idclient;
-        return $this;
-    }
-
     public function getIdclient(): ?string
     {
         return $this->idclient;
+    }
+
+    public function setIdclient(string $idclient): static
+    {
+        $this->idclient = $idclient;
+        return $this;
     }
 
     public function getDateExport(): ?\DateTimeImmutable
@@ -300,156 +265,6 @@ class Clients
     public function setNumTvaIntra(?string $numTvaIntra): static
     {
         $this->numTvaIntra = $numTvaIntra;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, CentresClients>
-     */
-    public function getCentresClients(): Collection
-    {
-        return $this->centresClients;
-    }
-
-    public function addCentresClient(CentresClients $centresClient): static
-    {
-        if (!$this->centresClients->contains($centresClient)) {
-            $this->centresClients->add($centresClient);
-            $centresClient->setIdclient($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCentresClient(CentresClients $centresClient): static
-    {
-        if ($this->centresClients->removeElement($centresClient)) {
-            // set the owning side to null (unless already changed)
-            if ($centresClient->getIdclient() === $this) {
-                $centresClient->setIdclient(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, ControlesNonFactures>
-     */
-    public function getControlesNonFactures(): Collection
-    {
-        return $this->controlesNonFactures;
-    }
-
-    public function addControlesNonFacture(ControlesNonFactures $controlesNonFacture): static
-    {
-        if (!$this->controlesNonFactures->contains($controlesNonFacture)) {
-            $this->controlesNonFactures->add($controlesNonFacture);
-            $controlesNonFacture->setIdclient($this);
-        }
-
-        return $this;
-    }
-
-    public function removeControlesNonFacture(ControlesNonFactures $controlesNonFacture): static
-    {
-        if ($this->controlesNonFactures->removeElement($controlesNonFacture)) {
-            // set the owning side to null (unless already changed)
-            if ($controlesNonFacture->getIdclient() === $this) {
-                $controlesNonFacture->setIdclient(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, ClientsControles>
-     */
-    public function getClientsControles(): Collection
-    {
-        return $this->clientsControles;
-    }
-
-    public function addClientsControle(ClientsControles $clientsControle): static
-    {
-        if (!$this->clientsControles->contains($clientsControle)) {
-            $this->clientsControles->add($clientsControle);
-            $clientsControle->setIdclient($this);
-        }
-
-        return $this;
-    }
-
-    public function removeClientsControle(ClientsControles $clientsControle): static
-    {
-        if ($this->clientsControles->removeElement($clientsControle)) {
-            // set the owning side to null (unless already changed)
-            if ($clientsControle->getIdclient() === $this) {
-                $clientsControle->setIdclient(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, ControlesFactures>
-     */
-    public function getControlesFactures(): Collection
-    {
-        return $this->controlesFactures;
-    }
-
-    public function addControlesFacture(ControlesFactures $controlesFacture): static
-    {
-        if (!$this->controlesFactures->contains($controlesFacture)) {
-            $this->controlesFactures->add($controlesFacture);
-            $controlesFacture->setIdclient($this);
-        }
-
-        return $this;
-    }
-
-    public function removeControlesFacture(ControlesFactures $controlesFacture): static
-    {
-        if ($this->controlesFactures->removeElement($controlesFacture)) {
-            // set the owning side to null (unless already changed)
-            if ($controlesFacture->getIdclient() === $this) {
-                $controlesFacture->setIdclient(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, FacturesReglements>
-     */
-    public function getFacturesReglements(): Collection
-    {
-        return $this->facturesReglements;
-    }
-
-    public function addFacturesReglement(FacturesReglements $facturesReglement): static
-    {
-        if (!$this->facturesReglements->contains($facturesReglement)) {
-            $this->facturesReglements->add($facturesReglement);
-            $facturesReglement->setIdclient($this);
-        }
-
-        return $this;
-    }
-
-    public function removeFacturesReglement(FacturesReglements $facturesReglement): static
-    {
-        if ($this->facturesReglements->removeElement($facturesReglement)) {
-            // set the owning side to null (unless already changed)
-            if ($facturesReglement->getIdclient() === $this) {
-                $facturesReglement->setIdclient(null);
-            }
-        }
 
         return $this;
     }

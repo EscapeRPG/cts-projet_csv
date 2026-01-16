@@ -3,9 +3,19 @@
 namespace App\Entity;
 
 use App\Repository\ControlesNonFacturesRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ControlesNonFacturesRepository::class)]
+#[ORM\Table(
+    name: 'controles_non_factures',
+    uniqueConstraints: [
+        new ORM\UniqueConstraint(
+            name: 'uniq_ctrlnfact_controle_client',
+            columns: ['idcontrole', 'idclient']
+        )
+    ]
+)]
 class ControlesNonFactures
 {
     #[ORM\Id]
@@ -13,13 +23,8 @@ class ControlesNonFactures
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'controlesNonFactures')]
-    #[ORM\JoinColumn(
-        name: 'idcontrole',
-        referencedColumnName: 'idcontrole',
-        nullable: false
-    )]
-    private ?Controles $idcontrole = null;
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?string $idcontrole = null;
 
     #[ORM\Column(length: 8)]
     private ?string $agrCentre = null;
@@ -27,25 +32,20 @@ class ControlesNonFactures
     #[ORM\Column(length: 8)]
     private ?string $agrControleur = null;
 
-    #[ORM\ManyToOne(inversedBy: 'controlesNonFactures')]
-    #[ORM\JoinColumn(
-        name: 'idclient',
-        referencedColumnName: 'idclient',
-        nullable: false
-    )]
-    private ?Clients $idclient = null;
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?string $idclient = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getIdcontrole(): ?Controles
+    public function getIdcontrole(): ?string
     {
         return $this->idcontrole;
     }
 
-    public function setIdcontrole(?Controles $idcontrole): static
+    public function setIdcontrole(string $idcontrole): static
     {
         $this->idcontrole = $idcontrole;
 
@@ -76,12 +76,12 @@ class ControlesNonFactures
         return $this;
     }
 
-    public function getIdclient(): ?Clients
+    public function getIdclient(): ?string
     {
         return $this->idclient;
     }
 
-    public function setIdclient(?Clients $idclient): static
+    public function setIdclient(string $idclient): static
     {
         $this->idclient = $idclient;
 

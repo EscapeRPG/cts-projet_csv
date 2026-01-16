@@ -2,40 +2,53 @@
 
 namespace App\Service;
 
-use App\DTO\ReglementsDTO;
-use App\Entity\Reglements;
-
 class ImportReglementsService extends AbstractCsvImportService
 {
-    /**
-     * @throws \Exception
-     */
-    protected function handleRow(array $data, int $lineNumber): bool
+    protected static function getTableName(): string
     {
-        $dto = ReglementsDTO::fromArray($data);
+        return 'reglements';
+    }
 
-        $exists = $this->em->getRepository(Reglements::class)
-            ->findOneBy([
-                'idreglement' => $dto->idreglement,
-                'dateExport' => $dto->dateExport
-            ]);
+    protected static function getColumns(): array
+    {
+        return [
+            'idreglement',
+            'date_export',
+            'mode_reglt',
+            'date_reglt',
+            'montant_reglt',
+            'banque',
+            'numero_cheque',
+            'numero_releve',
+        ];
+    }
 
-        if ($exists) {
-            return false;
-        }
+    protected static function getUniqueKeys(): array
+    {
+        return ['idreglement'];
+    }
 
-        $entity = new Reglements()
-            ->setIdreglement($dto->idreglement)
-            ->setDateExport($dto->dateExport)
-            ->setModeReglt($dto->modeReglt)
-            ->setDateReglt($dto->dateReglt)
-            ->setMontantReglt($dto->montantReglt)
-            ->setBanque($dto->banque)
-            ->setNumeroCheque($dto->numeroCheque)
-            ->setNumeroReleve($dto->numeroReleve);
+    protected static function getColumnMapping(): array
+    {
+        return [
+            'idreglement' => ['idreglement'],
+            'date_export' => ['date_export'],
+            'mode_reglt' => ['mode_reglt'],
+            'date_reglt' => ['date_reglt'],
+            'montant_reglt' => ['montant_reglt'],
+            'banque' => ['banque'],
+            'numero_cheque' => ['numero_cheque'],
+            'numero_releve' => ['numero_releve'],
+        ];
+    }
 
-        $this->em->persist($entity);
+    protected static function getDateColumns(): array
+    {
+        return ['date_export', 'date_reglt'];
+    }
 
-        return true;
+    protected static function getDecimalColumns(): array
+    {
+        return ['montant_reglt'];
     }
 }

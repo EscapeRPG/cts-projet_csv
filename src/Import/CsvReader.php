@@ -4,22 +4,37 @@ namespace App\Import;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-class CsvReader
+final class CsvReader
 {
-    public function read(UploadedFile $file, string $delimiter = ';'): iterable
+    public function read(UploadedFile $file, string $delimiter = ';'): \Generator
     {
         $handle = fopen($file->getPathname(), 'r');
-        $headers = array_map(
-            fn ($h) => strtolower(trim($h)),
-            fgetcsv($handle, 0, $delimiter)
-        );
 
+        if ($handle === false) {
+            throw new \RuntimeException('Impossible d’ouvrir le fichier CSV');
+        }
+
+        $headers = null;
 
         while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
+            if ($headers === null) {
+                $headers = array_map(
+                    fn($h) => $this->normalizeHeader($h),
+                    $row
+                );
+                continue;
+            }
+
             yield array_combine($headers, $row);
         }
 
         fclose($handle);
+    }
+
+    private function normalizeHeader(string $header): string
+    {
+        $header = preg_replace('/^\x{FEFF}/u', '', $header);
+        return trim(mb_strtolower($header));
     }
 }
 

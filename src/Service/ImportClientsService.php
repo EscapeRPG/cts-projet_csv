@@ -2,48 +2,69 @@
 
 namespace App\Service;
 
-use App\DTO\ClientsDTO;
-use App\Entity\Clients;
-
 class ImportClientsService extends AbstractCsvImportService
 {
-    /**
-     * @throws \Exception
-     */
-    protected function handleRow(array $data, int $lineNumber): bool
+    protected static function getTableName(): string
     {
-        $dto = ClientsDTO::fromArray($data);
+        return 'clients';
+    }
 
-        $exists = $this->em->getRepository(Clients::class)
-            ->findOneBy([
-                'idclient' => $dto->idclient,
-                'dateExport' => $dto->dateExport
-            ]);
+    protected static function getColumns(): array
+    {
+        return [
+            'idclient',
+            'date_export',
+            'date_creation',
+            'code_client',
+            'nom_code_client',
+            'code_sage',
+            'nom',
+            'prenom',
+            'adresse1',
+            'adresse2',
+            'cp',
+            'ville',
+            'email',
+            'telephone',
+            'mobile',
+            'num_tva_intra',
+        ];
+    }
 
-        if ($exists) {
-            return false;
-        }
+    protected static function getUniqueKeys(): array
+    {
+        return ['idclient'];
+    }
 
-        $entity = new Clients()
-            ->setIdclient($dto->idclient)
-            ->setDateExport($dto->dateExport)
-            ->setDateCreation($dto->dateCreation)
-            ->setCodeClient($dto->codeClient)
-            ->setNomCodeClient($dto->nomCodeClient)
-            ->setCodeSage($dto->codeSage)
-            ->setNom($dto->nom)
-            ->setPrenom($dto->prenom)
-            ->setAdresse1($dto->adresse1)
-            ->setAdresse2($dto->adresse2)
-            ->setCp($dto->cp)
-            ->setVille($dto->ville)
-            ->setEmail($dto->email)
-            ->setTelephone($dto->telephone)
-            ->setMobile($dto->mobile)
-            ->setNumTvaIntra($dto->numTvaIntra);
+    protected static function getColumnMapping(): array
+    {
+        return [
+            'idclient' => ['idclient'],
+            'date_export' => ['date_export'],
+            'date_creation' => ['date_creation'],
+            'code_client' => ['code_client'],
+            'nom_code_client' => ['nom_code_client'],
+            'code_sage' => ['code_sage'],
+            'nom' => ['nom'],
+            'prenom' => ['prenom'],
+            'adresse1' => ['adresse1'],
+            'adresse2' => ['adresse2'],
+            'cp' => ['cp'],
+            'ville' => ['ville'],
+            'email' => ['email'],
+            'telephone' => ['telephone'],
+            'mobile' => ['mobile'],
+            'num_tva_intra' => ['num_tva_intra']
+        ];
+    }
 
-        $this->em->persist($entity);
+    protected static function getDateColumns(): array
+    {
+        return ['date_export', 'date_creation'];
+    }
 
-        return true;
+    protected static function getDecimalColumns(): array
+    {
+        return [];
     }
 }

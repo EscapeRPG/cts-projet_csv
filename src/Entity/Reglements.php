@@ -3,15 +3,17 @@
 namespace App\Entity;
 
 use App\Repository\ReglementsRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ReglementsRepository::class)]
 #[ORM\Table(
+    name: 'reglements',
     uniqueConstraints: [
-        new ORM\UniqueConstraint(columns: ['idreglement'])
+        new ORM\UniqueConstraint(
+            name: 'uniq_reglt_reglement',
+            columns: ['idreglement']
+        )
     ]
 )]
 class Reglements
@@ -44,17 +46,6 @@ class Reglements
 
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $numeroReleve = null;
-
-    /**
-     * @var Collection<int, FacturesReglements>
-     */
-    #[ORM\OneToMany(targetEntity: FacturesReglements::class, mappedBy: 'idreglement')]
-    private Collection $facturesReglements;
-
-    public function __construct()
-    {
-        $this->facturesReglements = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -153,36 +144,6 @@ class Reglements
     public function setNumeroReleve(?string $numeroReleve): static
     {
         $this->numeroReleve = $numeroReleve;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, FacturesReglements>
-     */
-    public function getFacturesReglements(): Collection
-    {
-        return $this->facturesReglements;
-    }
-
-    public function addFacturesReglement(FacturesReglements $facturesReglement): static
-    {
-        if (!$this->facturesReglements->contains($facturesReglement)) {
-            $this->facturesReglements->add($facturesReglement);
-            $facturesReglement->setIdreglement($this);
-        }
-
-        return $this;
-    }
-
-    public function removeFacturesReglement(FacturesReglements $facturesReglement): static
-    {
-        if ($this->facturesReglements->removeElement($facturesReglement)) {
-            // set the owning side to null (unless already changed)
-            if ($facturesReglement->getIdreglement() === $this) {
-                $facturesReglement->setIdreglement(null);
-            }
-        }
 
         return $this;
     }

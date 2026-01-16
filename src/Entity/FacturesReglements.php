@@ -3,9 +3,19 @@
 namespace App\Entity;
 
 use App\Repository\FacturesReglementsRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: FacturesReglementsRepository::class)]
+#[ORM\Table(
+    name: 'factures_reglements',
+    uniqueConstraints: [
+        new ORM\UniqueConstraint(
+            name: 'uniq_factreglt_facture_reglement',
+            columns: ['idfacture', 'idreglement']
+        )
+    ]
+)]
 class FacturesReglements
 {
     #[ORM\Id]
@@ -13,56 +23,41 @@ class FacturesReglements
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'facturesReglements')]
-    #[ORM\JoinColumn(
-        name: 'idfacture',
-        referencedColumnName: 'idfacture',
-        nullable: false
-    )]
-    private ?Factures $idfacture = null;
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?string $idfacture = null;
 
-    #[ORM\ManyToOne(inversedBy: 'facturesReglements')]
-    #[ORM\JoinColumn(
-        name: 'idreglement',
-        referencedColumnName: 'idreglement',
-        nullable: false
-    )]
-    private ?Reglements $idreglement = null;
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?string $idreglement = null;
 
     #[ORM\Column(length: 8)]
     private ?string $agrCentre = null;
 
-    #[ORM\ManyToOne(inversedBy: 'facturesReglements')]
-    #[ORM\JoinColumn(
-        name: 'idclient',
-        referencedColumnName: 'idclient',
-        nullable: false
-    )]
-    private ?Clients $idclient = null;
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?string $idclient = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getIdfacture(): ?Factures
+    public function getIdfacture(): ?string
     {
         return $this->idfacture;
     }
 
-    public function setIdfacture(?Factures $idfacture): static
+    public function setIdfacture(string $idfacture): static
     {
         $this->idfacture = $idfacture;
 
         return $this;
     }
 
-    public function getIdreglement(): ?Reglements
+    public function getIdreglement(): ?string
     {
         return $this->idreglement;
     }
 
-    public function setIdreglement(?Reglements $idreglement): static
+    public function setIdreglement(string $idreglement): static
     {
         $this->idreglement = $idreglement;
 
@@ -81,12 +76,12 @@ class FacturesReglements
         return $this;
     }
 
-    public function getIdclient(): ?Clients
+    public function getIdclient(): ?string
     {
         return $this->idclient;
     }
 
-    public function setIdclient(?Clients $idclient): static
+    public function setIdclient(string $idclient): static
     {
         $this->idclient = $idclient;
 

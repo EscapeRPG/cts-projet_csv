@@ -3,9 +3,19 @@
 namespace App\Entity;
 
 use App\Repository\ClientsControlesRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClientsControlesRepository::class)]
+#[ORM\Table(
+    name: 'clients_controles',
+    uniqueConstraints: [
+        new ORM\UniqueConstraint(
+            name: 'uniq_cltctrl_client_controle',
+            columns: ['idclient', 'idcontrole']
+        )
+    ]
+)]
 class ClientsControles
 {
     #[ORM\Id]
@@ -13,21 +23,11 @@ class ClientsControles
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'clientsControles')]
-    #[ORM\JoinColumn(
-        name: 'idclient',
-        referencedColumnName: 'idclient',
-        nullable: false
-    )]
-    private ?Clients $idclient = null;
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?string $idclient = null;
 
-    #[ORM\ManyToOne(inversedBy: 'clientsControles')]
-    #[ORM\JoinColumn(
-        name: 'idcontrole',
-        referencedColumnName: 'idcontrole',
-        nullable: false
-    )]
-    private ?Controles $idcontrole = null;
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?string $idcontrole = null;
 
     #[ORM\Column(length: 8)]
     private ?string $agrCentre = null;
@@ -40,24 +40,24 @@ class ClientsControles
         return $this->id;
     }
 
-    public function getIdclient(): ?Clients
+    public function getIdclient(): ?string
     {
         return $this->idclient;
     }
 
-    public function setIdclient(?Clients $idclient): static
+    public function setIdclient(string $idclient): static
     {
         $this->idclient = $idclient;
 
         return $this;
     }
 
-    public function getIdcontrole(): ?Controles
+    public function getIdcontrole(): ?string
     {
         return $this->idcontrole;
     }
 
-    public function setIdcontrole(?Controles $idcontrole): static
+    public function setIdcontrole(string $idcontrole): static
     {
         $this->idcontrole = $idcontrole;
 

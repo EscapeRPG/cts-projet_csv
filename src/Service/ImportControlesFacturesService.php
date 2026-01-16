@@ -2,80 +2,47 @@
 
 namespace App\Service;
 
-use App\DTO\ControlesFacturesDTO;
-use App\Entity\Clients;
-use App\Entity\Controles;
-use App\Entity\ControlesFactures;
-use App\Entity\Factures;
-
 class ImportControlesFacturesService extends AbstractCsvImportService
 {
-    private array $controlesCache = [];
-    private array $facturesCache = [];
-    private array $clientsCache = [];
-
-    /**
-     * @throws \Exception
-     */
-    protected function handleRow(array $data, int $lineNumber): bool
+    protected static function getTableName(): string
     {
-        $dto = ControlesFacturesDTO::fromArray($data);
-
-        $controle = $this->getControle($dto->idcontrole);
-        $facture = $this->getFacture($dto->idfacture);
-        $client = $this->getClient($dto->idclient);
-
-        // Déjà existant ?
-        $exists = $this->em->getRepository(ControlesFactures::class)
-            ->findOneBy([
-                'idcontrole' => $controle,
-                'idfacture' => $facture,
-                'idclient' => $client,
-            ]);
-
-        if ($exists) {
-            return false;
-        }
-
-        $entity = new ControlesFactures()
-            ->setIdcontrole($controle)
-            ->setIdfacture($facture)
-            ->setIdclient($client)
-            ->setAgrCentre($dto->agrCentre)
-            ->setAgrControleur($dto->agrControleur);
-
-        $this->em->persist($entity);
-
-        return true;
+        return 'controles_factures';
     }
 
-    protected function resetCaches(): void
+    protected static function getColumns(): array
     {
-        $this->controlesCache = [];
-        $this->clientsCache = [];
+        return [
+            'agr_centre',
+            'agr_controleur',
+            'idcontrole',
+            'idfacture',
+            'idclient',
+        ];
     }
 
-    private function getControle(string $idcontrole): Controles
+    protected static function getUniqueKeys(): array
     {
-        return $this->controlesCache[$idcontrole]
-            ??= $this->em->getRepository(Controles::class)
-            ->findOneBy(['idcontrole' => $idcontrole])
-            ?? throw new \RuntimeException("Contrôle $idcontrole introuvable");
+        return ['idcontrole', 'idfacture'];
     }
 
-    private function getFacture(string $idfacture): Factures
+    protected static function getColumnMapping(): array
     {
-        return $this->facturesCache[$idfacture]
-            ??= $this->em->getRepository(Factures::class)
-            ->findOneBy(['idcontrole' => $idcontrole])
-            ?? throw new \RuntimeException("Facture $idfacture introuvable");
+        return [
+            'agr_centre' => ['agr_centre'],
+            'agr_controleur' => ['agr_controleur'],
+            'idcontrole' => ['idcontrole'],
+            'idfacture' => ['idfacture'],
+            'idclient' => ['idclient'],
+        ];
     }
 
-    private function getClient(string $idclient): Clients
+    protected static function getDateColumns(): array
     {
-        return $this->clientsCache[$idclient]
-            ??= $this->em->getRepository(Clients::class)
-            ->findOneBy(['idclient' => $idclient])
-            ?? throw new \RuntimeException("Client $idclient introuvable");
+        return [];
+    }
+
+    protected static function getDecimalColumns(): array
+    {
+        return [];
     }
 }
