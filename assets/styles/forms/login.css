@@ -1,0 +1,10 @@
+.line {
+    width: 300px;
+    justify-content: space-between;
+}
+
+.remember-me {
+    font-size: small;
+    justify-content: flex-start;
+    gap: 0;
+}

@@ -67,14 +67,16 @@ class ImportCsvController extends AbstractController
                 foreach ($imports as [$importer, $file]) {
                     if ($importer instanceof $serviceClass) {
                         $importer->importFromFile($file);
+                        $total++;
                     }
                 }
             }
 
             if ($total > 0) {
+                $message = $total . ($total > 1 ? ' fichiers importés' : ' fichier importé') . ' avec succès.';
                 $this->addFlash(
                     'success',
-                    sprintf('%d lignes importées avec succès', $total)
+                    $message
                 );
             }
         }

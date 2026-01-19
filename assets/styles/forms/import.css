@@ -28,3 +28,80 @@ form {
         gap: 20px;
     }
 }
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+
+    &.is-visible {
+        opacity: 1;
+        pointer-events: auto;
+
+        .modal {
+            opacity: 1;
+        }
+    }
+}
+
+.modal {
+    background: #d5ffd5;
+    padding: 2em;
+    border-radius: 20px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: var(--box-shadow);
+    opacity: 0;
+    transition: opacity .25s ease;
+
+    h2 {
+        margin-top: 0;
+    }
+}
+
+.dropzone {
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.dropzone__area {
+    background: rgba(30, 143, 176, .05);
+    border: 5px dashed var(--cts-main);
+    border-radius: 10px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: background .2s ease, border-color .2s ease;
+
+    &.dragover {
+        background: rgba(35, 180, 166, .15);
+        border-color: var(--cts-alt);
+    }
+
+    .dropzone__hint {
+        color: red;
+        font-style: italic;
+    }
+}
+
+.dropzone__files {
+    margin-top: 10px;
+    font-size: 14px;
+    flex-wrap: wrap;
+
+    div {
+        padding: 5px 10px;
+        border: 1px solid var(--cts-main);
+        border-radius: 5px;
+    }
+}
+

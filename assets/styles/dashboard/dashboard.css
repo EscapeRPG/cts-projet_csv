@@ -1,0 +1,36 @@
+.dashboard-container {
+    width: 80%;
+}
+
+.app-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    width: 90%;
+    margin: auto;
+    transition: all .25s ease;
+}
+
+.app {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 150px;
+    height: 150px;
+    margin: 10px;
+    border-radius: 10px;
+    box-shadow: var(--box-shadow);
+    background: var(--blocks);
+    transition: all .25s ease;
+    text-align: center;
+    color: var(--cts-main);
+    font-weight: bold;
+    text-decoration: none;
+
+    &:hover {
+        transform: scale(1.1);
+        background: linear-gradient(var(--cts-main), var(--cts-alt));
+        color: var(--nav-a-color);
+    }
+}
