@@ -22,6 +22,9 @@ class ImportedFiles
     #[ORM\Column]
     private ?\DateTimeImmutable $imported_at = null;
 
+    #[ORM\ManyToOne(inversedBy: 'importedFiles')]
+    private ?Reseau $reseau = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -59,6 +62,18 @@ class ImportedFiles
     public function setImportedAt(\DateTimeImmutable $imported_at): static
     {
         $this->imported_at = $imported_at;
+
+        return $this;
+    }
+
+    public function getReseau(): ?Reseau
+    {
+        return $this->reseau;
+    }
+
+    public function setReseau(?Reseau $reseau): static
+    {
+        $this->reseau = $reseau;
 
         return $this;
     }

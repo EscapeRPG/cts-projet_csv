@@ -82,7 +82,7 @@ form {
     cursor: pointer;
     transition: background .2s ease, border-color .2s ease;
 
-    &.dragover {
+    &.dragover, &:hover {
         background: rgba(35, 180, 166, .15);
         border-color: var(--cts-alt);
     }

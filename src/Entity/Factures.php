@@ -7,15 +7,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: FacturesRepository::class)]
-#[ORM\Table(
-    name: 'factures',
-    uniqueConstraints: [
-        new ORM\UniqueConstraint(
-            name: 'uniq_factures_facture',
-            columns: ['idfacture']
-        )
-    ]
-)]
 class Factures
 {
     #[ORM\Id]
@@ -91,6 +82,9 @@ class Factures
 
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $numeroReleve = null;
+
+    #[ORM\ManyToOne(inversedBy: 'factures')]
+    private ?Reseau $reseau = null;
 
     public function getId(): ?int
     {
@@ -369,6 +363,18 @@ class Factures
     public function setNumeroReleve(?string $numeroReleve): static
     {
         $this->numeroReleve = $numeroReleve;
+
+        return $this;
+    }
+
+    public function getReseau(): ?Reseau
+    {
+        return $this->reseau;
+    }
+
+    public function setReseau(?Reseau $reseau): static
+    {
+        $this->reseau = $reseau;
 
         return $this;
     }

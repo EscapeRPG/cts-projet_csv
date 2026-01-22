@@ -1,0 +1,38 @@
+.users-container {
+    width: 80%;
+}
+
+table {
+    width: 80%;
+    margin: auto;
+    text-align: center;
+    border-collapse: collapse;
+
+    th, td {
+        padding: 5px 0;
+    }
+
+    th {
+        border-bottom: 2px solid var(--cts-main);
+    }
+
+    td {
+        border-bottom: 1px solid var(--cts-alt);
+    }
+}
+
+.degrade {
+    background: red;
+
+    &:hover {
+        background: darkred;
+    }
+}
+
+.promote {
+    background: limegreen;
+
+    &:hover {
+        background: darkgreen;
+    }
+}

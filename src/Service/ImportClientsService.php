@@ -28,6 +28,7 @@ class ImportClientsService extends AbstractCsvImportService
             'telephone',
             'mobile',
             'num_tva_intra',
+            'reseau_id',
         ];
     }
 

@@ -7,15 +7,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ControlesNonFacturesRepository::class)]
-#[ORM\Table(
-    name: 'controles_non_factures',
-    uniqueConstraints: [
-        new ORM\UniqueConstraint(
-            name: 'uniq_ctrlnfact_controle_client',
-            columns: ['idcontrole', 'idclient']
-        )
-    ]
-)]
 class ControlesNonFactures
 {
     #[ORM\Id]
@@ -34,6 +25,9 @@ class ControlesNonFactures
 
     #[ORM\Column(type: Types::BIGINT)]
     private ?string $idclient = null;
+
+    #[ORM\ManyToOne(inversedBy: 'controlesNonFactures')]
+    private ?Reseau $reseau = null;
 
     public function getId(): ?int
     {
@@ -84,6 +78,18 @@ class ControlesNonFactures
     public function setIdclient(string $idclient): static
     {
         $this->idclient = $idclient;
+
+        return $this;
+    }
+
+    public function getReseau(): ?Reseau
+    {
+        return $this->reseau;
+    }
+
+    public function setReseau(?Reseau $reseau): static
+    {
+        $this->reseau = $reseau;
 
         return $this;
     }

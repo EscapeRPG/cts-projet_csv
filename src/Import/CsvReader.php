@@ -16,7 +16,7 @@ final class CsvReader
 
         $headers = null;
 
-        while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
+        while (($row = fgetcsv($handle, 0, $delimiter, '"', '')) !== false) {
             if ($headers === null) {
                 $headers = array_map(
                     fn($h) => $this->normalizeHeader($h),

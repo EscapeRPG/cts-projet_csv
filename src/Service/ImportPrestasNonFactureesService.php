@@ -29,6 +29,7 @@ class ImportPrestasNonFactureesService extends AbstractCsvImportService
             'total_ttc',
             'pourcentage_tva',
             'montant_tva',
+            'reseau_id',
         ];
     }
 

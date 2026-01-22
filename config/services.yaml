@@ -19,6 +19,10 @@ services:
     App\:
         resource: '../src/'
 
+    App\EventSubscriber\ForcePasswordChangeSubscriber:
+        tags:
+            - { name: 'kernel.event_subscriber' }
+
     App\Import\ImportRouter:
         arguments:
             $clientsImport: '@App\Service\ImportClientsService'
@@ -31,3 +35,8 @@ services:
             $facturesReglementsImport: '@App\Service\ImportFacturesReglementsService'
             $reglementsImport: '@App\Service\ImportReglementsService'
             $prestasNonFactureesImport: '@App\Service\ImportPrestasNonFactureesService'
+
+    App\Service\SftpClient:
+        arguments:
+            $mode: '%env(string:SFTP_MODE)%'
+            $basePath: '%env(string:SFTP_LOCAL_PATH)%'

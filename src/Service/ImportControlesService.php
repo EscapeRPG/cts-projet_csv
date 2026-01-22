@@ -29,6 +29,7 @@ class ImportControlesService extends AbstractCsvImportService
             'type_ctrl',
             'modele_vehicule',
             'annee_circulation',
+            'reseau_id',
         ];
     }
 

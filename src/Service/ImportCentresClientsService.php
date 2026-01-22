@@ -14,6 +14,7 @@ class ImportCentresClientsService extends AbstractCsvImportService
         return [
             'agr_centre',
             'idclient',
+            'reseau_id',
         ];
     }
 

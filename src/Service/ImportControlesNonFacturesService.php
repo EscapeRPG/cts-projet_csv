@@ -16,6 +16,7 @@ class ImportControlesNonFacturesService extends AbstractCsvImportService
             'agr_controleur',
             'idcontrole',
             'idclient',
+            'reseau_id',
         ];
     }
 

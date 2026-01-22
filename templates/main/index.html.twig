@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello MainController!{% endblock %}
+{% block title %}Tableau de bord{% endblock %}
 
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('styles/dashboard/dashboard.css') }}">
@@ -8,7 +8,7 @@
 
 {% block body %}
     <div class="dashboard-container">
-        <h1>Hello {{ user }} !</h1>
+        <h1>Bonjour {{ user.username }} !</h1>
 
         <p>Bienvenue sur votre tableau de bord.</p>
 

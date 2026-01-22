@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use App\Entity\Reseau;
+use App\Import\CsvReader;
 use App\Interfaces\CsvImportInterface;
 use App\Utils\DateParser;
 use DateTimeImmutable;
@@ -12,11 +14,17 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 abstract class AbstractCsvImportService implements CsvImportInterface
 {
     protected int $batchSize = 500;
+    protected ?Reseau $reseau = null;
 
     public function __construct(
         protected EntityManagerInterface $em,
-        protected \App\Import\CsvReader $csvReader
+        protected CsvReader $csvReader
     ) {}
+
+    public function setReseau(Reseau $reseau): void
+    {
+        $this->reseau = $reseau;
+    }
 
     // ----------------------------
     // À définir dans le service concret
@@ -34,9 +42,9 @@ abstract class AbstractCsvImportService implements CsvImportInterface
     /**
      * @throws Exception
      */
-    public function importFromFile(UploadedFile $file): int
+    public function importFromFile(UploadedFile $file, Reseau $reseau): int
     {
-        if ($this->shouldSkipFile($file)) {
+        if ($this->shouldSkipFile($file, $reseau)) {
             return 0;
         }
 
@@ -61,7 +69,7 @@ abstract class AbstractCsvImportService implements CsvImportInterface
             $this->insertBatch($batch);
         }
 
-        $this->markFileAsImported($file);
+        $this->markFileAsImported($file, $reseau);
 
         return $count;
     }
@@ -69,7 +77,6 @@ abstract class AbstractCsvImportService implements CsvImportInterface
     // ----------------------------
     // Mappe une ligne CSV aux colonnes
     // ----------------------------
-
     protected function mapRow(array $data): array
     {
         $mapping = static::getColumnMapping();
@@ -79,6 +86,15 @@ abstract class AbstractCsvImportService implements CsvImportInterface
         $row = [];
 
         foreach (static::getColumns() as $column) {
+            if ($column === 'reseau_id') {
+                if (!$this->reseau) {
+                    throw new \LogicException("Reseau non défini pour l'import");
+                }
+
+                $row[] = $this->reseau->getId();
+                continue;
+            }
+
             $value = null;
 
             // mapping CSV → BDD
@@ -116,15 +132,16 @@ abstract class AbstractCsvImportService implements CsvImportInterface
     /**
      * @throws Exception
      */
-    protected function shouldSkipFile(UploadedFile $file): bool
+    protected function shouldSkipFile(UploadedFile $file, Reseau $reseau): bool
     {
         $hash = $this->getFileHash($file);
 
         return (bool) $this->em->getConnection()->fetchOne(
-            'SELECT 1 FROM imported_files WHERE filename = :name AND file_hash = :hash',
+            'SELECT 1 FROM imported_files WHERE filename = :name AND file_hash = :hash AND reseau_id = :reseau',
             [
                 'name' => $file->getClientOriginalName(),
                 'hash' => $hash,
+                'reseau' => $reseau->getId(),
             ]
         );
     }
@@ -177,12 +194,13 @@ abstract class AbstractCsvImportService implements CsvImportInterface
     /**
      * @throws Exception
      */
-    protected function markFileAsImported(UploadedFile $file): void
+    protected function markFileAsImported(UploadedFile $file, Reseau $reseau): void
     {
         $this->em->getConnection()->insert('imported_files', [
             'filename'    => $file->getClientOriginalName(),
             'file_hash'   => $this->getFileHash($file),
             'imported_at' => new DateTimeImmutable()->format('Y-m-d H:i:s'),
+            'reseau_id' => $reseau->getId(),
         ]);
     }
 

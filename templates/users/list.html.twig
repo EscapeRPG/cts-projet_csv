@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/users/users.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="users-container">
+        <h1>Liste des utilisateurs</h1>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Rôle</th>
+                    <th>Email</th>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <th>Action</th>
+                    {% endif %}
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>
+                        {% if ('ROLE_ADMIN' in user.roles) %}
+                            Administrateur
+                        {% else %}
+                            Utilisateur
+                        {% endif %}
+                    </td>
+                    <td>{{ user.email }}</td>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <td>
+                            <form action="{{ path('app_users_promote', {id: user.id}) }}" method="post">
+                                {% if ('ROLE_ADMIN' in user.roles) %}
+                                    <button class="degrade">Rétrograder</button>
+                                {% else %}
+                                    <button class="promote">Promouvoir</button>
+                                {% endif %}
+                            </form>
+                        </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

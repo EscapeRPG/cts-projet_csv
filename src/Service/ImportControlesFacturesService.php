@@ -17,6 +17,7 @@ class ImportControlesFacturesService extends AbstractCsvImportService
             'idcontrole',
             'idfacture',
             'idclient',
+            'reseau_id',
         ];
     }
 

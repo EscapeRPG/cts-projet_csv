@@ -9,15 +9,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ControlesRepository::class)]
-#[ORM\Table(
-    name: 'controles',
-    uniqueConstraints: [
-        new ORM\UniqueConstraint(
-            name: 'uniq_ctrl_controle',
-            columns: ['idcontrole']
-        )
-    ]
-)]
 class Controles
 {
     #[ORM\Id]
@@ -75,6 +66,9 @@ class Controles
 
     #[ORM\Column]
     private ?int $anneeCirculation = null;
+
+    #[ORM\ManyToOne(inversedBy: 'controles')]
+    private ?Reseau $reseau = null;
 
     public function getId(): ?int
     {
@@ -281,6 +275,18 @@ class Controles
     public function setAnneeCirculation(int $anneeCirculation): static
     {
         $this->anneeCirculation = $anneeCirculation;
+
+        return $this;
+    }
+
+    public function getReseau(): ?Reseau
+    {
+        return $this->reseau;
+    }
+
+    public function setReseau(?Reseau $reseau): static
+    {
+        $this->reseau = $reseau;
 
         return $this;
     }

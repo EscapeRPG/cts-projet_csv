@@ -7,15 +7,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PrestasNonFactureesRepository::class)]
-#[ORM\Table(
-    name: 'prestas_non_facturees',
-    uniqueConstraints: [
-        new ORM\UniqueConstraint(
-            name: 'uniq_presta_controle',
-            columns: ['idcontrole']
-        )
-    ]
-)]
 class PrestasNonFacturees
 {
     #[ORM\Id]
@@ -73,6 +64,9 @@ class PrestasNonFacturees
 
     #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2)]
     private ?string $montantTva = null;
+
+    #[ORM\ManyToOne(inversedBy: 'prestasNonFacturees')]
+    private ?Reseau $reseau = null;
 
     public function getId(): ?int
     {
@@ -279,6 +273,18 @@ class PrestasNonFacturees
     public function setMontantTva(string $montantTva): static
     {
         $this->montantTva = $montantTva;
+
+        return $this;
+    }
+
+    public function getReseau(): ?Reseau
+    {
+        return $this->reseau;
+    }
+
+    public function setReseau(?Reseau $reseau): static
+    {
+        $this->reseau = $reseau;
 
         return $this;
     }

@@ -7,15 +7,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ReglementsRepository::class)]
-#[ORM\Table(
-    name: 'reglements',
-    uniqueConstraints: [
-        new ORM\UniqueConstraint(
-            name: 'uniq_reglt_reglement',
-            columns: ['idreglement']
-        )
-    ]
-)]
 class Reglements
 {
     #[ORM\Id]
@@ -46,6 +37,9 @@ class Reglements
 
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $numeroReleve = null;
+
+    #[ORM\ManyToOne(inversedBy: 'reglements')]
+    private ?Reseau $reseau = null;
 
     public function getId(): ?int
     {
@@ -144,6 +138,18 @@ class Reglements
     public function setNumeroReleve(?string $numeroReleve): static
     {
         $this->numeroReleve = $numeroReleve;
+
+        return $this;
+    }
+
+    public function getReseau(): ?Reseau
+    {
+        return $this->reseau;
+    }
+
+    public function setReseau(?Reseau $reseau): static
+    {
+        $this->reseau = $reseau;
 
         return $this;
     }

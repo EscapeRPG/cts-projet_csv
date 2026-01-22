@@ -9,15 +9,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClientsRepository::class)]
-#[ORM\Table(
-    name: 'clients',
-    uniqueConstraints: [
-        new ORM\UniqueConstraint(
-            name: 'uniq_clt_client',
-            columns: ['idclient']
-        )
-    ]
-)]
 class Clients
 {
     #[ORM\Id]
@@ -72,6 +63,9 @@ class Clients
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $numTvaIntra = null;
+
+    #[ORM\ManyToOne(inversedBy: 'clients')]
+    private ?Reseau $reseau = null;
 
     public function getId(): ?int
     {
@@ -265,6 +259,18 @@ class Clients
     public function setNumTvaIntra(?string $numTvaIntra): static
     {
         $this->numTvaIntra = $numTvaIntra;
+
+        return $this;
+    }
+
+    public function getReseau(): ?Reseau
+    {
+        return $this->reseau;
+    }
+
+    public function setReseau(?Reseau $reseau): static
+    {
+        $this->reseau = $reseau;
 
         return $this;
     }

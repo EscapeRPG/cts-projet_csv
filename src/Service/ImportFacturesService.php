@@ -35,6 +35,7 @@ class ImportFacturesService extends AbstractCsvImportService
             'montant_tva',
             'num_facture',
             'numero_releve',
+            'reseau_id',
         ];
     }
 

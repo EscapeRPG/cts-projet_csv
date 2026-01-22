@@ -2,22 +2,22 @@
 
 namespace App\Repository;
 
-use App\Entity\Reglements;
+use App\Entity\Centre;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Reglements>
+ * @extends ServiceEntityRepository<Centre>
  */
 class ReglementsRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Reglements::class);
+        parent::__construct($registry, Centre::class);
     }
 
     //    /**
-    //     * @return Reglements[] Returns an array of Reglements objects
+    //     * @return Centre[] Returns an array of Centre objects
     //     */
     //    public function findByExampleField($value): array
     //    {
@@ -31,7 +31,7 @@ class ReglementsRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?Reglements
+    //    public function findOneBySomeField($value): ?Centre
     //    {
     //        return $this->createQueryBuilder('r')
     //            ->andWhere('r.exampleField = :val')

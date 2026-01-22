@@ -16,6 +16,7 @@ class ImportFacturesReglementsService extends AbstractCsvImportService
             'idfacture',
             'idreglement',
             'idclient',
+            'reseau_id',
         ];
     }
 

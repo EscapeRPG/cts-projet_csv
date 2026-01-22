@@ -16,6 +16,7 @@ class ImportClientsControlesService extends AbstractCsvImportService
             'agr_controleur',
             'idclient',
             'idcontrole',
+            'reseau_id',
         ];
     }
 
