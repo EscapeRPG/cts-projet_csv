@@ -1,8 +1,6 @@
 <?php
 
-namespace App\Service;
-
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+namespace App\Service\Import;
 
 class SftpClient
 {

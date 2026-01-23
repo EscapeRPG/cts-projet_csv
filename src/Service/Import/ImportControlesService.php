@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Import;
 
-class ImportControlesService extends AbstractCsvImportService
+class ImportControlesService extends \App\Service\Import\AbstractCsvImportService
 {
     protected static function getTableName(): string
     {

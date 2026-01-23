@@ -1,0 +1,81 @@
+.annees-filter {
+    margin: 20px auto;
+    z-index: 100;
+
+    a {
+        padding: 15px 20px;
+        background: var(--cts-main);
+        border-radius: 10px;
+        margin: 0 20px;
+        text-decoration: none;
+        font-weight: bold;
+        color: var(--nav-a-color);
+
+        &:hover {
+            background: var(--cts-alt);
+            color: var(--nav-a-color-hover);
+        }
+    }
+
+    .active {
+        background: var(--active);
+        border: solid 1px var(--cts-main);
+        color: var(--cts-main);
+        padding: 14px 19px;
+    }
+}
+
+.suivi-container {
+    width: 80%;
+    min-height: 100%;
+    background: var(--blocks);
+    box-shadow: var(--box-shadow);
+    border-radius: 10px;
+}
+
+.table-wrapper {
+    max-height: 80vh;
+    overflow: auto;
+    border-radius: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+
+    thead {
+        position: sticky;
+        top: 0;
+        background: var(--cts-main);
+        color: var(--text);
+        text-align: center;
+        z-index: 2;
+
+        tr {
+            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.15);
+        }
+    }
+
+    td {
+        border: 1px solid var(--cts-main-light);
+        padding: 5px 10px;
+
+        &:first-child {
+            border-left: none;
+        }
+
+        &:last-child {
+            border-right: none;
+        }
+    }
+
+    .int-row {
+        text-align: center;
+    }
+
+    .total-row {
+        background: var(--cts-main-light);
+        font-weight: bold;
+        text-align: center;
+    }
+}

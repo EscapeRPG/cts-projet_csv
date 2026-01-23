@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Import;
 
 use App\Entity\Reseau;
 use App\Import\CsvReader;
 use App\Interfaces\CsvImportInterface;
 use App\Utils\DateParser;
-use DateTimeImmutable;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -199,7 +198,7 @@ abstract class AbstractCsvImportService implements CsvImportInterface
         $this->em->getConnection()->insert('imported_files', [
             'filename'    => $file->getClientOriginalName(),
             'file_hash'   => $this->getFileHash($file),
-            'imported_at' => new DateTimeImmutable()->format('Y-m-d H:i:s'),
+            'imported_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
             'reseau_id' => $reseau->getId(),
         ]);
     }

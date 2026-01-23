@@ -1,0 +1,45 @@
+form {
+    display: flex;
+    flex-direction: row;
+    margin: 20px auto;
+}
+
+.filter-dropdown {
+    position: relative;
+    display: flex;
+}
+
+.dropdown-toggle {
+    padding: 6px 12px;
+    background: var(--cts-main);
+    color: #fff;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--blocks);
+    box-shadow: var(--box-shadow);
+    border-radius: 6px;
+    padding: 8px;
+    z-index: 10;
+    min-width: 200px;
+}
+
+.filter-dropdown:hover .dropdown-menu {
+    display: block;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.dropdown-menu label {
+    display: flex;
+    gap: 6px;
+    padding: 4px 0;
+    cursor: pointer;
+}

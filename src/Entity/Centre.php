@@ -18,7 +18,7 @@ class Centre
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $nom = null;
+    private ?string $ville = null;
 
     #[ORM\Column(length: 50, unique: true, nullable: true)]
     private ?string $agr_centre = null;
@@ -37,6 +37,27 @@ class Centre
     #[ORM\JoinColumn(nullable: false)]
     private ?Societe $societe = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $coordonnees = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $telephone = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $email = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $siteWeb = null;
+
+    #[ORM\Column(length: 20)]
+    private ?string $numSiret = null;
+
+    #[ORM\Column(length: 50)]
+    private ?string $reseauNom = null;
+
+    #[ORM\Column(length: 10)]
+    private ?string $cp = null;
+
     public function __construct()
     {
         $this->affectations = new ArrayCollection();
@@ -47,14 +68,14 @@ class Centre
         return $this->id;
     }
 
-    public function getNom(): ?string
+    public function getVille(): ?string
     {
-        return $this->nom;
+        return $this->ville;
     }
 
-    public function setNom(?string $nom): static
+    public function setVille(?string $ville): static
     {
-        $this->nom = $nom;
+        $this->ville = $ville;
         return $this;
     }
 
@@ -117,6 +138,90 @@ class Centre
     public function setSociete(?Societe $societe): static
     {
         $this->societe = $societe;
+
+        return $this;
+    }
+
+    public function getCoordonnees(): ?string
+    {
+        return $this->coordonnees;
+    }
+
+    public function setCoordonnees(?string $coordonnees): static
+    {
+        $this->coordonnees = $coordonnees;
+
+        return $this;
+    }
+
+    public function getTelephone(): ?string
+    {
+        return $this->telephone;
+    }
+
+    public function setTelephone(?string $telephone): static
+    {
+        $this->telephone = $telephone;
+
+        return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): static
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+    public function getSiteWeb(): ?string
+    {
+        return $this->siteWeb;
+    }
+
+    public function setSiteWeb(?string $siteWeb): static
+    {
+        $this->siteWeb = $siteWeb;
+
+        return $this;
+    }
+
+    public function getNumSiret(): ?string
+    {
+        return $this->numSiret;
+    }
+
+    public function setNumSiret(string $numSiret): static
+    {
+        $this->numSiret = $numSiret;
+
+        return $this;
+    }
+
+    public function getReseauNom(): ?string
+    {
+        return $this->reseauNom;
+    }
+
+    public function setReseauNom(string $reseauNom): static
+    {
+        $this->reseauNom = $reseauNom;
+
+        return $this;
+    }
+
+    public function getCp(): ?string
+    {
+        return $this->cp;
+    }
+
+    public function setCp(string $cp): static
+    {
+        $this->cp = $cp;
 
         return $this;
     }

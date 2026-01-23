@@ -4,7 +4,7 @@ namespace App\Command;
 
 use App\Import\ImportRouter;
 use App\Repository\ReseauRepository;
-use App\Service\SftpClient;
+use App\Service\Import\SftpClient;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

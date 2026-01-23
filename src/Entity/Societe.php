@@ -24,6 +24,9 @@ class Societe
     #[ORM\OneToMany(targetEntity: Centre::class, mappedBy: 'societe')]
     private Collection $centre;
 
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $numTva = null;
+
     public function __construct()
     {
         $this->centre = new ArrayCollection();
@@ -72,6 +75,18 @@ class Societe
                 $centre->setSociete(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getNumTva(): ?string
+    {
+        return $this->numTva;
+    }
+
+    public function setNumTva(?string $numTva): static
+    {
+        $this->numTva = $numTva;
 
         return $this;
     }

@@ -18,6 +18,8 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
+        autowire: true
+        autoconfigure: true
 
     App\EventSubscriber\ForcePasswordChangeSubscriber:
         tags:
@@ -25,18 +27,18 @@ services:
 
     App\Import\ImportRouter:
         arguments:
-            $clientsImport: '@App\Service\ImportClientsService'
-            $centresClientsImport: '@App\Service\ImportCentresClientsService'
-            $clientsControlesImport: '@App\Service\ImportClientsControlesService'
-            $controlesImport: '@App\Service\ImportControlesService'
-            $controlesFacturesImport: '@App\Service\ImportControlesFacturesService'
-            $controlesNonFacturesImport: '@App\Service\ImportControlesNonFacturesService'
-            $facturesImport: '@App\Service\ImportFacturesService'
-            $facturesReglementsImport: '@App\Service\ImportFacturesReglementsService'
-            $reglementsImport: '@App\Service\ImportReglementsService'
-            $prestasNonFactureesImport: '@App\Service\ImportPrestasNonFactureesService'
+            $clientsImport: '@App\Service\Import\ImportClientsService'
+            $centresClientsImport: '@App\Service\Import\ImportCentresClientsService'
+            $clientsControlesImport: '@App\Service\Import\ImportClientsControlesService'
+            $controlesImport: '@App\Service\Import\ImportControlesService'
+            $controlesFacturesImport: '@App\Service\Import\ImportControlesFacturesService'
+            $controlesNonFacturesImport: '@App\Service\Import\ImportControlesNonFacturesService'
+            $facturesImport: '@App\Service\Import\ImportFacturesService'
+            $facturesReglementsImport: '@App\Service\Import\ImportFacturesReglementsService'
+            $reglementsImport: '@App\Service\Import\ImportReglementsService'
+            $prestasNonFactureesImport: '@App\Service\Import\ImportPrestasNonFactureesService'
 
-    App\Service\SftpClient:
+    App\Service\Import\SftpClient:
         arguments:
             $mode: '%env(string:SFTP_MODE)%'
             $basePath: '%env(string:SFTP_LOCAL_PATH)%'

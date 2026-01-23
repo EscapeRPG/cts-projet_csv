@@ -1,0 +1,153 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Suivi contrôleurs{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/forms/suivi-synthese.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/suivi/suivi.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="annees-filter">
+        {% for annee in annees %}
+            <a href="{{ path('app_suivi_activite', { annee: annee }) }}"
+               class="{{ annee == anneeCourante ? 'active' }}">
+                {{ annee }}
+            </a>
+        {% endfor %}
+
+        <a href="{{ path('app_suivi_activite') }}"
+           class="{{ anneeCourante is null ? 'active' }}">
+            Toutes
+        </a>
+    </div>
+
+    <form method="get" class="filter-form">
+        <div class="filter-dropdown">
+            <button type="button" class="dropdown-toggle">
+                Sociétés
+            </button>
+
+            <div class="dropdown-menu">
+                {% for societe in societes %}
+                    <label>
+                        <input type="checkbox"
+                               name="societe[]"
+                               value="{{ societe.nom }}"
+                               {% if societe.nom in selected.societe %}checked{% endif %}>
+                        {{ societe.nom }}
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="filter-dropdown">
+            <button type="button" class="dropdown-toggle">
+                Centres
+            </button>
+
+            <div class="dropdown-menu">
+                {% for centre in centres %}
+                    <label>
+                        <input type="checkbox"
+                               name="centre[]"
+                               value="{{ centre.ville }}"
+                               {% if centre.ville in selected.centre %}checked{% endif %}>
+                        {{ centre.nom }} {{ centre.ville }}
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="filter-dropdown">
+            <button type="button" class="dropdown-toggle">
+                Contrôleurs
+            </button>
+
+            <div class="dropdown-menu">
+                {% for c in controleurs %}
+                    {% set value = c.nom ~ ' ' ~ c.prenom %}
+                    <label>
+                        <input type="checkbox"
+                               name="controleur[]"
+                               value="{{ value }}"
+                               {% if value in selected.controleur %}checked{% endif %}>
+                        {{ c.nom }} {{ c.prenom }}
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if anneeCourante is not null %}
+            <input type="hidden" name="annee" value="{{ anneeCourante }}">
+        {% endif %}
+
+        <button type="submit">Filtrer</button>
+    </form>
+
+    <div class="suivi-container">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>Société</th>
+                    <th>Réseau</th>
+                    <th>Contrôleur</th>
+                    <th>Agrément</th>
+                    <th>VTP</th>
+                    <th>CV</th>
+                    <th>VTC</th>
+                    <th>Total</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% set lastSociete = null %}
+                {% set lastCentre = null %}
+
+                {% for societe, centres in data %}
+                    {% set lastCentre = null %}
+
+                    {% for agrCentre, centreData in centres %}
+                        {% for salarie in centreData.salaries %}
+                            <tr>
+                                <td>
+                                    {% if societe != lastSociete %}
+                                        <strong>{{ societe }}</strong>
+                                        {% set lastSociete = societe %}
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if agrCentre != lastCentre %}
+                                        {{ centreData.centre.reseau_code }}
+                                        {{ centreData.centre.ville }}
+                                        {% set lastCentre = agrCentre %}
+                                    {% endif %}
+                                </td>
+
+                                <td>{{ salarie.nom }} {{ salarie.prenom }}</td>
+                                <td>{{ salarie.agr }}</td>
+                                <td class="int-row">{{ salarie.nb_vtp }}</td>
+                                <td class="int-row">{{ salarie.nb_cv }}</td>
+                                <td class="int-row">{{ salarie.nb_vtc }}</td>
+                                <td class="int-row">{{ salarie.nb_controles }}</td>
+                            </tr>
+                        {% endfor %}
+
+                        <tr class="total-row">
+                            <td colspan="3">{{ centreData.centre.reseau_code }} {{ centreData.centre.ville }} {{ agrCentre }}
+                                - {{ centreData.centre.reseau }}</td>
+                            <td>TOTAL</td>
+                            <td>{{ centreData.totaux.nb_vtp }}</td>
+                            <td>{{ centreData.totaux.nb_cv }}</td>
+                            <td>{{ centreData.totaux.nb_vtc }}</td>
+                            <td>{{ centreData.totaux.nb_controles }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

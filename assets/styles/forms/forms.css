@@ -43,3 +43,10 @@ button {
         cursor: pointer;
     }
 }
+
+input {
+    border: 1px solid var(--cts-main);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 5px 10px;
+}

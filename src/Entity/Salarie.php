@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: SalarieRepository::class)]
-#[UniqueEntity('code')]
+#[UniqueEntity('agrControleur')]
 class Salarie
 {
     #[ORM\Id]
@@ -24,13 +24,16 @@ class Salarie
     private string $prenom;
 
     #[ORM\Column(length: 50, unique: true, nullable: true)]
-    private ?string $code = null;
+    private ?string $agrControleur = null;
 
     /**
      * @var Collection<int, Affectation>
      */
     #[ORM\OneToMany(targetEntity: Affectation::class, mappedBy: 'salarie', orphanRemoval: true)]
     private Collection $affectations;
+
+    #[ORM\Column]
+    private ?bool $isActive = null;
 
     public function __construct()
     {
@@ -64,14 +67,14 @@ class Salarie
         return $this;
     }
 
-    public function getCode(): ?string
+    public function getAgrControleur(): ?string
     {
-        return $this->code;
+        return $this->agrControleur;
     }
 
-    public function setCode(?string $code): static
+    public function setAgrControleur(?string $agrControleur): static
     {
-        $this->code = $code;
+        $this->agrControleur = $agrControleur;
         return $this;
     }
 
@@ -100,6 +103,18 @@ class Salarie
                 $affectation->setSalarie(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isActive(): ?bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
 
         return $this;
     }

@@ -1,19 +1,23 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Import;
 
-class ImportPrestasNonFactureesService extends AbstractCsvImportService
+class ImportFacturesService extends \App\Service\Import\AbstractCsvImportService
 {
     protected static function getTableName(): string
     {
-        return 'prestas_non_facturees';
+        return 'factures';
     }
 
     protected static function getColumns(): array
     {
         return [
-            'idcontrole',
+            'idfacture',
             'date_export',
+            'type_facture',
+            'date_facture',
+            'date_echeance',
+            'num_tva_intra',
             'devise',
             'otc_ht',
             'montant_tva_otc_ht',
@@ -29,20 +33,26 @@ class ImportPrestasNonFactureesService extends AbstractCsvImportService
             'total_ttc',
             'pourcentage_tva',
             'montant_tva',
+            'num_facture',
+            'numero_releve',
             'reseau_id',
         ];
     }
 
     protected static function getUniqueKeys(): array
     {
-        return ['idcontrole'];
+        return ['idfacture'];
     }
 
     protected static function getColumnMapping(): array
     {
         return [
-            'idcontrole' => ['idcontrole'],
+            'idfacture' => ['idfacture'],
             'date_export' => ['date_export'],
+            'type_facture' => ['type_facture'],
+            'date_facture' => ['date_facture'],
+            'date_echeance' => ['date_echeance'],
+            'num_tva_intra' => ['num_tva_intra'],
             'devise' => ['devise'],
             'otc_ht' => ['otc_ht'],
             'montant_tva_otc_ht' => ['montant_tva_otc_ht', 'montant_tva_otc'],
@@ -58,12 +68,14 @@ class ImportPrestasNonFactureesService extends AbstractCsvImportService
             'total_ttc' => ['total_ttc'],
             'pourcentage_tva' => ['pourcentage_tva'],
             'montant_tva' => ['montant_tva'],
+            'num_facture' => ['num_facture'],
+            'numero_releve' => ['numero_releve'],
         ];
     }
 
     protected static function getDateColumns(): array
     {
-        return ['date_export'];
+        return ['date_export', 'date_facture', 'date_echeance'];
     }
 
     protected static function getDecimalColumns(): array
@@ -83,6 +95,6 @@ class ImportPrestasNonFactureesService extends AbstractCsvImportService
             'total_ttc',
             'pourcentage_tva',
             'montant_tva'
-        ];
+            ];
     }
 }

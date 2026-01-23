@@ -1,21 +1,20 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Import;
 
-class ImportControlesFacturesService extends AbstractCsvImportService
+class ImportFacturesReglementsService extends \App\Service\Import\AbstractCsvImportService
 {
     protected static function getTableName(): string
     {
-        return 'controles_factures';
+        return 'factures_reglements';
     }
 
     protected static function getColumns(): array
     {
         return [
             'agr_centre',
-            'agr_controleur',
-            'idcontrole',
             'idfacture',
+            'idreglement',
             'idclient',
             'reseau_id',
         ];
@@ -23,16 +22,15 @@ class ImportControlesFacturesService extends AbstractCsvImportService
 
     protected static function getUniqueKeys(): array
     {
-        return ['idcontrole', 'idfacture'];
+        return ['idfacture', 'idreglement'];
     }
 
     protected static function getColumnMapping(): array
     {
         return [
             'agr_centre' => ['agr_centre'],
-            'agr_controleur' => ['agr_controleur'],
-            'idcontrole' => ['idcontrole'],
             'idfacture' => ['idfacture'],
+            'idreglement' => ['idreglement'],
             'idclient' => ['idclient'],
         ];
     }
