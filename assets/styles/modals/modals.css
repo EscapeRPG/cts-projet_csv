@@ -1,0 +1,64 @@
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+    z-index: 99;
+
+    &.is-visible {
+        opacity: 1;
+        pointer-events: auto;
+
+        .modal {
+            opacity: 1;
+        }
+    }
+}
+
+.modal {
+    padding: 2em;
+    border-radius: 20px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: var(--box-shadow);
+    opacity: 0;
+    transition: opacity .25s ease;
+    z-index: 100;
+
+    h2 {
+        margin-top: 0;
+    }
+
+    img {
+        width: 40%;
+    }
+}
+
+.error-modal {
+    background: #ffd5d5;
+}
+
+.success-modal {
+    background: #d5ffd5;
+}
+
+
+.abort-btn {
+    background: white;
+    color: black;
+}
+
+.confirm-btn {
+    background: red;
+
+    &:hover {
+        background: white;
+        color: red;
+    }
+}

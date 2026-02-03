@@ -3,51 +3,113 @@
 {% block title %}Tableau de bord{% endblock %}
 
 {% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/tables/tables.css') }}">
     <link rel="stylesheet" href="{{ asset('styles/users/users.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/modals/modals.css') }}">
 {% endblock %}
 
 {% block body %}
-    <div class="users-container">
-        <h1>Liste des utilisateurs</h1>
+    <h1>Liste des utilisateurs</h1>
 
-        <table>
-            <thead>
+    <div class="table-container">
+        <div class="table-wrapper">
+            <table>
+                <thead>
                 <tr>
                     <th>Nom</th>
                     <th>Rôle</th>
                     <th>Email</th>
                     {% if is_granted('ROLE_ADMIN') %}
-                        <th>Action</th>
+                        <th>Actions</th>
+                        <th>Supprimer</th>
                     {% endif %}
                 </tr>
-            </thead>
+                </thead>
 
-            <tbody>
-            {% for user in users %}
-                <tr>
-                    <td>{{ user.username }}</td>
-                    <td>
-                        {% if ('ROLE_ADMIN' in user.roles) %}
-                            Administrateur
-                        {% else %}
-                            Utilisateur
-                        {% endif %}
-                    </td>
-                    <td>{{ user.email }}</td>
-                    {% if is_granted('ROLE_ADMIN') %}
+                <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.username }}</td>
                         <td>
-                            <form action="{{ path('app_users_promote', {id: user.id}) }}" method="post">
-                                {% if ('ROLE_ADMIN' in user.roles) %}
-                                    <button class="degrade">Rétrograder</button>
-                                {% else %}
-                                    <button class="promote">Promouvoir</button>
-                                {% endif %}
-                            </form>
+                            {% if ('ROLE_ADMIN' in user.roles) %}
+                                Administrateur
+                            {% else %}
+                                Utilisateur
+                            {% endif %}
                         </td>
-                    {% endif %}
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+                        <td>{{ user.email }}</td>
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <td>
+                                <form action="{{ path('app_users_promote', { id: user.id }) }}" method="post">
+                                    {% if ('ROLE_ADMIN' in user.roles) %}
+                                        <button class="degrade">Rétrograder</button>
+                                    {% else %}
+                                        <button class="promote">Promouvoir</button>
+                                    {% endif %}
+                                </form>
+                            </td>
+                            <td>
+                                {% if user.id != 1 %}
+                                    <form action="{{ path('app_users_delete', { id: user.id }) }}" method="post"
+                                          data-controller="confirm-modal-trigger"
+                                          data-confirm-modal-trigger-message-value=""
+                                    >
+                                        <input type="hidden" name="_token"
+                                               value="{{ csrf_token('delete-user-' ~ user.id) }}">
+                                        <button type="button" class="delete"
+                                                data-action="click->confirm-modal-trigger#open">X
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% set errorsMessages = app.flashes('error') %}
+    {% if errorsMessages is not empty %}
+        <div id="modal" class="modal-overlay" data-controller="modals" data-modals-target="overlay">
+            <div class="modal error-modal" data-modals-target="modal">
+                <h3>Erreurs détectées</h3>
+                <ul>
+                    {% for error in errorsMessages %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+
+    {% set successMessages = app.flashes('success') %}
+    {% if successMessages is not empty %}
+        <div id="modal" class="modal-overlay" data-controller="modals" data-modals-target="overlay">
+            <div class="modal success-modal" data-modals-target="modal">
+                <h2>Succès</h2>
+
+                {% for message in successMessages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+
+                <button id="close-modal" data-action="click->modals#hide">OK</button>
+            </div>
+        </div>
+    {% endif %}
+
+    <div id="confirmModal" class="modal-overlay" data-controller="confirm-modal" data-confirm-modal-target="overlay">
+        <div class="modal error-modal" data-confirm-modal-target="modal">
+            <img src="{{ asset("/img/warning.png") }}" alt="attention">
+
+            <p>Souhaitez-vous vraiment supprimer cet utilisateur ?</p>
+            <p>Cette action est irréversible.</p>
+
+            <div class="modal-buttons">
+                <button type="button" class="abort-btn" data-action="click->confirm-modal#hide">Annuler</button>
+                <button type="button" class="confirm-btn" data-action="click->confirm-modal#confirm">Supprimer</button>
+            </div>
+        </div>
     </div>
 {% endblock %}

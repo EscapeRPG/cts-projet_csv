@@ -12,7 +12,7 @@
     --margin-top: 64px;
     --bg-main-color: linear-gradient(var(--cts-main-light), var(--cts-alt-light));
     --blocks: #fafafa;
-    --active: #aaffaa;
+    --active: #fafafa;
 }
 
 body {
@@ -117,7 +117,7 @@ header {
             transition: transform .4s ease;
             background: linear-gradient(var(--cts-main), var(--cts-alt));
             margin: 0;
-            padding-top: var(--margin-top);
+            padding: var(--margin-top) 10px 0 10px;
 
             &.open {
                 transform: translateX(0);

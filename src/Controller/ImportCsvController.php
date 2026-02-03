@@ -4,16 +4,16 @@ namespace App\Controller;
 
 use App\Form\ImportCsvType;
 use App\Import\ImportRouter;
-use App\Service\ImportCentresClientsService;
-use App\Service\ImportClientsControlesService;
-use App\Service\ImportClientsService;
-use App\Service\ImportControlesFacturesService;
-use App\Service\ImportControlesNonFacturesService;
-use App\Service\ImportControlesService;
-use App\Service\ImportFacturesReglementsService;
-use App\Service\ImportFacturesService;
-use App\Service\ImportPrestasNonFactureesService;
-use App\Service\ImportReglementsService;
+use App\Service\Import\ImportCentresClientsService;
+use App\Service\Import\ImportClientsControlesService;
+use App\Service\Import\ImportClientsService;
+use App\Service\Import\ImportControlesFacturesService;
+use App\Service\Import\ImportControlesNonFacturesService;
+use App\Service\Import\ImportControlesService;
+use App\Service\Import\ImportFacturesReglementsService;
+use App\Service\Import\ImportFacturesService;
+use App\Service\Import\ImportPrestasNonFactureesService;
+use App\Service\Import\ImportReglementsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,7 +21,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted('ROLE_IMPORT')]
-class ImportCsvController extends AbstractController
+final class ImportCsvController extends AbstractController
 {
     #[Route('/import', name: 'import_csv')]
     public function import(

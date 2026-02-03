@@ -14,11 +14,17 @@ abstract class AbstractCsvImportService implements CsvImportInterface
 {
     protected int $batchSize = 500;
     protected ?Reseau $reseau = null;
+    protected ?\DateTimeImmutable $fileDate = null;
 
     public function __construct(
         protected EntityManagerInterface $em,
         protected CsvReader $csvReader
     ) {}
+
+    public function setFileDate(?\DateTimeImmutable $fileDate): void
+    {
+        $this->fileDate = $fileDate;
+    }
 
     public function setReseau(Reseau $reseau): void
     {
@@ -85,6 +91,11 @@ abstract class AbstractCsvImportService implements CsvImportInterface
         $row = [];
 
         foreach (static::getColumns() as $column) {
+            if ($column === 'data_date') {
+                $row[] = $this->fileDate?->format('Y-m-d');
+                continue;
+            }
+
             if ($column === 'reseau_id') {
                 if (!$this->reseau) {
                     throw new \LogicException("Reseau non défini pour l'import");
@@ -200,6 +211,7 @@ abstract class AbstractCsvImportService implements CsvImportInterface
             'file_hash'   => $this->getFileHash($file),
             'imported_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
             'reseau_id' => $reseau->getId(),
+            'data_date' => $this->fileDate?->format('Y-m-d'),
         ]);
     }
 

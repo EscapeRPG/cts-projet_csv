@@ -10,14 +10,16 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class PasswordController extends AbstractController
 {
+    #[IsGranted('ROLE_USER')]
     #[Route('/change-password', name: 'app_change_password')]
     public function changePassword(
-        Request $request,
+        Request                     $request,
         UserPasswordHasherInterface $passwordHasher,
-        EntityManagerInterface $entityManager,
+        EntityManagerInterface      $entityManager,
     ): Response
     {
         $user = $this->getUser();
@@ -48,5 +50,11 @@ final class PasswordController extends AbstractController
         return $this->render('security/change_password.html.twig', [
             'form' => $form->createView(),
         ]);
+    }
+
+    #[Route('/reset-password', name: 'app_reset_password')]
+    public function resetPassword(): Response
+    {
+        return $this->render('security/reset_password.html.twig');
     }
 }

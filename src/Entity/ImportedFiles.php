@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\ImportedFilesRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ImportedFilesRepository::class)]
@@ -24,6 +25,9 @@ class ImportedFiles
 
     #[ORM\ManyToOne(inversedBy: 'importedFiles')]
     private ?Reseau $reseau = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    private ?\DateTime $dataDate = null;
 
     public function getId(): ?int
     {
@@ -74,6 +78,18 @@ class ImportedFiles
     public function setReseau(?Reseau $reseau): static
     {
         $this->reseau = $reseau;
+
+        return $this;
+    }
+
+    public function getDataDate(): ?\DateTime
+    {
+        return $this->dataDate;
+    }
+
+    public function setDataDate(\DateTime $dataDate): static
+    {
+        $this->dataDate = $dataDate;
 
         return $this;
     }

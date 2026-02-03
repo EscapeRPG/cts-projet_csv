@@ -5,6 +5,7 @@ namespace App\Command;
 use App\Import\ImportRouter;
 use App\Repository\ReseauRepository;
 use App\Service\Import\SftpClient;
+use App\Utils\FileDateExtractor;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -55,6 +56,12 @@ class ImportSftpCommand extends Command
                     );
 
                     $importer = $this->importRouter->getImporterForFile($file);
+
+                    $fileDate = FileDateExtractor::extract($file);
+
+                    if (method_exists($importer, 'setFileDate')) {
+                        $importer->setFileDate($fileDate);
+                    }
 
                     if (method_exists($importer, 'setReseau')) {
                         $importer->setReseau($reseau);

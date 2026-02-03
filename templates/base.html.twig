@@ -47,21 +47,6 @@
                             Suivi
                         </a>
                     </li>
-                    <li>
-                        <a href="{{ path('app_home') }}">
-                            Menu #2
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ path('app_home') }}">
-                            Menu #3
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ path('app_home') }}">
-                            Menu au titre long et interminable
-                        </a>
-                    </li>
                 </ul>
 
                 <h1>IMPORT</h1>
@@ -73,7 +58,13 @@
                     </li>
                 </ul>
 
+                <h1>COMPTE</h1>
                 <ul>
+                    <li>
+                        <a href="{{ path('app_profile', { id: app.user.id }) }}">
+                            Profil utilisateur
+                        </a>
+                    </li>
                     <li>
                         <a href="{{ path('app_logout') }}">
                             Se déconnecter

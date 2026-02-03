@@ -17,6 +17,7 @@ class ImportFacturesReglementsService extends \App\Service\Import\AbstractCsvImp
             'idreglement',
             'idclient',
             'reseau_id',
+            'data_date',
         ];
     }
 

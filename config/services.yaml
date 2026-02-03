@@ -21,10 +21,6 @@ services:
         autowire: true
         autoconfigure: true
 
-    App\EventSubscriber\ForcePasswordChangeSubscriber:
-        tags:
-            - { name: 'kernel.event_subscriber' }
-
     App\Import\ImportRouter:
         arguments:
             $clientsImport: '@App\Service\Import\ImportClientsService'

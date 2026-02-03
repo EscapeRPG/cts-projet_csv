@@ -30,6 +30,7 @@ class ImportControlesService extends \App\Service\Import\AbstractCsvImportServic
             'modele_vehicule',
             'annee_circulation',
             'reseau_id',
+            'data_date',
         ];
     }
 

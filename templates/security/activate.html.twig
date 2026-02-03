@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Changer le mot de passe{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/forms/login.css') }}">
+{% endblock %}
+
+{% block body %}
+    <h1>Activation du compte</h1>
+
+    <div class="form-wrapper">
+        {{ form_start(form) }}
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

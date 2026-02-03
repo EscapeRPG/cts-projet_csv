@@ -31,8 +31,8 @@ class CreateUserType extends AbstractType
                 'required' => true,
                 'mapped' => false,
                 'choices' => [
-                    'Administrateur' => 'ROLE_ADMIN',
                     'Utilisateur' => 'ROLE_IMPORT',
+                    'Administrateur' => 'ROLE_ADMIN',
                 ]
             ])
             ->add('sumbit', SubmitType::class, [

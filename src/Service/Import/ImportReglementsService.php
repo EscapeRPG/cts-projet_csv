@@ -21,6 +21,7 @@ class ImportReglementsService extends AbstractCsvImportService
             'numero_cheque',
             'numero_releve',
             'reseau_id',
+            'data_date',
         ];
     }
 

@@ -67,6 +67,9 @@ class Clients
     #[ORM\ManyToOne(inversedBy: 'clients')]
     private ?Reseau $reseau = null;
 
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    private ?\DateTime $dataDate = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -271,6 +274,18 @@ class Clients
     public function setReseau(?Reseau $reseau): static
     {
         $this->reseau = $reseau;
+
+        return $this;
+    }
+
+    public function getDataDate(): ?\DateTime
+    {
+        return $this->dataDate;
+    }
+
+    public function setDataDate(\DateTime $dataDate): static
+    {
+        $this->dataDate = $dataDate;
 
         return $this;
     }

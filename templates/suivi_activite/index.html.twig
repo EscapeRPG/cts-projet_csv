@@ -3,6 +3,7 @@
 {% block title %}Suivi contrôleurs{% endblock %}
 
 {% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/tables/tables.css') }}">
     <link rel="stylesheet" href="{{ asset('styles/forms/suivi-synthese.css') }}">
     <link rel="stylesheet" href="{{ asset('styles/suivi/suivi.css') }}">
 {% endblock %}
@@ -51,8 +52,8 @@
                     <label>
                         <input type="checkbox"
                                name="centre[]"
-                               value="{{ centre.ville }}"
-                               {% if centre.ville in selected.centre %}checked{% endif %}>
+                               value="{{ centre.agr_centre }}"
+                               {% if centre.agr_centre in selected.centre %}checked{% endif %}>
                         {{ centre.nom }} {{ centre.ville }}
                     </label>
                 {% endfor %}
@@ -66,7 +67,7 @@
 
             <div class="dropdown-menu">
                 {% for c in controleurs %}
-                    {% set value = c.nom ~ ' ' ~ c.prenom %}
+                    {% set value = c.agr_controleur %}
                     <label>
                         <input type="checkbox"
                                name="controleur[]"

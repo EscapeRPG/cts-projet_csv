@@ -19,13 +19,9 @@ class SuiviActiviteRepository
     {
         $where = ['sa.is_active = 1 AND ce.id IS NOT NULL'];
         $params = [];
-
-        if (!empty($filters['annee'])) {
-            $where[] = 'YEAR(ctrl.date_export) = :annee';
-            $params['annee'] = (int)$filters['annee'];
-        }
-
         $types = [];
+
+        $annee = !empty($filters['annee']) ? (int)$filters['annee'] : null;
 
         if (!empty($filters['societe'])) {
             $where[] = 'so.nom IN (:societes)';
@@ -50,21 +46,26 @@ class SuiviActiviteRepository
             SELECT
                 so.nom        AS societe_nom,
                 ce.agr_centre AS centre_agrement,
-                ce.ville      AS centre_ville,
-                ce.reseau_nom AS reseau_nom,
-                sa.nom        AS salarie_nom,
-                sa.prenom     AS salarie_prenom,
+                ce.ville       AS centre_ville,
+                ce.reseau_nom  AS reseau_nom,
+
+                sa.nom         AS salarie_nom,
+                sa.prenom      AS salarie_prenom,
                 sa.agr_controleur,
 
-                COALESCE(cnt.nb_controles, 0) AS nb_controles,
-                COALESCE(cnt.nb_vtp, 0) AS nb_vtp,
-                COALESCE(cnt.nb_cv, 0) AS nb_cv,
-                COALESCE(cnt.nb_vtc, 0) AS nb_vtc
+                COUNT(DISTINCT ctrl.idcontrole) AS nb_controles,
+                COUNT(DISTINCT CASE WHEN ctrl.type_ctrl = 'VTP' THEN ctrl.idcontrole END) AS nb_vtp,
+                COUNT(DISTINCT CASE WHEN ctrl.type_ctrl = 'CV'  THEN ctrl.idcontrole END) AS nb_cv,
+                COUNT(DISTINCT CASE WHEN ctrl.type_ctrl = 'VTC' THEN ctrl.idcontrole END) AS nb_vtc
 
             FROM salarie sa
 
             LEFT JOIN clients_controles cc
                 ON cc.agr_controleur = sa.agr_controleur
+
+            LEFT JOIN controles ctrl
+                ON ctrl.idcontrole = cc.idcontrole
+                " . ($annee !== null ? "AND YEAR(ctrl.data_date) = :annee" : "") . "
 
             LEFT JOIN centre ce
                 ON ce.agr_centre = cc.agr_centre
@@ -72,65 +73,23 @@ class SuiviActiviteRepository
             LEFT JOIN societe so
                 ON so.id = ce.societe_id
 
-            LEFT JOIN controles ctrl
-                ON ctrl.idcontrole = cc.idcontrole
-
-            LEFT JOIN (
-                SELECT
-                    cc.agr_controleur,
-                    cc.agr_centre,
-
-                    COUNT(DISTINCT ctrl.idcontrole) AS nb_controles,
-
-                    COUNT(DISTINCT CASE
-                        WHEN ctrl.type_ctrl = 'VTP' THEN ctrl.idcontrole
-                    END) AS nb_vtp,
-
-                    COUNT(DISTINCT CASE
-                        WHEN ctrl.type_ctrl = 'CV' THEN ctrl.idcontrole
-                    END) AS nb_cv,
-
-                    COUNT(DISTINCT CASE
-                        WHEN ctrl.type_ctrl = 'VTC' THEN ctrl.idcontrole
-                    END) AS nb_vtc
-
-                FROM clients_controles cc
-                INNER JOIN controles ctrl
-                    ON ctrl.idcontrole = cc.idcontrole
-
-                GROUP BY
-                    cc.agr_controleur,
-                    cc.agr_centre
-            ) cnt
-                ON cnt.agr_controleur = sa.agr_controleur
-                AND cnt.agr_centre = ce.agr_centre
-
             " . ($where ? ' WHERE ' . implode(' AND ', $where) : '') . "
 
-                GROUP BY
-                    sa.id,
-                    sa.nom,
-                    sa.prenom,
-                    sa.agr_controleur,
+            GROUP BY
+                so.nom,
+                ce.agr_centre,
+                ce.ville,
+                ce.reseau_nom,
+                sa.agr_controleur,
+                sa.nom,
+                sa.prenom
 
-                    ce.id,
-                    ce.agr_centre,
-                    ce.ville,
-                    ce.reseau_nom,
-
-                    so.id,
-                    so.nom,
-
-                    cnt.nb_controles,
-                    cnt.nb_vtp,
-                    cnt.nb_cv,
-                    cnt.nb_vtc
-
-                ORDER BY
-                    so.nom,
-                    ce.ville,
-                    sa.nom
+            ORDER BY so.nom, ce.ville, sa.nom;
             ";
+
+        if ($annee !== null) {
+            $params['annee'] = $annee;
+        }
 
         $rows = $this->connection->executeQuery(
             $sql,
@@ -201,7 +160,7 @@ class SuiviActiviteRepository
     public function getYear(): array
     {
         return $this->connection->fetchFirstColumn(
-            'SELECT DISTINCT YEAR(date_export) FROM controles ORDER BY 1 DESC'
+            'SELECT DISTINCT YEAR(data_date) FROM controles'
         );
     }
 
@@ -221,7 +180,7 @@ class SuiviActiviteRepository
     public function getCentres(): array
     {
         $rows = $this->connection->fetchAllAssociative(
-            'SELECT ville, reseau_nom FROM centre ORDER BY reseau_nom'
+            'SELECT ville, reseau_nom, agr_centre FROM centre ORDER BY reseau_nom, ville'
         );
 
         $data = [];
@@ -239,7 +198,8 @@ class SuiviActiviteRepository
 
             $data[] = [
                 'nom' => $reseauCode,
-                'ville' => $row['ville']
+                'ville' => $row['ville'],
+                'agr_centre' => $row['agr_centre']
             ];
         }
 
@@ -252,7 +212,7 @@ class SuiviActiviteRepository
     public function getControleurs(): array
     {
         return $this->connection->fetchAllAssociative(
-            'SELECT nom, prenom FROM salarie ORDER BY nom'
+            'SELECT nom, prenom, agr_controleur FROM salarie ORDER BY nom'
         );
     }
 }

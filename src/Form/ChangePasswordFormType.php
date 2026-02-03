@@ -5,13 +5,16 @@ namespace App\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\NotCompromisedPassword;
+use Symfony\Component\Validator\Constraints\PasswordStrength;
 use Symfony\Component\Validator\Constraints\Regex;
 
-class ChangePasswordType extends AbstractType
+class ChangePasswordFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -21,23 +24,27 @@ class ChangePasswordType extends AbstractType
                 'options' => [
                     'attr' => [
                         'autocomplete' => 'new-password',
-                    ]
-                ],
-                'first_options' => [
-                    'label' => 'Mot de passe',
-                    'constraints' => [
-                        new NotBlank(message: 'Veuillez saisir un mot de passe'),
-                        new Length(min: 12, max: 4096, minMessage: 'Le mot de passe doit contenir au moins {{ limit }} caractères'),
-                        new Regex(pattern: '/^(?=.*[0-9])(?=.*[\W_]).+$/', message: 'Le mot de passe doit contenir au moins un chiffre et un caractère spécial.'),
                     ],
                 ],
-                'second_options' => [
-                    'label' => 'Confirmation',
+                'first_options' => [
+                    'help' => 'Au moins 12 caractères alphanumériques dont un caractère spécial',
+                    'constraints' => [
+                        new NotBlank(message: 'Veuillez indiquer votre mot de passe'),
+                        new Length(min: 12, max: 4096, minMessage: 'Le mot de passe doit au moins contenir {{ limit }} caractères'),
+                        new Regex(pattern: '/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[\W_]).{12,}$/', message: 'Le mot de passe doit contenir au moins 12 caractères avec une lettre, un chiffre et un caractère spécial.'),
+                        new PasswordStrength(),
+                        new NotCompromisedPassword(),
+
+                    ],
+                    'label' => 'Votre mot de passe',
                 ],
-                'invalid_message' => 'Les mots de passe doivent correspondre.',
-                'required' => true,
+                'second_options' => [
+                    'label' => 'Retapez votre mot de passe',
+                ],
+                'invalid_message' => 'Les deux mots de passe ne correspondent pas.',
                 'mapped' => false,
-            ]);
+            ])
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Profil{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/users/users.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/forms/forms.css') }}">
+{% endblock %}
+
+{% block body %}
+    <h1>Profil de {{ user.username }}</h1>
+    <h2>
+        {% if ('ROLE_ADMIN' in user.roles) %}
+            Administrateur
+        {% else %}
+            Utilisateur
+        {% endif %}
+    </h2>
+
+    <a href="{{ path('app_change_password') }}">Changer mon mot de passe</a>
+{% endblock %}

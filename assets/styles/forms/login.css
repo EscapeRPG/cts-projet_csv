@@ -5,6 +5,16 @@
 
 .remember-me {
     font-size: small;
-    justify-content: flex-start;
+    justify-content: flex-end;
     gap: 0;
+}
+
+.forgot-pass {
+    text-decoration: none;
+    color: red;
+    font-weight: bold;
+
+    &:hover {
+        color: var(--cts-main);
+    }
 }

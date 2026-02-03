@@ -15,6 +15,7 @@ class ImportCentresClientsService extends \App\Service\Import\AbstractCsvImportS
             'agr_centre',
             'idclient',
             'reseau_id',
+            'data_date',
         ];
     }
 

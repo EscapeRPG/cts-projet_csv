@@ -1,6 +1,6 @@
 .form-wrapper {
     width: 60%;
-    margin: auto;
+    margin: 20px auto;
     border-radius: 20px;
     background: var(--blocks);
     box-shadow: var(--box-shadow);
@@ -14,6 +14,19 @@
     h1 {
         text-align: left;
     }
+
+    form {
+        width: 60%;
+        margin: auto;
+
+        div {
+            width: 100%;
+
+            input:not([type="checkbox"]), select, textarea {
+                width: 80%;
+            }
+        }
+    }
 }
 
 form {
@@ -24,7 +37,7 @@ form {
 
     div {
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
         align-items: center;
         gap: 20px;
     }
@@ -37,16 +50,39 @@ button {
     border: none;
     padding: 10px 15px;
     font-weight: bold;
+    margin: auto;
+    transition: all .5s ease;
 
     &:hover {
         background: var(--cts-alt);
         cursor: pointer;
+        transform: scale(1.1);
     }
 }
 
-input {
+input, select, textarea {
     border: 1px solid var(--cts-main);
-    color: var(--text);
+    color: black;
     border-radius: 10px;
     padding: 5px 10px;
+}
+
+.alert {
+    width: 60%;
+    margin: 0 auto;
+    text-align: justify;
+    font-weight: bold;
+    display: block;
+
+    ul {
+        list-style-type: none;
+    }
+}
+
+.alert-danger {
+    color: red;
+}
+
+.alert-success {
+    color: limegreen;
 }
