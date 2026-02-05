@@ -1,0 +1,137 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des salariés{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/forms/salaries.css') }}">
+{% endblock %}
+
+{% block body %}
+    <h1>Liste des salariés</h1>
+    <div class="table-loader" id="tableLoader">
+        <div class="spinner"></div>
+        <p>Chargement des salariés…</p>
+    </div>
+
+    <div class="table-container" id="tableContainer">
+        <div class="table-wrapper">
+            <table class="salaries-list">
+                <thead>
+                <tr>
+                    <th>Société</th>
+                    <th>Agrément</th>
+                    <th>Agrément CL</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Date de naissance</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Échelons</th>
+                    <th>Salaire brut</th>
+                    <th>Nb heures</th>
+                    <th>Veste</th>
+                    <th>Polaire</th>
+                    <th>Pantalon</th>
+                    <th>Tee-shirt</th>
+                    <th>Polo</th>
+                    <th>Chaussures</th>
+                    <th>Actif</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for salarie in salaries %}
+                    {{ form_start(forms[salarie.id], {'action': path('app_salaries_update', {'id': salarie.id}), 'method': 'POST', 'attr': {'data-turbo': 'false'}}) }}
+                    {{ form_errors(forms[salarie.id]) }}
+
+                    <tr>
+                        <td>{{ form_widget(forms[salarie.id].societe) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].agrControleur) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].agrClControleur) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].nom) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].prenom) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].dateNaissance) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].email) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].telephone) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].echelons) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].salaireBrut) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].nbHeures) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].vesteMancheAmovible) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].polaire) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].pantalon) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].teeShirts) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].polo) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].chaussures) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].isActive) }}</td>
+                        <td>
+                            <button type="submit">Enregistrer</button>
+                        </td>
+                    </tr>
+                    {{ form_end(forms[salarie.id]) }}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        function adjustColumnWidths() {
+            const table = document.querySelector('.salaries-list');
+            if (!table) return;
+
+            function getTextWidth(text, font) {
+                const span = document.createElement('span');
+                span.style.visibility = 'hidden';
+                span.style.position = 'absolute';
+                span.style.whiteSpace = 'pre';
+                span.style.font = font;
+                span.textContent = text;
+                document.body.appendChild(span);
+                const width = span.getBoundingClientRect().width;
+                document.body.removeChild(span);
+                return width;
+            }
+
+            const ths = table.querySelectorAll('thead th');
+            ths.forEach((th, colIndex) => {
+                let maxWidth = getTextWidth(th.textContent.trim(), getComputedStyle(th).font);
+
+                table.querySelectorAll('tbody tr').forEach(tr => {
+                    const td = tr.children[colIndex];
+                    if (!td) return;
+
+                    const input = td.querySelector('input, select, textarea');
+                    if (!input) return;
+
+                    if (input.tagName.toLowerCase() === 'select') {
+                        for (let option of input.options) {
+                            maxWidth = Math.max(maxWidth, getTextWidth(option.text, getComputedStyle(input).font) + 22);
+                        }
+                    } else if (input.type === 'date') {
+                        maxWidth = Math.max(maxWidth, getTextWidth('0000-00-00', getComputedStyle(input).font));
+                    } else {
+                        maxWidth = Math.max(maxWidth, getTextWidth(input.value || input.placeholder || ' ', getComputedStyle(input).font) + 8);
+                    }
+
+                    input.style.width = maxWidth + 'px';
+                });
+            });
+        }
+
+        function initTable() {
+            adjustColumnWidths();
+
+            const loader = document.getElementById('tableLoader');
+            const wrapper = document.getElementById('tableContainer');
+            loader.classList.add('hidden');
+            wrapper.classList.add('visible');
+
+            setTimeout(() => loader.remove(), 400);
+        }
+
+        document.addEventListener('DOMContentLoaded', initTable);
+        document.addEventListener('turbo:load', initTable);
+    </script>
+{% endblock %}

@@ -21,7 +21,7 @@ final class Version20260122083508 extends AbstractMigration
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE TABLE societe (id INT AUTO_INCREMENT NOT NULL, nom VARCHAR(100) NOT NULL, UNIQUE INDEX UNIQ_19653DBD6C6E55B5 (nom), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
-        $this->addSql('ALTER TABLE affectation ADD CONSTRAINT FK_F4DD61D35859934A FOREIGN KEY (salarie_id) REFERENCES salarie (id)');
+        $this->addSql('ALTER TABLE affectation ADD CONSTRAINT FK_F4DD61D35859934A FOREIGN KEY (salarie_id) REFERENCES salaries (id)');
         $this->addSql('ALTER TABLE affectation ADD CONSTRAINT FK_F4DD61D3463CD7C3 FOREIGN KEY (centre_id) REFERENCES centre (id)');
         $this->addSql('ALTER TABLE centre ADD societe_id INT NOT NULL');
         $this->addSql('ALTER TABLE centre ADD CONSTRAINT FK_C6A0EA75445D170C FOREIGN KEY (reseau_id) REFERENCES reseau (id)');

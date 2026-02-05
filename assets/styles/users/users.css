@@ -2,14 +2,6 @@
     width: 80%;
 }
 
-.table-container {
-    width: 80%;
-    min-height: 100%;
-    background: var(--blocks);
-    box-shadow: var(--box-shadow);
-    border-radius: 10px;
-}
-
 .degrade {
     background: red;
     width: 200px;
@@ -34,7 +26,7 @@
     background: white;
     color: red;
     font-weight: bold;
-    padding: 5px;
+    padding: 5px 10px;
     aspect-ratio: 1 / 1;
 
     &:hover {

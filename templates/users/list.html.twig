@@ -1,12 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Tableau de bord{% endblock %}
-
-{% block stylesheets %}
-    <link rel="stylesheet" href="{{ asset('styles/tables/tables.css') }}">
-    <link rel="stylesheet" href="{{ asset('styles/users/users.css') }}">
-    <link rel="stylesheet" href="{{ asset('styles/modals/modals.css') }}">
-{% endblock %}
+{% block title %}Liste des utilisateurs{% endblock %}
 
 {% block body %}
     <h1>Liste des utilisateurs</h1>
@@ -39,7 +33,7 @@
                         </td>
                         <td>{{ user.email }}</td>
                         {% if is_granted('ROLE_ADMIN') %}
-                            <td>
+                            <td class="table-action">
                                 <form action="{{ path('app_users_promote', { id: user.id }) }}" method="post">
                                     {% if ('ROLE_ADMIN' in user.roles) %}
                                         <button class="degrade">Rétrograder</button>
@@ -48,8 +42,8 @@
                                     {% endif %}
                                 </form>
                             </td>
-                            <td>
-                                {% if user.id != 1 %}
+                            <td class="table-action">
+                                {% if user.id != 1 and user.id != 2 %}
                                     <form action="{{ path('app_users_delete', { id: user.id }) }}" method="post"
                                           data-controller="confirm-modal-trigger"
                                           data-confirm-modal-trigger-message-value=""

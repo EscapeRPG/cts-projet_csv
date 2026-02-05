@@ -5,6 +5,7 @@
 .env.dev
 .env.local
 .env.local.php
+.env.prod.local
 .env.test
 /.env.local
 /.env.*.local

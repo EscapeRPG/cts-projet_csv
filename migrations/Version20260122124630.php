@@ -20,7 +20,7 @@ final class Version20260122124630 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE affectation ADD CONSTRAINT FK_F4DD61D35859934A FOREIGN KEY (salarie_id) REFERENCES salarie (id)');
+        $this->addSql('ALTER TABLE affectation ADD CONSTRAINT FK_F4DD61D35859934A FOREIGN KEY (salarie_id) REFERENCES salaries (id)');
         $this->addSql('ALTER TABLE affectation ADD CONSTRAINT FK_F4DD61D3463CD7C3 FOREIGN KEY (centre_id) REFERENCES centre (id)');
         $this->addSql('ALTER TABLE centre ADD CONSTRAINT FK_C6A0EA75445D170C FOREIGN KEY (reseau_id) REFERENCES reseau (id)');
         $this->addSql('ALTER TABLE centre ADD CONSTRAINT FK_C6A0EA75FCF77503 FOREIGN KEY (societe_id) REFERENCES societe (id)');
@@ -35,7 +35,7 @@ final class Version20260122124630 extends AbstractMigration
         $this->addSql('ALTER TABLE imported_files ADD CONSTRAINT FK_D8475CB7445D170C FOREIGN KEY (reseau_id) REFERENCES reseau (id)');
         $this->addSql('ALTER TABLE prestas_non_facturees ADD CONSTRAINT FK_6E23438D445D170C FOREIGN KEY (reseau_id) REFERENCES reseau (id)');
         $this->addSql('ALTER TABLE reglements ADD CONSTRAINT FK_648F2671445D170C FOREIGN KEY (reseau_id) REFERENCES reseau (id)');
-        $this->addSql('ALTER TABLE salarie ADD is_active TINYINT NOT NULL');
+        $this->addSql('ALTER TABLE salaries ADD is_active TINYINT NOT NULL');
     }
 
     public function down(Schema $schema): void
@@ -56,6 +56,6 @@ final class Version20260122124630 extends AbstractMigration
         $this->addSql('ALTER TABLE imported_files DROP FOREIGN KEY FK_D8475CB7445D170C');
         $this->addSql('ALTER TABLE prestas_non_facturees DROP FOREIGN KEY FK_6E23438D445D170C');
         $this->addSql('ALTER TABLE reglements DROP FOREIGN KEY FK_648F2671445D170C');
-        $this->addSql('ALTER TABLE salarie DROP is_active');
+        $this->addSql('ALTER TABLE salaries DROP is_active');
     }
 }

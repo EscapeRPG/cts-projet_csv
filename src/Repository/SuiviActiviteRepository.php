@@ -12,144 +12,11 @@ class SuiviActiviteRepository
     {
     }
 
-    /**
-     * @throws Exception
-     */
     public function getSyntheseGlobale(array $filters = []): array
     {
-        $where = ['sa.is_active = 1 AND ce.id IS NOT NULL'];
-        $params = [];
-        $types = [];
-
-        $annee = !empty($filters['annee']) ? (int)$filters['annee'] : null;
-
-        if (!empty($filters['societe'])) {
-            $where[] = 'so.nom IN (:societes)';
-            $params['societes'] = $filters['societe'];
-            $types['societes'] = ArrayParameterType::STRING;
-        }
-
-        if (!empty($filters['centre'])) {
-            $where[] = 'ce.agr_centre IN (:centres)';
-            $params['centres'] = $filters['centre'];
-            $types['centres'] = ArrayParameterType::STRING;
-        }
-
-        if (!empty($filters['controleur'])) {
-            $where[] = 'sa.agr_controleur IN (:controleurs)';
-            $params['controleurs'] = $filters['controleur'];
-            $types['controleurs'] = ArrayParameterType::STRING;
-        }
-
-
-        $sql = "
-            SELECT
-                so.nom        AS societe_nom,
-                ce.agr_centre AS centre_agrement,
-                ce.ville       AS centre_ville,
-                ce.reseau_nom  AS reseau_nom,
-
-                sa.nom         AS salarie_nom,
-                sa.prenom      AS salarie_prenom,
-                sa.agr_controleur,
-
-                COUNT(DISTINCT ctrl.idcontrole) AS nb_controles,
-                COUNT(DISTINCT CASE WHEN ctrl.type_ctrl = 'VTP' THEN ctrl.idcontrole END) AS nb_vtp,
-                COUNT(DISTINCT CASE WHEN ctrl.type_ctrl = 'CV'  THEN ctrl.idcontrole END) AS nb_cv,
-                COUNT(DISTINCT CASE WHEN ctrl.type_ctrl = 'VTC' THEN ctrl.idcontrole END) AS nb_vtc
-
-            FROM salarie sa
-
-            LEFT JOIN clients_controles cc
-                ON cc.agr_controleur = sa.agr_controleur
-
-            LEFT JOIN controles ctrl
-                ON ctrl.idcontrole = cc.idcontrole
-                " . ($annee !== null ? "AND YEAR(ctrl.data_date) = :annee" : "") . "
-
-            LEFT JOIN centre ce
-                ON ce.agr_centre = cc.agr_centre
-
-            LEFT JOIN societe so
-                ON so.id = ce.societe_id
-
-            " . ($where ? ' WHERE ' . implode(' AND ', $where) : '') . "
-
-            GROUP BY
-                so.nom,
-                ce.agr_centre,
-                ce.ville,
-                ce.reseau_nom,
-                sa.agr_controleur,
-                sa.nom,
-                sa.prenom
-
-            ORDER BY so.nom, ce.ville, sa.nom;
-            ";
-
-        if ($annee !== null) {
-            $params['annee'] = $annee;
-        }
-
-        $rows = $this->connection->executeQuery(
-            $sql,
-            $params,
-            $types
-        )->fetchAllAssociative();
-
-        // Transformation en structure imbriquée
-        $data = [];
-
-        foreach ($rows as $row) {
-            $societe = $row['societe_nom'] ?? 'Société inconnue';
-            $centre = strtoupper($row['centre_agrement']) ?? 'Centre inconnu';
-
-            if (!isset($data[$societe])) {
-                $data[$societe] = [];
-            }
-
-            $reseauCode = match ($row['reseau_nom']) {
-                'Dekra' => 'DE',
-                'Norisko' => 'NO',
-                'Auto-Sécurité' => 'AS',
-                'Autovision' => 'AU',
-                'Sécuritest' => 'SE',
-                'Vérif\'Autos' => 'VA',
-                default => '',
-            };
-
-            if (!isset($data[$societe][$centre])) {
-                $data[$societe][$centre] = [
-                    'centre' => [
-                        'ville' => $row['centre_ville'] ?? '',
-                        'reseau' => $row['reseau_nom'] ?? '',
-                        'reseau_code' => $reseauCode
-                    ],
-                    'salaries' => [],
-                    'totaux' => [
-                        'nb_controles' => 0,
-                        'nb_vtp' => 0,
-                        'nb_vtc' => 0,
-                        'nb_cv' => 0,
-                    ]
-                ];
-            }
-
-            $data[$societe][$centre]['salaries'][] = [
-                'nom' => $row['salarie_nom'],
-                'prenom' => $row['salarie_prenom'],
-                'agr' => $row['agr_controleur'],
-                'nb_controles' => (int)$row['nb_controles'],
-                'nb_vtp' => (int)$row['nb_vtp'],
-                'nb_vtc' => (int)$row['nb_vtc'],
-                'nb_cv' => (int)$row['nb_cv'],
-            ];
-
-            $data[$societe][$centre]['totaux']['nb_controles'] += (int)$row['nb_controles'];
-            $data[$societe][$centre]['totaux']['nb_vtp'] += (int)$row['nb_vtp'];
-            $data[$societe][$centre]['totaux']['nb_vtc'] += (int)$row['nb_vtc'];
-            $data[$societe][$centre]['totaux']['nb_cv'] += (int)$row['nb_cv'];
-        }
+        $rows = $this->fetchRows($filters);
+        $data = $this->buildDataStructure($rows);
+        $this->calculateCentreAverages($data);
 
         return $data;
     }
@@ -212,7 +79,251 @@ class SuiviActiviteRepository
     public function getControleurs(): array
     {
         return $this->connection->fetchAllAssociative(
-            'SELECT nom, prenom, agr_controleur FROM salarie ORDER BY nom'
+            'SELECT id, nom, prenom, agr_controleur FROM salaries ORDER BY nom'
         );
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function fetchRows(array $filters): array
+    {
+        $where = ['sa.is_active = 1 AND ce.id IS NOT NULL'];
+        $params = [];
+        $types = [];
+
+        // Filtre année
+        $annee = !empty($filters['annee']) ? (int)$filters['annee'] : null;
+        if ($annee !== null) {
+            $where[] = 'YEAR(ctrl.data_date) = :annee';
+            $params['annee'] = $annee;
+        }
+
+        // Filtre sociétés
+        if (!empty($filters['societe'])) {
+            $where[] = 'so.nom IN (:societes)';
+            $params['societes'] = $filters['societe'];
+            $types['societes'] = ArrayParameterType::STRING;
+        }
+
+        // Filtre centres
+        if (!empty($filters['centre'])) {
+            $where[] = 'ce.agr_centre IN (:centres)';
+            $params['centres'] = $filters['centre'];
+            $types['centres'] = ArrayParameterType::STRING;
+        }
+
+        // Filtre contrôleurs (par id)
+        if (!empty($filters['controleur'])) {
+            $where[] = 'sa.id IN (:controleurs)';
+            $params['controleurs'] = $filters['controleur'];
+            $types['controleurs'] = ArrayParameterType::INTEGER;
+        }
+
+        // Requête principale
+        $sql = "
+        SELECT
+            so.nom AS societe_nom,
+            ce.agr_centre AS centre_agrement,
+            ce.ville AS centre_ville,
+            ce.reseau_nom AS reseau_nom,
+            sa.nom AS salarie_nom,
+            sa.prenom AS salarie_prenom,
+            sa.id AS salarie_id,
+            sa.agr_controleur AS agr,
+
+            SUM(fa.montant_presta_ht) AS total_presta_ht,
+            SUM(IF(ctrl.type_ctrl = 'VTP', fa.montant_presta_ht, 0)) AS total_ht_vtp,
+            SUM(IF(ctrl.type_ctrl = 'CLVTP', fa.montant_presta_ht, 0)) AS total_ht_clvtp,
+            SUM(IF(ctrl.type_ctrl = 'CV', fa.montant_presta_ht, 0)) AS total_ht_cv,
+            SUM(IF(ctrl.type_ctrl = 'CLCV', fa.montant_presta_ht, 0)) AS total_ht_clcv,
+            SUM(IF(ctrl.type_ctrl = 'VTC', fa.montant_presta_ht, 0)) AS total_ht_vtc,
+            SUM(IF(ctrl.type_ctrl = 'VOL', fa.montant_presta_ht, 0)) AS total_ht_vol,
+
+            COUNT(DISTINCT ctrl.idcontrole) AS nb_controles,
+            COUNT(DISTINCT IF(ctrl.type_ctrl = 'VTP', ctrl.idcontrole, NULL)) AS nb_vtp,
+            COUNT(DISTINCT IF(ctrl.type_ctrl = 'CLVTP', ctrl.idcontrole, NULL)) AS nb_clvtp,
+            COUNT(DISTINCT IF(ctrl.type_ctrl = 'CV', ctrl.idcontrole, NULL)) AS nb_cv,
+            COUNT(DISTINCT IF(ctrl.type_ctrl = 'CLCV', ctrl.idcontrole, NULL)) AS nb_clcv,
+            COUNT(DISTINCT IF(ctrl.type_ctrl = 'VTC', ctrl.idcontrole, NULL)) AS nb_vtc,
+            COUNT(DISTINCT IF(ctrl.type_ctrl = 'VOL', ctrl.idcontrole, NULL)) AS nb_vol
+        FROM salaries sa
+        JOIN clients_controles cc
+            ON cc.agr_controleur = sa.agr_controleur
+            OR (sa.agr_cl_controleur IS NOT NULL AND cc.agr_controleur = sa.agr_cl_controleur)
+        JOIN controles ctrl ON ctrl.idcontrole = cc.idcontrole
+        LEFT JOIN controles_factures cf ON cf.idcontrole = ctrl.idcontrole
+        LEFT JOIN factures fa ON fa.idfacture = cf.idfacture
+        LEFT JOIN centre ce ON ce.agr_centre = cc.agr_centre
+        LEFT JOIN societe so ON so.id = ce.societe_id
+    ";
+
+        if ($where) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
+        }
+
+        $sql .= "
+        GROUP BY
+            sa.id,
+            sa.nom,
+            sa.prenom,
+            sa.agr_controleur,
+            ce.agr_centre,
+            ce.ville,
+            ce.reseau_nom,
+            so.nom
+        ORDER BY
+            so.nom,
+            ce.ville,
+            sa.nom
+    ";
+
+        return $this->connection->executeQuery($sql, $params, $types)->fetchAllAssociative();
+    }
+
+    private function buildDataStructure(array $rows): array
+    {
+        $data = [];
+
+        foreach ($rows as $row) {
+            $societe = $row['societe_nom'] ?? 'Société inconnue';
+            $centre = strtoupper($row['centre_agrement']) ?? 'Centre inconnu';
+
+            if (!isset($data[$societe])) {
+                $data[$societe] = [];
+            }
+
+            $reseauCode = match ($row['reseau_nom']) {
+                'Dekra' => 'DE',
+                'Norisko' => 'NO',
+                'Auto-Sécurité' => 'AS',
+                'Autovision' => 'AU',
+                'Sécuritest' => 'SE',
+                'Vérif\'Autos' => 'VA',
+                default => '',
+            };
+
+            if (!isset($data[$societe][$centre])) {
+                $data[$societe][$centre] = [
+                    'centre' => [
+                        'ville' => $row['centre_ville'] ?? '',
+                        'reseau' => $row['reseau_nom'] ?? '',
+                        'reseau_code' => $reseauCode
+                    ],
+                    'salaries' => [],
+                    'totaux' => [
+                        'nb_controles' => 0,
+                        'nb_vtp' => 0,
+                        'nb_clvtp' => 0,
+                        'nb_cv' => 0,
+                        'nb_clcv' => 0,
+                        'nb_vtc' => 0,
+                        'nb_vol' => 0,
+                        'ca_total_ht' => 0,
+                        'ca_total_ht_vtp' => 0,
+                        'ca_total_ht_clvtp' => 0,
+                        'ca_total_ht_cv' => 0,
+                        'ca_total_ht_clcv' => 0,
+                        'ca_total_ht_vtc' => 0,
+                        'ca_total_ht_vol' => 0,
+                        'prix_moyen_vtp' => 0,
+                        'prix_moyen_clvtp' => 0,
+                        'prix_moyen_cv' => 0,
+                        'prix_moyen_clcv' => 0,
+                        'prix_moyen_vtc' => 0,
+                        'prix_moyen_vol' => 0,
+                    ]
+                ];
+            }
+
+            $nbVtp = (int)$row['nb_vtp'];
+            $nbClvtp = (int)$row['nb_clvtp'];
+            $nbCv = (int)$row['nb_cv'];
+            $nbClcv = (int)$row['nb_clcv'];
+            $nbVtc = (int)$row['nb_vtc'];
+            $nbVol = (int)$row['nb_vol'];
+            $caVtp = (float)$row['total_ht_vtp'];
+            $caClvtp = (float)$row['total_ht_clvtp'];
+            $caCv = (float)$row['total_ht_cv'];
+            $caClcv = (float)$row['total_ht_clcv'];
+            $caVtc = (float)$row['total_ht_vtc'];
+            $caVol = (float)$row['total_ht_vol'];
+            $caTotal = (float)$row['total_presta_ht'];
+
+            $data[$societe][$centre]['salaries'][] = [
+                'nom' => mb_strtoupper($row['salarie_nom']),
+                'prenom' => mb_ucfirst($row['salarie_prenom']),
+                'agr' => $row['agr'],
+                'nb_controles' => (int)$row['nb_controles'],
+                'nb_vtp' => $nbVtp,
+                'nb_clvtp' => $nbClvtp,
+                'nb_cv' => $nbCv,
+                'nb_clcv' => $nbClcv,
+                'nb_vtc' => $nbVtc,
+                'nb_vol' => $nbVol,
+                'total_presta_ht' => $caTotal,
+                'total_ht_vtp' => $caVtp,
+                'total_ht_clvtp' => $caClvtp,
+                'total_ht_cv' => $caCv,
+                'total_ht_clcv' => $caClcv,
+                'total_ht_vtc' => $caVtc,
+                'total_ht_vol' => $caVol,
+                'prix_moyen_vtp' => $nbVtp > 0 ? $caVtp / $nbVtp : 0,
+                'prix_moyen_clvtp' => $nbClvtp > 0 ? $caClvtp / $nbClvtp : 0,
+                'prix_moyen_cv' => $nbCv > 0 ? $caCv / $nbCv : 0,
+                'prix_moyen_clcv' => $nbClcv > 0 ? $caClcv / $nbClcv : 0,
+                'prix_moyen_vtc' => $nbVtc > 0 ? $caVtc / $nbVtc : 0,
+                'prix_moyen_vol' => $nbVol > 0 ? $caVol / $nbVol : 0,
+            ];
+
+            $data[$societe][$centre]['totaux']['nb_controles'] += (int)$row['nb_controles'];
+            $data[$societe][$centre]['totaux']['nb_vtp'] += $nbVtp;
+            $data[$societe][$centre]['totaux']['nb_clvtp'] += $nbClvtp;
+            $data[$societe][$centre]['totaux']['nb_cv'] += $nbCv;
+            $data[$societe][$centre]['totaux']['nb_clcv'] += $nbClcv;
+            $data[$societe][$centre]['totaux']['nb_vtc'] += $nbVtc;
+            $data[$societe][$centre]['totaux']['nb_vol'] += $nbVol;
+            $data[$societe][$centre]['totaux']['ca_total_ht'] += $caTotal;
+            $data[$societe][$centre]['totaux']['ca_total_ht_vtp'] += $caVtp;
+            $data[$societe][$centre]['totaux']['ca_total_ht_clvtp'] += $caClvtp;
+            $data[$societe][$centre]['totaux']['ca_total_ht_cv'] += $caCv;
+            $data[$societe][$centre]['totaux']['ca_total_ht_clcv'] += $caClcv;
+            $data[$societe][$centre]['totaux']['ca_total_ht_vtc'] += $caVtc;
+            $data[$societe][$centre]['totaux']['ca_total_ht_vol'] += $caVol;
+        }
+
+        return $data;
+    }
+
+    private function calculateCentreAverages(array &$data): void
+    {
+        foreach ($data as $societe => &$centres) {
+            foreach ($centres as &$centre) {
+                $centre['totaux']['prix_moyen_vtp'] = $centre['totaux']['nb_vtp'] > 0
+                    ? $centre['totaux']['ca_total_ht_vtp'] / $centre['totaux']['nb_vtp']
+                    : 0;
+
+                $centre['totaux']['prix_moyen_clvtp'] = $centre['totaux']['nb_clvtp'] > 0
+                    ? $centre['totaux']['ca_total_ht_clvtp'] / $centre['totaux']['nb_clvtp']
+                    : 0;
+
+                $centre['totaux']['prix_moyen_cv'] = $centre['totaux']['nb_cv'] > 0
+                    ? $centre['totaux']['ca_total_ht_cv'] / $centre['totaux']['nb_cv']
+                    : 0;
+
+                $centre['totaux']['prix_moyen_clcv'] = $centre['totaux']['nb_clcv'] > 0
+                    ? $centre['totaux']['ca_total_ht_clcv'] / $centre['totaux']['nb_clcv']
+                    : 0;
+
+                $centre['totaux']['prix_moyen_vtc'] = $centre['totaux']['nb_vtc'] > 0
+                    ? $centre['totaux']['ca_total_ht_vtc'] / $centre['totaux']['nb_vtc']
+                    : 0;
+
+                $centre['totaux']['prix_moyen_vol'] = $centre['totaux']['nb_vol'] > 0
+                    ? $centre['totaux']['ca_total_ht_vol'] / $centre['totaux']['nb_vol']
+                    : 0;
+            }
+        }
+        unset($centres, $centre);
     }
 }

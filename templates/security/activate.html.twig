@@ -2,15 +2,62 @@
 
 {% block title %}Changer le mot de passe{% endblock %}
 
-{% block stylesheets %}
-    <link rel="stylesheet" href="{{ asset('styles/forms/login.css') }}">
-{% endblock %}
-
 {% block body %}
     <h1>Activation du compte</h1>
 
+    {% if form.vars.errors|length > 0 %}
+        <div class="alert alert-danger">
+            <ul>
+                {% for error in form.vars.errors %}
+                    <li>{{ error.message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {% for child in form %}
+        {% if child.vars.errors|length > 0 %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for error in child.vars.errors %}
+                        <li>{{ error.message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {# Pour RepeatedType, vérifier les enfants #}
+        {% for sub in child %}
+            {% if sub.vars.errors|length > 0 %}
+                <div class="alert alert-danger">
+                    <ul>
+                        {% for error in sub.vars.errors %}
+                            <li>{{ error.message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+
     <div class="form-wrapper">
-        {{ form_start(form) }}
+        {{ form_start(form, {'attr': {'data-turbo': 'false'}}) }}
+
+        <div>
+            {{ form_label(form.plainPassword.first) }}
+            {{ form_widget(form.plainPassword.first) }}
+        </div>
+
+        <div>
+            <small>{{ form_help(form.plainPassword.first) }}</small>
+        </div>
+
+        <div>
+            {{ form_label(form.plainPassword.second) }}
+            {{ form_widget(form.plainPassword.second) }}
+        </div>
+
+        <button type="submit">Activer mon compte</button>
         {{ form_end(form) }}
     </div>
 {% endblock %}

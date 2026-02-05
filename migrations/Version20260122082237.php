@@ -20,7 +20,7 @@ final class Version20260122082237 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE affectation ADD CONSTRAINT FK_F4DD61D35859934A FOREIGN KEY (salarie_id) REFERENCES salarie (id)');
+        $this->addSql('ALTER TABLE affectation ADD CONSTRAINT FK_F4DD61D35859934A FOREIGN KEY (salarie_id) REFERENCES salaries (id)');
         $this->addSql('ALTER TABLE affectation ADD CONSTRAINT FK_F4DD61D3463CD7C3 FOREIGN KEY (centre_id) REFERENCES centre (id)');
         $this->addSql('ALTER TABLE centre ADD CONSTRAINT FK_C6A0EA75445D170C FOREIGN KEY (reseau_id) REFERENCES reseau (id)');
         $this->addSql('ALTER TABLE centre RENAME INDEX agr_centre TO UNIQ_C6A0EA75A927AF30');
@@ -35,7 +35,7 @@ final class Version20260122082237 extends AbstractMigration
         $this->addSql('ALTER TABLE imported_files ADD CONSTRAINT FK_D8475CB7445D170C FOREIGN KEY (reseau_id) REFERENCES reseau (id)');
         $this->addSql('ALTER TABLE prestas_non_facturees ADD CONSTRAINT FK_6E23438D445D170C FOREIGN KEY (reseau_id) REFERENCES reseau (id)');
         $this->addSql('ALTER TABLE reglements ADD CONSTRAINT FK_648F2671445D170C FOREIGN KEY (reseau_id) REFERENCES reseau (id)');
-        $this->addSql('ALTER TABLE salarie RENAME INDEX code TO UNIQ_828E3A1A77153098');
+        $this->addSql('ALTER TABLE salaries RENAME INDEX code TO UNIQ_828E3A1A77153098');
     }
 
     public function down(Schema $schema): void
@@ -56,6 +56,6 @@ final class Version20260122082237 extends AbstractMigration
         $this->addSql('ALTER TABLE imported_files DROP FOREIGN KEY FK_D8475CB7445D170C');
         $this->addSql('ALTER TABLE prestas_non_facturees DROP FOREIGN KEY FK_6E23438D445D170C');
         $this->addSql('ALTER TABLE reglements DROP FOREIGN KEY FK_648F2671445D170C');
-        $this->addSql('ALTER TABLE salarie RENAME INDEX uniq_828e3a1a77153098 TO code');
+        $this->addSql('ALTER TABLE salaries RENAME INDEX uniq_828e3a1a77153098 TO code');
     }
 }

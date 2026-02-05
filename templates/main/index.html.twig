@@ -2,13 +2,9 @@
 
 {% block title %}Tableau de bord{% endblock %}
 
-{% block stylesheets %}
-    <link rel="stylesheet" href="{{ asset('styles/dashboard/dashboard.css') }}">
-{% endblock %}
-
 {% block body %}
     <div class="dashboard-container">
-        <h1>Bonjour {{ user.username }} !</h1>
+        <h1>Bonjour {{ user.username }},</h1>
 
         <p>Bienvenue sur votre tableau de bord.</p>
 
@@ -19,18 +15,6 @@
 
             <a href="{{ path('app_suivi_activite') }}" class="app">
                 Suivi
-            </a>
-
-            <a href="{{ path('app_home') }}" class="app">
-                Application 1
-            </a>
-
-            <a href="{{ path('app_home') }}" class="app">
-                Application 2
-            </a>
-
-            <a href="{{ path('app_home') }}" class="app">
-                Application au nom super long pour vérifier que ça tient correctement
             </a>
         </div>
     </div>

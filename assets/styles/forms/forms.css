@@ -1,10 +1,10 @@
 .form-wrapper {
     width: 60%;
-    margin: 20px auto;
     border-radius: 20px;
-    background: var(--blocks);
     box-shadow: var(--box-shadow);
     padding: 40px 20px;
+    margin: 20px auto;
+    background: var(--blocks);
     text-align: center;
 
     img {
@@ -16,30 +16,177 @@
     }
 
     form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
         width: 60%;
         margin: auto;
 
         div {
+            display: flex;
             width: 100%;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+
+            input, select, textarea {
+                border: 1px solid var(--cts-main);
+                color: black;
+                border-radius: 10px;
+                padding: 5px 10px;
+                box-sizing: border-box;
+            }
 
             input:not([type="checkbox"]), select, textarea {
-                width: 80%;
+                width: 60%;
             }
         }
     }
 }
 
-form {
+.dropzone {
+    width: 100%;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 20px;
+}
+
+.dropzone__area {
+    background: rgba(30, 143, 176, .05);
+    border: 5px dashed var(--cts-main);
+    border-radius: 10px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: background .2s ease, border-color .2s ease;
+
+    &.dragover, &:hover {
+        background: rgba(35, 180, 166, .15);
+        border-color: var(--cts-alt);
+    }
+
+    .dropzone__hint {
+        color: red;
+        font-style: italic;
+    }
+}
+
+.dropzone__files {
+    margin-top: 10px;
+    font-size: 14px;
+    flex-wrap: wrap;
 
     div {
+        padding: 5px 10px;
+        border: 1px solid var(--cts-main);
+        border-radius: 5px;
+    }
+}
+
+.remember-me {
+    font-size: small;
+    justify-content: flex-end !important;
+    gap: 0;
+}
+
+.forgot-pass {
+    text-decoration: none;
+    color: red;
+    font-weight: bold;
+
+    &:hover {
+        color: var(--cts-main);
+    }
+}
+
+.filter-form {
+    display: flex;
+    flex-direction: row;
+    margin: 20px auto;
+    gap: 20px;
+}
+
+.filter-dropdown {
+    position: relative;
+    display: flex;
+
+    &:hover {
+        .dropdown-toggle {
+            border-radius: 10px 10px 0 0;
+            background: var(--cts-alt);
+
+            &::before {
+                border-bottom-right-radius: 0;
+            }
+        }
+
+        .dropdown-menu {
+            display: block;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+    }
+}
+
+.dropdown-toggle {
+    background: var(--text);
+    color: black;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    padding-right: 50px;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 35px;
+        height: 100%;
+        background: #f2f2f2;
+        border-left: 1px solid var(--cts-alt);
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+    }
+
+    &::after {
+        content: "▼";
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 12px;
+        color: #555;
+        pointer-events: none;
+    }
+
+    &:hover {
+        border-radius: 10px 10px 0 0;
+
+        &::before {
+            border-bottom-right-radius: 0;
+        }
+    }
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--blocks);
+    box-shadow: var(--box-shadow);
+    border-radius: 6px;
+    padding: 8px;
+    z-index: 10;
+    min-width: 200px;
+
+    label {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
+        gap: 6px;
+        padding: 4px 0;
+        cursor: pointer;
     }
 }
 
@@ -60,13 +207,6 @@ button {
     }
 }
 
-input, select, textarea {
-    border: 1px solid var(--cts-main);
-    color: black;
-    border-radius: 10px;
-    padding: 5px 10px;
-}
-
 .alert {
     width: 60%;
     margin: 0 auto;
@@ -79,7 +219,7 @@ input, select, textarea {
     }
 }
 
-.alert-danger {
+.alert-danger, .required-inputs {
     color: red;
 }
 

@@ -2,10 +2,16 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Welcome!{% endblock %}</title>
+    <title>Ker-Milo - {% block title %}Welcome!{% endblock %}</title>
     <link rel="icon"
           href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
     <link rel="stylesheet" href="{{ asset('styles/forms/forms.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/modals/modals.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/suivi/suivi.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/tables/tables.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/users/users.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/dashboard/dashboard.css') }}">
+
     {% block stylesheets %}
     {% endblock %}
 
@@ -26,25 +32,41 @@
         <div id="responsive" data-burger-target="menu">
             {% if is_granted('ROLE_ADMIN') %}
                 <h1>ESPACE ADMIN</h1>
+                <h2>Utilisateurs</h2>
                 <ul>
                     <li>
                         <a href="{{ path('app_users_list') }}">
-                            Liste des utilisateurs
+                            → Liste des utilisateurs
                         </a>
                     </li>
                     <li>
                         <a href="{{ path('app_users_add') }}">
-                            Ajouter un utilisateur
+                            → Ajouter un utilisateur
+                        </a>
+                    </li>
+                </ul>
+
+                <h2>Salariés</h2>
+                <ul>
+                    <li>
+                        <a href="{{ path('app_salaries_list') }}">
+                            → Liste des salariés
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_salaries_add') }}">
+                            → Ajouter un salarié
                         </a>
                     </li>
                 </ul>
             {% endif %}
 
             {% if is_granted('IS_AUTHENTICATED') %}
+                <h1>Suivi</h1>
                 <ul>
                     <li>
                         <a href="{{ path('app_suivi_activite') }}">
-                            Suivi
+                            → Suivi contrôleurs
                         </a>
                     </li>
                 </ul>
@@ -53,7 +75,7 @@
                 <ul>
                     <li>
                         <a href="{{ path('import_csv') }}">
-                            Importer des fichiers
+                            → Importer des fichiers
                         </a>
                     </li>
                 </ul>
@@ -62,12 +84,12 @@
                 <ul>
                     <li>
                         <a href="{{ path('app_profile', { id: app.user.id }) }}">
-                            Profil utilisateur
+                            → Profil
                         </a>
                     </li>
                     <li>
                         <a href="{{ path('app_logout') }}">
-                            Se déconnecter
+                            → Se déconnecter
                         </a>
                     </li>
                 </ul>
@@ -75,7 +97,7 @@
                 <ul>
                     <li>
                         <a href="{{ path('app_login') }}">
-                            Se connecter
+                            → Se connecter
                         </a>
                     </li>
                 </ul>
@@ -94,5 +116,7 @@
 <footer>
     © {{ "now"|date('Y') }} - CTS
 </footer>
+
+{% block scripts %}{% endblock %}
 </body>
 </html>

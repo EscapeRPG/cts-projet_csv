@@ -20,7 +20,7 @@ final class Version20260122092740 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE affectation ADD CONSTRAINT FK_F4DD61D35859934A FOREIGN KEY (salarie_id) REFERENCES salarie (id)');
+        $this->addSql('ALTER TABLE affectation ADD CONSTRAINT FK_F4DD61D35859934A FOREIGN KEY (salarie_id) REFERENCES salaries (id)');
         $this->addSql('ALTER TABLE affectation ADD CONSTRAINT FK_F4DD61D3463CD7C3 FOREIGN KEY (centre_id) REFERENCES centre (id)');
         $this->addSql('ALTER TABLE centre ADD coordonnees VARCHAR(255) DEFAULT NULL, ADD telephone VARCHAR(12) DEFAULT NULL, ADD email VARCHAR(100) DEFAULT NULL, ADD site_web VARCHAR(255) DEFAULT NULL, ADD num_siret VARCHAR(20) NOT NULL, CHANGE nom ville VARCHAR(255) NOT NULL');
         $this->addSql('ALTER TABLE centre ADD CONSTRAINT FK_C6A0EA75445D170C FOREIGN KEY (reseau_id) REFERENCES reseau (id)');

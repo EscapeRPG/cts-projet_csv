@@ -1,3 +1,12 @@
+.table-container {
+    width: 80%;
+    min-height: 100%;
+    background: var(--blocks);
+    box-shadow: var(--box-shadow);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
 .table-wrapper {
     max-height: 80vh;
     overflow: auto;
@@ -31,6 +40,10 @@ table {
 
         &:last-child {
             border-right: none;
+        }
+
+        &.table-action {
+            text-align: center;
         }
     }
 

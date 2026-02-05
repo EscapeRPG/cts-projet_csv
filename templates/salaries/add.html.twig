@@ -1,0 +1,141 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter un salarié{% endblock %}
+
+{% block body %}
+    <h1>Ajouter un utilisateur</h1>
+
+    {% set errors = [] %}
+
+    {# erreurs globales #}
+    {% for error in form.vars.errors %}
+        {% set errors = errors|merge(['[Global] ' ~ error.message]) %}
+    {% endfor %}
+
+    {# erreurs des champs #}
+    {% for child in form %}
+        {% for error in child.vars.errors %}
+            {% set errors = errors|merge([child.vars.label ~ error.message]) %}
+        {% endfor %}
+
+        {# si le champ a des enfants (ex: collection ou subform) #}
+        {% if child is iterable %}
+            {% for sub in child %}
+                {% for error in sub.vars.errors %}
+                    {% set errors = errors|merge([sub.vars.label ~ error.message]) %}
+                {% endfor %}
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+
+    {# affichage #}
+    {% if errors|length > 0 %}
+        <div class="alert alert-danger">
+            <ul>
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="form-wrapper">
+        <small class="required-inputs">Les champs marqués d'un * sont obligatoires.</small><br><br>
+
+        {{ form_start(form, {'attr': {'data-turbo': 'false'}}) }}
+
+        <div>
+            {{ form_label(form.societe) }}
+            {{ form_widget(form.societe) }}
+        </div>
+
+        <div>
+            {{ form_label(form.agrControleur) }}
+            {{ form_widget(form.agrControleur) }}
+        </div>
+
+        <div>
+            {{ form_label(form.agrClControleur) }}
+            {{ form_widget(form.agrClControleur) }}
+        </div>
+
+        <div>
+            {{ form_label(form.nom) }}
+            {{ form_widget(form.nom) }}
+        </div>
+
+        <div>
+            {{ form_label(form.prenom) }}
+            {{ form_widget(form.prenom) }}
+        </div>
+
+        <div>
+            {{ form_label(form.dateNaissance) }}
+            {{ form_widget(form.dateNaissance) }}
+        </div>
+
+        <div>
+            {{ form_label(form.email) }}
+            {{ form_widget(form.email) }}
+        </div>
+
+        <div>
+            {{ form_label(form.telephone) }}
+            {{ form_widget(form.telephone) }}
+        </div>
+
+        <div>
+            {{ form_label(form.echelons) }}
+            {{ form_widget(form.echelons) }}
+        </div>
+
+        <div>
+            {{ form_label(form.salaireBrut) }}
+            {{ form_widget(form.salaireBrut) }}
+        </div>
+
+        <div>
+            {{ form_label(form.nbHeures) }}
+            {{ form_widget(form.nbHeures) }}
+        </div>
+        <small>{{ form_help(form.nbHeures) }}</small>
+
+        <div>
+            {{ form_label(form.vesteMancheAmovible) }}
+            {{ form_widget(form.vesteMancheAmovible) }}
+        </div>
+
+        <div>
+            {{ form_label(form.polaire) }}
+            {{ form_widget(form.polaire) }}
+        </div>
+
+        <div>
+            {{ form_label(form.pantalon) }}
+            {{ form_widget(form.pantalon) }}
+        </div>
+
+        <div>
+            {{ form_label(form.teeShirts) }}
+            {{ form_widget(form.teeShirts) }}
+        </div>
+
+        <div>
+            {{ form_label(form.polo) }}
+            {{ form_widget(form.polo) }}
+        </div>
+
+        <div>
+            {{ form_label(form.chaussures) }}
+            {{ form_widget(form.chaussures) }}
+        </div>
+
+        <div class="remember-me">
+            {{ form_label(form.isActive) }}
+            {{ form_widget(form.isActive) }}
+        </div>
+
+        <button type="submit">Enregistrer</button>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}
