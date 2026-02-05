@@ -79,7 +79,7 @@ class SuiviActiviteRepository
     public function getControleurs(): array
     {
         return $this->connection->fetchAllAssociative(
-            'SELECT id, nom, prenom, agr_controleur FROM salaries ORDER BY nom'
+            'SELECT id, nom, prenom, agr_controleur FROM salarie ORDER BY nom'
         );
     }
 
@@ -147,7 +147,7 @@ class SuiviActiviteRepository
             COUNT(DISTINCT IF(ctrl.type_ctrl = 'CLCV', ctrl.idcontrole, NULL)) AS nb_clcv,
             COUNT(DISTINCT IF(ctrl.type_ctrl = 'VTC', ctrl.idcontrole, NULL)) AS nb_vtc,
             COUNT(DISTINCT IF(ctrl.type_ctrl = 'VOL', ctrl.idcontrole, NULL)) AS nb_vol
-        FROM salaries sa
+        FROM salarie sa
         JOIN clients_controles cc
             ON cc.agr_controleur = sa.agr_controleur
             OR (sa.agr_cl_controleur IS NOT NULL AND cc.agr_controleur = sa.agr_cl_controleur)
