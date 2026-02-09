@@ -8,9 +8,13 @@
     <link rel="stylesheet" href="{{ asset('styles/forms/forms.css') }}">
     <link rel="stylesheet" href="{{ asset('styles/modals/modals.css') }}">
     <link rel="stylesheet" href="{{ asset('styles/suivi/suivi.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/suivi/filters.css') }}">
     <link rel="stylesheet" href="{{ asset('styles/tables/tables.css') }}">
     <link rel="stylesheet" href="{{ asset('styles/users/users.css') }}">
     <link rel="stylesheet" href="{{ asset('styles/dashboard/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/loader/loader.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/suivi/synthese.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/forms/salaries.css') }}">
 
     {% block stylesheets %}
     {% endblock %}
@@ -30,9 +34,20 @@
         </div>
 
         <div id="responsive" data-burger-target="menu">
+            {% if is_granted('IS_AUTHENTICATED') %}
+                <h3>{{ user.username }}</h3>
+                <h3>
+                    {% if ('ROLE_ADMIN' in user.roles) %}
+                        Administrateur
+                    {% else %}
+                        Utilisateur
+                    {% endif %}
+                </h3>
+            {% endif %}
+
             {% if is_granted('ROLE_ADMIN') %}
-                <h1>ESPACE ADMIN</h1>
-                <h2>Utilisateurs</h2>
+                <h2>ESPACE ADMIN</h2>
+                <h3>Utilisateurs</h3>
                 <ul>
                     <li>
                         <a href="{{ path('app_users_list') }}">
@@ -46,7 +61,7 @@
                     </li>
                 </ul>
 
-                <h2>Salariés</h2>
+                <h3>Salariés</h3>
                 <ul>
                     <li>
                         <a href="{{ path('app_salaries_list') }}">
@@ -62,25 +77,21 @@
             {% endif %}
 
             {% if is_granted('IS_AUTHENTICATED') %}
-                <h1>Suivi</h1>
+                <h2>Suivi</h2>
                 <ul>
                     <li>
                         <a href="{{ path('app_suivi_activite') }}">
-                            → Suivi contrôleurs
+                            → Synthèse
                         </a>
                     </li>
-                </ul>
-
-                <h1>IMPORT</h1>
-                <ul>
                     <li>
-                        <a href="{{ path('import_csv') }}">
-                            → Importer des fichiers
+                        <a href="{{ path('app_suivi_controleurs') }}">
+                            → Contrôleurs
                         </a>
                     </li>
                 </ul>
 
-                <h1>COMPTE</h1>
+                <h2>COMPTE</h2>
                 <ul>
                     <li>
                         <a href="{{ path('app_profile', { id: app.user.id }) }}">
@@ -110,13 +121,21 @@
 </header>
 
 <main>
-    {% block body %}{% endblock %}
+    <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <p>Chargement...</p>
+    </div>
+
+    <div class="loading-content" id="loadingContent">
+        {% block body %}{% endblock %}
+    </div>
 </main>
 
 <footer>
     © {{ "now"|date('Y') }} - CTS
 </footer>
 
-{% block scripts %}{% endblock %}
+<script src="{{ asset('js/salaries_list.js') }}"></script>
+<script src="{{ asset('js/loader.js') }}"></script>
 </body>
 </html>

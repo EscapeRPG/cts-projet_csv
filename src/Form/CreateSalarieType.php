@@ -89,12 +89,14 @@ class CreateSalarieType extends AbstractType
                 'label' => 'Salaire Brut',
                 'required' => false,
                 'empty_data' => null,
+                'scale' => 2,
             ])
             ->add('nbHeures', NumberType::class, [
                 'label' => 'Nombre d\'heures : ',
                 'help' => 'Au format numérique uniquement (ex: 35,15)',
                 'required' => false,
                 'empty_data' => null,
+                'scale' => 2,
             ])
             ->add('vesteMancheAmovible', ChoiceType::class, [
                 'label' => 'Veste : ',

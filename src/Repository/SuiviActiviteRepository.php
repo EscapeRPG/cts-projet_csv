@@ -12,6 +12,9 @@ class SuiviActiviteRepository
     {
     }
 
+    /**
+     * @throws Exception
+     */
     public function getSyntheseGlobale(array $filters = []): array
     {
         $rows = $this->fetchRows($filters);
@@ -29,6 +32,24 @@ class SuiviActiviteRepository
         return $this->connection->fetchFirstColumn(
             'SELECT DISTINCT YEAR(data_date) FROM controles'
         );
+    }
+
+    public function getMonth(): array
+    {
+        return [
+            1 => 'Janvier',
+            2 => 'Février',
+            3 => 'Mars',
+            4 => 'Avril',
+            5 => 'Mai',
+            6 => 'Juin',
+            7 => 'Juillet',
+            8 => 'Août',
+            9 => 'Septembre',
+            10 => 'Octobre',
+            11 => 'Novembre',
+            12 => 'Décembre'
+        ];
     }
 
     /**
@@ -93,11 +114,19 @@ class SuiviActiviteRepository
         $types = [];
 
         // Filtre année
-        $annee = !empty($filters['annee']) ? (int)$filters['annee'] : null;
-        if ($annee !== null) {
-            $where[] = 'YEAR(ctrl.data_date) = :annee';
-            $params['annee'] = $annee;
-        }
+        $annee = !empty($filters['annee']) ? [(int)$filters['annee']] : [date('Y') - 2, date('Y') - 1, date('Y')];
+        $where[] = 'YEAR(ctrl.data_date) IN (:annee)';
+        $params['annee'] = $annee;
+        $types['annee'] = ArrayParameterType::STRING;
+
+        // Filtre mois
+        $mois = !empty($filters['mois'])
+            ? array_map('intval', $filters['mois'])
+            : range(1, 12);
+
+        $where[] = 'MONTH(ctrl.data_date) IN (:mois)';
+        $params['mois'] = $mois;
+        $types['mois'] = ArrayParameterType::INTEGER;
 
         // Filtre sociétés
         if (!empty($filters['societe'])) {
@@ -124,13 +153,23 @@ class SuiviActiviteRepository
         $sql = "
         SELECT
             so.nom AS societe_nom,
+
             ce.agr_centre AS centre_agrement,
             ce.ville AS centre_ville,
             ce.reseau_nom AS reseau_nom,
+
+            sa.id AS salarie_id,
             sa.nom AS salarie_nom,
             sa.prenom AS salarie_prenom,
-            sa.id AS salarie_id,
             sa.agr_controleur AS agr,
+
+            COUNT(DISTINCT ctrl.idcontrole) AS nb_controles,
+            COUNT(DISTINCT IF(ctrl.type_ctrl = 'VTP', ctrl.idcontrole, NULL)) AS nb_vtp,
+            COUNT(DISTINCT IF(ctrl.type_ctrl = 'CLVTP', ctrl.idcontrole, NULL)) AS nb_clvtp,
+            COUNT(DISTINCT IF(ctrl.type_ctrl = 'CV', ctrl.idcontrole, NULL)) AS nb_cv,
+            COUNT(DISTINCT IF(ctrl.type_ctrl = 'CLCV', ctrl.idcontrole, NULL)) AS nb_clcv,
+            COUNT(DISTINCT IF(ctrl.type_ctrl = 'VTC', ctrl.idcontrole, NULL)) AS nb_vtc,
+            COUNT(DISTINCT IF(ctrl.type_ctrl = 'VOL', ctrl.idcontrole, NULL)) AS nb_vol,
 
             SUM(fa.montant_presta_ht) AS total_presta_ht,
             SUM(IF(ctrl.type_ctrl = 'VTP', fa.montant_presta_ht, 0)) AS total_ht_vtp,
@@ -140,13 +179,13 @@ class SuiviActiviteRepository
             SUM(IF(ctrl.type_ctrl = 'VTC', fa.montant_presta_ht, 0)) AS total_ht_vtc,
             SUM(IF(ctrl.type_ctrl = 'VOL', fa.montant_presta_ht, 0)) AS total_ht_vol,
 
-            COUNT(DISTINCT ctrl.idcontrole) AS nb_controles,
-            COUNT(DISTINCT IF(ctrl.type_ctrl = 'VTP', ctrl.idcontrole, NULL)) AS nb_vtp,
-            COUNT(DISTINCT IF(ctrl.type_ctrl = 'CLVTP', ctrl.idcontrole, NULL)) AS nb_clvtp,
-            COUNT(DISTINCT IF(ctrl.type_ctrl = 'CV', ctrl.idcontrole, NULL)) AS nb_cv,
-            COUNT(DISTINCT IF(ctrl.type_ctrl = 'CLCV', ctrl.idcontrole, NULL)) AS nb_clcv,
-            COUNT(DISTINCT IF(ctrl.type_ctrl = 'VTC', ctrl.idcontrole, NULL)) AS nb_vtc,
-            COUNT(DISTINCT IF(ctrl.type_ctrl = 'VOL', ctrl.idcontrole, NULL)) AS nb_vol
+            SUM(ctrl.temps_ctrl) AS temps_total,
+
+            SUM(IF(ctrl.res_ctrl IN ('S','R','SP'), 1, 0)) AS taux_refus,
+
+            SUM(IF(cli.nom_code_client IS NULL OR cli.nom_code_client = '', 1, 0)) AS nb_particuliers,
+            SUM(IF(cli.nom_code_client IS NOT NULL AND cli.nom_code_client != '', 1, 0)) AS nb_professionnels
+
         FROM salarie sa
         JOIN clients_controles cc
             ON cc.agr_controleur = sa.agr_controleur
@@ -156,6 +195,7 @@ class SuiviActiviteRepository
         LEFT JOIN factures fa ON fa.idfacture = cf.idfacture
         LEFT JOIN centre ce ON ce.agr_centre = cc.agr_centre
         LEFT JOIN societe so ON so.id = ce.societe_id
+        LEFT JOIN clients cli ON cli.idclient = cc.idclient
     ";
 
         if ($where) {
@@ -172,6 +212,7 @@ class SuiviActiviteRepository
             ce.ville,
             ce.reseau_nom,
             so.nom
+
         ORDER BY
             so.nom,
             ce.ville,
@@ -232,6 +273,10 @@ class SuiviActiviteRepository
                         'prix_moyen_clcv' => 0,
                         'prix_moyen_vtc' => 0,
                         'prix_moyen_vol' => 0,
+                        'temps_total' => 0,
+                        'taux_refus' => 0,
+                        'nb_particuliers' => 0,
+                        'nb_professionnels' => 0,
                     ]
                 ];
             }
@@ -251,6 +296,7 @@ class SuiviActiviteRepository
             $caTotal = (float)$row['total_presta_ht'];
 
             $data[$societe][$centre]['salaries'][] = [
+                'id' => $row['salarie_id'],
                 'nom' => mb_strtoupper($row['salarie_nom']),
                 'prenom' => mb_ucfirst($row['salarie_prenom']),
                 'agr' => $row['agr'],
@@ -274,6 +320,10 @@ class SuiviActiviteRepository
                 'prix_moyen_clcv' => $nbClcv > 0 ? $caClcv / $nbClcv : 0,
                 'prix_moyen_vtc' => $nbVtc > 0 ? $caVtc / $nbVtc : 0,
                 'prix_moyen_vol' => $nbVol > 0 ? $caVol / $nbVol : 0,
+                'temps_total' => (int)$row['temps_total'],
+                'taux_refus' => (float)$row['taux_refus'],
+                'nb_particuliers' => (int)$row['nb_particuliers'],
+                'nb_professionnels' => (int)$row['nb_professionnels'],
             ];
 
             $data[$societe][$centre]['totaux']['nb_controles'] += (int)$row['nb_controles'];

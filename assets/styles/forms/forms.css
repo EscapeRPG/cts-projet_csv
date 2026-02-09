@@ -100,96 +100,6 @@
     }
 }
 
-.filter-form {
-    display: flex;
-    flex-direction: row;
-    margin: 20px auto;
-    gap: 20px;
-}
-
-.filter-dropdown {
-    position: relative;
-    display: flex;
-
-    &:hover {
-        .dropdown-toggle {
-            border-radius: 10px 10px 0 0;
-            background: var(--cts-alt);
-
-            &::before {
-                border-bottom-right-radius: 0;
-            }
-        }
-
-        .dropdown-menu {
-            display: block;
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-    }
-}
-
-.dropdown-toggle {
-    background: var(--text);
-    color: black;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-    padding-right: 50px;
-
-    &::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 35px;
-        height: 100%;
-        background: #f2f2f2;
-        border-left: 1px solid var(--cts-alt);
-        border-top-right-radius: 10px;
-        border-bottom-right-radius: 10px;
-    }
-
-    &::after {
-        content: "▼";
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 12px;
-        color: #555;
-        pointer-events: none;
-    }
-
-    &:hover {
-        border-radius: 10px 10px 0 0;
-
-        &::before {
-            border-bottom-right-radius: 0;
-        }
-    }
-}
-
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background: var(--blocks);
-    box-shadow: var(--box-shadow);
-    border-radius: 6px;
-    padding: 8px;
-    z-index: 10;
-    min-width: 200px;
-
-    label {
-        display: flex;
-        gap: 6px;
-        padding: 4px 0;
-        cursor: pointer;
-    }
-}
-
 button {
     background: var(--cts-main);
     color: var(--text);
@@ -198,12 +108,18 @@ button {
     padding: 10px 15px;
     font-weight: bold;
     margin: auto;
-    transition: all .5s ease;
+
+    &:not(.dropdown-toggle) {
+        transition: all .5s ease;
+    }
 
     &:hover {
-        background: var(--cts-alt);
         cursor: pointer;
-        transform: scale(1.1);
+
+        &:not(.dropdown-toggle) {
+            background: var(--cts-alt);
+            transform: scale(1.1);
+        }
     }
 }
 

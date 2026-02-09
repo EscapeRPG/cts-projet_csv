@@ -134,7 +134,7 @@ final class AdminController extends AbstractController
         FormFactoryInterface   $formFactory
     ): Response
     {
-        $salaries = $salarieRepository->findAll();
+        $salaries = $salarieRepository->findBy([], ['nom' => 'ASC']);
         $forms = [];
 
         foreach ($salaries as $salarie) {

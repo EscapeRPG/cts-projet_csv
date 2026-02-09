@@ -27,12 +27,6 @@ class Centre
     #[ORM\JoinColumn(nullable: false)]
     private ?Reseau $reseau = null;
 
-    /**
-     * @var Collection<int, Affectation>
-     */
-    #[ORM\OneToMany(targetEntity: Affectation::class, mappedBy: 'centre', orphanRemoval: true)]
-    private Collection $affectations;
-
     #[ORM\ManyToOne(inversedBy: 'centre')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Societe $societe = null;
@@ -57,11 +51,6 @@ class Centre
 
     #[ORM\Column(length: 10)]
     private ?string $cp = null;
-
-    public function __construct()
-    {
-        $this->affectations = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -98,35 +87,6 @@ class Centre
     public function setReseau(?Reseau $reseau): static
     {
         $this->reseau = $reseau;
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Affectation>
-     */
-    public function getAffectations(): Collection
-    {
-        return $this->affectations;
-    }
-
-    public function addAffectation(Affectation $affectation): static
-    {
-        if (!$this->affectations->contains($affectation)) {
-            $this->affectations->add($affectation);
-            $affectation->setCentre($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAffectation(Affectation $affectation): static
-    {
-        if ($this->affectations->removeElement($affectation)) {
-            if ($affectation->getCentre() === $this) {
-                $affectation->setCentre(null);
-            }
-        }
-
         return $this;
     }
 

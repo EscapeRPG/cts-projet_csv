@@ -38,3 +38,6 @@ services:
         arguments:
             $mode: '%env(string:SFTP_MODE)%'
             $basePath: '%env(string:SFTP_LOCAL_PATH)%'
+
+    App\Service\AppExtension:
+        tags: ['twig.extension']

@@ -40,13 +40,13 @@ class Controles
     #[ORM\Column(length: 1)]
     private ?string $typeRdv = null;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(type: Types::TIME_IMMUTABLE)]
     private ?\DateTimeImmutable $debCtrl = null;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(type: Types::TIME_IMMUTABLE)]
     private ?\DateTimeImmutable $finCtrl = null;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     private ?\DateTimeImmutable $dateCtrl = null;
 
     #[ORM\Column(type: Types::SMALLINT)]

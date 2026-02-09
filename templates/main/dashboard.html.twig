@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block body %}
+        <h1>Bonjour {{ user.username }},</h1>
+
+        <p>Bienvenue sur votre tableau de bord.</p>
+
+        <div class="app-container">
+            {% if is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('app_salaries_list') }}" class="app">
+                    Liste des salariés
+                </a>
+            {% endif %}
+
+            <a href="{{ path('app_suivi_activite') }}" class="app">
+                Suivi activité
+            </a>
+
+            <a href="{{ path('app_suivi_controleurs') }}" class="app">
+                Suivi contrôleurs
+            </a>
+        </div>
+{% endblock %}

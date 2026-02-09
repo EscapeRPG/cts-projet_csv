@@ -1,0 +1,126 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Suivi contrôleurs{% endblock %}
+
+{% block body %}
+    {% include 'partials/year-filter.html.twig' %}
+
+    <div class="suivi-container">
+        {% include 'partials/filters.html.twig' %}
+
+        <div class="container">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Société</th>
+                        <th>Réseau</th>
+                        <th>Contrôleur</th>
+                        <th>Agrément</th>
+                        <th>VTP</th>
+                        <th>CLVTP</th>
+                        <th>CV</th>
+                        <th>CLCV</th>
+                        <th>VTC</th>
+                        <th>VOL</th>
+                        <th>Total</th>
+                        <th>CA HT VTP</th>
+                        <th>CA HT CLVTP</th>
+                        <th>CA HT CV</th>
+                        <th>CA HT CLCV</th>
+                        <th>CA HV VTC</th>
+                        <th>CA HV VOL</th>
+                        <th>Total CA HT</th>
+                        <th>Prix moyen VTP</th>
+                        <th>Prix moyen CLVTP</th>
+                        <th>Prix moyen CV</th>
+                        <th>Prix moyen CLCV</th>
+                        <th>Prix moyen VTC</th>
+                        <th>Prix moyen VOL</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {% set lastSociete = null %}
+                    {% set lastCentre = null %}
+
+                    {% for societe, centres in data %}
+                        {% set lastCentre = null %}
+
+                        {% for agrCentre, centreData in centres %}
+                            {% for salarie in centreData.salaries %}
+                                <tr>
+                                    <td>
+                                        {% if societe != lastSociete %}
+                                            <strong>{{ societe }}</strong>
+                                            {% set lastSociete = societe %}
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if agrCentre != lastCentre %}
+                                            {{ centreData.centre.reseau_code }}
+                                            {{ centreData.centre.ville }}
+                                            {% set lastCentre = agrCentre %}
+                                        {% endif %}
+                                    </td>
+
+                                    <td>{{ salarie.nom }} {{ salarie.prenom }}</td>
+                                    <td>{{ salarie.agr }}</td>
+                                    <td class="int-row">{{ salarie.nb_vtp }}</td>
+                                    <td class="int-row">{{ salarie.nb_clvtp }}</td>
+                                    <td class="int-row">{{ salarie.nb_cv }}</td>
+                                    <td class="int-row">{{ salarie.nb_clcv }}</td>
+                                    <td class="int-row">{{ salarie.nb_vtc }}</td>
+                                    <td class="int-row">{{ salarie.nb_vol }}</td>
+                                    <td class="int-row">{{ salarie.nb_controles }}</td>
+                                    <td class="int-row">{{ salarie.total_ht_vtp | number_format(2, ',', ' ') }}€</td>
+                                    <td class="int-row">{{ salarie.total_ht_clvtp | number_format(2, ',', ' ') }}€</td>
+                                    <td class="int-row">{{ salarie.total_ht_cv | number_format(2, ',', ' ') }}€</td>
+                                    <td class="int-row">{{ salarie.total_ht_clcv | number_format(2, ',', ' ') }}€</td>
+                                    <td class="int-row">{{ salarie.total_ht_vtc | number_format(2, ',', ' ') }}€</td>
+                                    <td class="int-row">{{ salarie.total_ht_vol | number_format(2, ',', ' ') }}€</td>
+                                    <td class="int-row">{{ salarie.total_presta_ht | number_format(2, ',', ' ') }}€</td>
+                                    <td class="int-row">{{ salarie.prix_moyen_vtp | number_format(2, ',', ' ') }}€</td>
+                                    <td class="int-row">{{ salarie.prix_moyen_clvtp | number_format(2, ',', ' ') }}€
+                                    </td>
+                                    <td class="int-row">{{ salarie.prix_moyen_cv | number_format(2, ',', ' ') }}€</td>
+                                    <td class="int-row">{{ salarie.prix_moyen_clcv | number_format(2, ',', ' ') }}€</td>
+                                    <td class="int-row">{{ salarie.prix_moyen_vtc | number_format(2, ',', ' ') }}€</td>
+                                    <td class="int-row">{{ salarie.prix_moyen_vol | number_format(2, ',', ' ') }}€</td>
+                                </tr>
+                            {% endfor %}
+
+                            <tr class="total-row">
+                                <td colspan="3">{{ centreData.centre.reseau_code }} {{ centreData.centre.ville }} {{ agrCentre }}
+                                    - {{ centreData.centre.reseau }}</td>
+                                <td>TOTAL</td>
+                                <td>{{ centreData.totaux.nb_vtp }}</td>
+                                <td>{{ centreData.totaux.nb_clvtp }}</td>
+                                <td>{{ centreData.totaux.nb_cv }}</td>
+                                <td>{{ centreData.totaux.nb_clcv }}</td>
+                                <td>{{ centreData.totaux.nb_vtc }}</td>
+                                <td>{{ centreData.totaux.nb_vol }}</td>
+                                <td>{{ centreData.totaux.nb_controles }}</td>
+                                <td>{{ centreData.totaux.ca_total_ht_vtp | number_format(2, ',', ' ') }}€</td>
+                                <td>{{ centreData.totaux.ca_total_ht_clvtp | number_format(2, ',', ' ') }}€</td>
+                                <td>{{ centreData.totaux.ca_total_ht_cv | number_format(2, ',', ' ') }}€</td>
+                                <td>{{ centreData.totaux.ca_total_ht_clcv | number_format(2, ',', ' ') }}€</td>
+                                <td>{{ centreData.totaux.ca_total_ht_vtc | number_format(2, ',', ' ') }}€</td>
+                                <td>{{ centreData.totaux.ca_total_ht_vol | number_format(2, ',', ' ') }}€</td>
+                                <td>{{ centreData.totaux.ca_total_ht | number_format(2, ',', ' ') }}€</td>
+                                <td>{{ centreData.totaux.prix_moyen_vtp | number_format(2, ',', ' ') }}€</td>
+                                <td>{{ centreData.totaux.prix_moyen_clvtp | number_format(2, ',', ' ') }}€</td>
+                                <td>{{ centreData.totaux.prix_moyen_cv | number_format(2, ',', ' ') }}€</td>
+                                <td>{{ centreData.totaux.prix_moyen_clcv | number_format(2, ',', ' ') }}€</td>
+                                <td>{{ centreData.totaux.prix_moyen_vtc | number_format(2, ',', ' ') }}€</td>
+                                <td>{{ centreData.totaux.prix_moyen_vol | number_format(2, ',', ' ') }}€</td>
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

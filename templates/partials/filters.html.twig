@@ -1,0 +1,89 @@
+<div class="sidenav">
+    {% set route = app.request.attributes.get('_route') %}
+
+    <a href="{{ path('app_suivi_activite') }}" class="{{ route == 'app_suivi_activite' ? 'active' : '' }}">Synthèse</a>
+    <a href="{{ path('app_suivi_controleurs') }}" class="{{ route == 'app_suivi_controleurs' ? 'active' : '' }}">Contrôleurs</a>
+
+    <form method="get" class="filter-form">
+        <div class="filters-container">
+            <div class="filter-dropdown">
+                <button type="button" class="dropdown-toggle">
+                    Mois
+                </button>
+
+                <div class="dropdown-menu">
+                    {% for key, label in mois %}
+                        <label>
+                            <input type="checkbox"
+                                   name="mois[]"
+                                   value="{{ key }}"
+                                   {% if key in selected.mois %}checked{% endif %}>
+                            {{ label }}
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="filter-dropdown">
+                <button type="button" class="dropdown-toggle">
+                    Sociétés
+                </button>
+
+                <div class="dropdown-menu">
+                    {% for societe in societes %}
+                        <label>
+                            <input type="checkbox"
+                                   name="societe[]"
+                                   value="{{ societe.nom }}"
+                                   {% if societe.nom in selected.societe %}checked{% endif %}>
+                            {{ societe.nom }}
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="filter-dropdown">
+                <button type="button" class="dropdown-toggle">
+                    Centres
+                </button>
+
+                <div class="dropdown-menu">
+                    {% for centre in centres %}
+                        <label>
+                            <input type="checkbox"
+                                   name="centre[]"
+                                   value="{{ centre.agr_centre }}"
+                                   {% if centre.agr_centre in selected.centre %}checked{% endif %}>
+                            {{ centre.nom }} {{ centre.ville }}
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="filter-dropdown">
+                <button type="button" class="dropdown-toggle">
+                    Contrôleurs
+                </button>
+
+                <div class="dropdown-menu">
+                    {% for c in controleurs %}
+                        {% set value = c.id %}
+                        <label>
+                            <input type="checkbox"
+                                   name="controleur[]"
+                                   value="{{ value }}"
+                                   {% if value in selected.controleur %}checked{% endif %}>
+                            {{ c.nom }} {{ c.prenom }}
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if anneeCourante is not null %}
+                <input type="hidden" name="annee" value="{{ anneeCourante }}">
+            {% endif %}
+
+            <button type="submit">Filtrer</button>
+        </div>
+    </form>
+</div>

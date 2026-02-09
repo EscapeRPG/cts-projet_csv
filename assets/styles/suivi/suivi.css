@@ -1,39 +1,148 @@
-.annees-filter {
+.suivi-container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 95%;
     margin: 20px auto;
-    z-index: 100;
+}
 
-    a {
-        padding: 15px 20px;
-        background: var(--cts-main);
-        border-radius: 10px;
-        margin: 0 20px;
-        text-decoration: none;
-        font-weight: bold;
-        color: var(--nav-a-color);
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 20px;
+    width: 100%;
+    max-height: 80vh;
+    padding: 20px 0 20px 20px;
+    border-left: 2px solid var(--cts-main);
 
-        &:hover {
-            background: var(--cts-alt);
-            color: var(--nav-a-color);
-        }
-    }
-
-    .active {
-        background: var(--active);
-        border: solid 1px var(--cts-main);
-        color: var(--cts-main);
-        padding: 14px 19px;
-
-        &:hover {
-            border: none;
-            padding: 15px 20px;
-        }
+    h2 {
+        margin: 10px 20px;
     }
 }
 
-.suivi-container {
-    width: 80%;
-    min-height: 100%;
-    background: var(--blocks);
+.stats-wrapper {
+    width: 100%;
+    border-radius: 5px;
     box-shadow: var(--box-shadow);
-    border-radius: 10px;
+    padding: 0;
+    background: var(--blocks);
+    overflow: hidden;
+
+    &:last-child {
+        grid-column: 1 / -1;
+    }
+}
+
+.stats-panel {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+.salaries-chart {
+    width: 95%;
+    margin: auto;
+    position: relative;
+    display: flex;
+    gap: 10px;
+
+    .salarie-name, .bar-container, .salarie-row {
+        white-space: nowrap;
+        font-size: 1em;
+    }
+
+    .salarie-name, .salarie-row {
+        margin: 5px 0;
+    }
+
+    .salarie-name {
+        text-align: right;
+    }
+
+    .bars {
+        position: relative;
+        flex: 1;
+
+        .avg-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: red;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .avg-line span {
+            position: sticky;
+            top: 20px;
+            transform: translateX(-60%);
+            padding: 5px;
+            background: red;
+            color: white;
+            white-space: nowrap;
+        }
+
+        .bar-container, .bar {
+            box-sizing: border-box;
+        }
+
+        .bar-container {
+            background: rgba(0, 0, 0, 0.2);
+            margin: 15px 0;
+
+            &:nth-child(2) {
+                margin-top: 11px;
+            }
+
+            &:last-of-type {
+                margin-bottom: 5px;
+            }
+        }
+
+        .bar {
+            background: linear-gradient(90deg, var(--cts-main), var(--cts-alt));
+            color: white;
+            padding: 4px 8px;
+            white-space: nowrap;
+            border-radius: 4px;
+        }
+
+        .stacked-bar {
+            display: flex;
+            height: 18px;
+            overflow: hidden;
+            background: var(--cts-alt-light);
+            margin: 5px 0;
+        }
+
+        .bar-part {
+            background-color: var(--cts-main);
+            height: 100%;
+        }
+
+        .bar-pro {
+            background-color: var(--cts-alt);
+            height: 100%;
+        }
+
+        .bar-part, .bar-pro {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: .8em;
+        }
+
+        .bar-container, .repartition-bars-container {
+            flex: 1;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0;
+        }
+    }
 }

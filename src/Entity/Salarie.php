@@ -197,12 +197,12 @@ class Salarie
         return $this;
     }
 
-    public function getNbHeures(): ?int
+    public function getNbHeures(): ?string
     {
         return $this->nbHeures;
     }
 
-    public function setNbHeures(?int $nbHeures): static
+    public function setNbHeures(?string $nbHeures): static
     {
         $this->nbHeures = $nbHeures;
 

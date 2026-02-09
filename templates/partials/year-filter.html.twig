@@ -1,0 +1,13 @@
+<div class="annees-filter">
+    {% for annee in annees %}
+    <a href="{{ path(app.request.attributes.get('_route'), { annee: annee }) }}"
+       class="{{ annee == anneeCourante ? 'active' }}">
+        {{ annee }}
+    </a>
+    {% endfor %}
+
+    <a href="{{ path(app.request.attributes.get('_route')) }}"
+       class="{{ anneeCourante is null ? 'active' }}">
+        3 dernières
+    </a>
+</div>
