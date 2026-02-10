@@ -23,11 +23,16 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_IMPORT')]
 final class ImportCsvController extends AbstractController
 {
+    /*
+     * Détermine l'ordre d'importation des fichiers csv
+     * Importe les fichiers en bdd
+     */
     #[Route('/import', name: 'import_csv')]
     public function import(
-        Request $request,
+        Request      $request,
         ImportRouter $importRouter,
-    ): Response {
+    ): Response
+    {
         $form = $this->createForm(ImportCsvType::class);
         $form->handleRequest($request);
 

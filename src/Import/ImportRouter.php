@@ -20,6 +20,9 @@ class ImportRouter
     ) {
     }
 
+    /*
+     * Permet de matcher les titres des fichiers csv avec le service d'import correspondant
+     */
     public function getImporterForFile(string $filename): CsvImportInterface
     {
         $filename = strtolower($filename);

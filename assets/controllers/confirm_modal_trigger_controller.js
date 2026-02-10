@@ -4,6 +4,7 @@ export default class extends Controller {
     connect() {
     }
 
+    // Affiche la modal et empêche la soumission du formulaire pour demande de confirmation
     open(event) {
         event.preventDefault();
 

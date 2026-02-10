@@ -1,3 +1,4 @@
+// Ajuste la largeur des colonnes à la valeur la plus longue de chacune d'elles
 function adjustColumnWidths(table) {
     if (!table) return;
 
@@ -44,6 +45,7 @@ function initTable(table) {
     adjustColumnWidths(table);
 }
 
+// Trie les colonnes par ordre alphabétique, ou inverse si on re-clique
 function sortTableByColumn(table, colIndex) {
     const tbody = table.querySelector('tbody');
     const rows = Array.from(tbody.querySelectorAll('tr'));
@@ -88,6 +90,8 @@ function sortTableByColumn(table, colIndex) {
     rows.forEach(row => tbody.appendChild(row));
 }
 
+// Permet de rendre le bouton de soumission du formulaire cliquable si une information a été changée.
+// Revient en disabled si les informations entrées sont les mêmes qu'au chargement
 function enableSubmitOnChange(table) {
     if (!table) return;
 
@@ -126,12 +130,14 @@ function enableSubmitOnChange(table) {
     });
 }
 
+// Ajoute une fonction de tri sur certaines colonnes de la table de salariés et prépare la table pour un affichage optimisé
 function init() {
     const table = document.querySelector('.salaries-list');
     if (!table) return;
 
     const headers = table.querySelectorAll('th');
 
+    // Ajout de la fonction de tri
     headers.forEach((th, index) => {
         const sortableColumns = ['Société', 'Nom', 'Nb heures', 'Salaire brut'];
         if (sortableColumns.includes(th.textContent.trim())) {

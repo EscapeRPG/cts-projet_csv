@@ -2,9 +2,14 @@
 
 namespace App\Utils;
 
+use DateTimeImmutable;
+
 final class FileDateExtractor
 {
-    public static function extract(string $filename): ?\DateTimeImmutable
+    /*
+     * Récupère la date dans le nom du fichier pour enregistrement en bdd et tri par année des données
+     */
+    public static function extract(string $filename): ?DateTimeImmutable
     {
         $patterns = [
             // 20240131
@@ -18,9 +23,9 @@ final class FileDateExtractor
         foreach ($patterns as $pattern) {
             if (preg_match($pattern, $filename, $m)) {
                 if (strlen($m[1]) === 4) {
-                    return new \DateTimeImmutable("$m[1]-$m[2]-$m[3]");
+                    return new DateTimeImmutable("$m[1]-$m[2]-$m[3]");
                 }
-                return new \DateTimeImmutable("$m[3]-$m[2]-$m[1]");
+                return new DateTimeImmutable("$m[3]-$m[2]-$m[1]");
             }
         }
 

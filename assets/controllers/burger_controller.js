@@ -7,6 +7,7 @@ export default class extends Controller {
         this.outsideClick = this.outsideClick.bind(this);
     }
 
+    // Appelle les fonctions d'ouverture et de fermeture du menu
     menu() {
         if (this.burgerTarget.className === '') {
             this.show();
@@ -15,6 +16,7 @@ export default class extends Controller {
         }
     }
 
+    // Affiche le menu
     show() {
         this.containerTarget.classList.add('open');
         this.burgerTarget.className = 'open';
@@ -22,6 +24,7 @@ export default class extends Controller {
         document.addEventListener('click', this.outsideClick)
     }
 
+    // Cache le menu
     hide() {
         this.containerTarget.classList.remove('open');
         this.burgerTarget.className = '';
@@ -29,6 +32,7 @@ export default class extends Controller {
         document.removeEventListener('click', this.outsideClick)
     }
 
+    // Permet de cacher le menu en cliquant en dehors
     outsideClick(event) {
         if (!this.menuTarget.contains(event.target) && !this.element.contains(event.target)) {
             this.hide()

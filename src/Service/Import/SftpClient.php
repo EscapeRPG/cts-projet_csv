@@ -17,7 +17,7 @@ class SftpClient
     {
         return array_filter(
             scandir($this->basePath),
-            fn ($d) => !in_array($d, ['.', '..']) && is_dir($this->basePath.'/'.$d)
+            fn($d) => !in_array($d, ['.', '..']) && is_dir($this->basePath . '/' . $d)
         );
     }
 
@@ -27,7 +27,7 @@ class SftpClient
 
         return array_values(array_filter(
             scandir($path),
-            fn ($f) => str_ends_with($f, '.csv')
+            fn($f) => str_ends_with($f, '.csv')
         ));
     }
 
@@ -36,6 +36,9 @@ class SftpClient
         return "{$this->basePath}/{$reseau}/incoming";
     }
 
+    /*
+     * Transfère le fichier vers le dossier "processed" en cas de réussite
+     */
     public function moveToProcessed(string $reseau, string $filename): bool
     {
         $src = "{$this->basePath}/{$reseau}/incoming/{$filename}";
@@ -44,6 +47,9 @@ class SftpClient
         return rename($src, $dest);
     }
 
+    /*
+     * Transfère le fichier vers le dossier "error" en cas d'erreur
+     */
     public function moveToErrorSafe(string $reseau, string $filename): bool
     {
         $incoming = "{$this->basePath}/{$reseau}/incoming/{$filename}";

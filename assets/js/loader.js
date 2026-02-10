@@ -1,3 +1,4 @@
+// Affiche un loader le temps que toute la page soit chargée
 function loadContent() {
     const loader = document.getElementById('loader');
     const wrapper = document.getElementById('loadingContent');

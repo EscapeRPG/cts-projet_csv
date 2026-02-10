@@ -1,44 +1,83 @@
+.annees-filter a, .sidenav a {
+    background: none;
+    text-decoration: none;
+    font-weight: bold;
+    border: 2px solid var(--cts-main);
+    color: var(--cts-main);
+
+    &.active {
+        background: var(--cts-main);
+        color: var(--nav-a-color);
+
+        &:hover {
+            background: var(--cts-main);
+            border-color: var(--cts-main);
+            color: var(--nav-a-color);
+        }
+    }
+
+    &:hover {
+        background: var(--cts-alt);
+        border-color: var(--cts-alt);
+        color: var(--nav-a-color);
+    }
+}
+
 .annees-filter {
-    margin: 20px auto;
+    display: flex;
+    align-items: flex-end;
+    width: calc(100% - 250px);
+    margin: 20px auto 0 250px;
     z-index: 100;
+    gap: 10px;
+
+    a {
+        border-radius: 10px 10px 0 0;
+        padding: 10px 20px;
+        border-bottom: none;
+        transition: all .4s ease;
+
+        &:hover {
+            padding: 15px 20px;
+        }
+    }
+
+    .active {
+        padding: 15px 20px;
+    }
 }
 
 .sidenav {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-end;
+    justify-content: space-between;
     margin: 20px auto;
-    gap: 20px;
-    position: sticky;
-    top: 100px;
-    padding-right: 20px;
-}
+    z-index: 100;
+    flex: 1;
 
-.annees-filter, .sidenav {
-    a {
-        padding: 15px 20px;
-        background: var(--cts-main);
-        border-radius: 10px;
-        margin: 0 20px;
-        text-decoration: none;
-        font-weight: bold;
-        color: var(--nav-a-color);
+    .onglets {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
 
-        &:hover {
-            background: var(--cts-alt);
-            color: var(--nav-a-color);
-        }
-    }
-
-    .active {
-        background: var(--active);
-        border: solid 1px var(--cts-main);
-        color: var(--cts-main);
-        padding: 14px 19px;
-
-        &:hover {
-            border: none;
+        a {
+            width: calc(100% - 80px);
+            border-radius: 10px 0 0 10px;
+            margin-right: 0;
             padding: 15px 20px;
+            border-right: none;
+            transition: all .4s ease;
+
+            &:hover {
+                width: calc(100% - 40px);
+            }
+        }
+
+        .active {
+            width: calc(100% - 40px);
         }
     }
 }
@@ -47,6 +86,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-right: 20px;
 }
 
 .filters-container {
@@ -135,6 +175,7 @@
     padding: 8px;
     z-index: 10;
     min-width: 200px;
+    height: 500px;
 
     label {
         display: flex;

@@ -44,7 +44,7 @@
                     {% set lastSociete = null %}
                     {% set lastCentre = null %}
 
-                    {% for societe, centres in data %}
+                    {% for societe, centres in synthese %}
                         {% set lastCentre = null %}
 
                         {% for agrCentre, centreData in centres %}
@@ -59,7 +59,7 @@
 
                                     <td>
                                         {% if agrCentre != lastCentre %}
-                                            {{ centreData.centre.reseau_code }}
+                                            {{ centreData.centre.reseau }}
                                             {{ centreData.centre.ville }}
                                             {% set lastCentre = agrCentre %}
                                         {% endif %}

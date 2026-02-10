@@ -2,6 +2,7 @@
     max-height: 70vh;
     overflow: auto;
     border-radius: 10px;
+    border: 2px solid var(--cts-main);
 }
 
 table {

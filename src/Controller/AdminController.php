@@ -25,6 +25,9 @@ use Symfony\Component\Uid\Uuid;
 #[IsGranted("ROLE_ADMIN")]
 final class AdminController extends AbstractController
 {
+    /*
+     * Affiche la liste des utilisateurs du site
+     */
     #[Route("/admin/users/list", name: 'app_users_list')]
     public function list(UserRepository $userRepository): Response
     {
@@ -37,6 +40,8 @@ final class AdminController extends AbstractController
 
     /**
      * @throws TransportExceptionInterface
+     *
+     * Permet d'ajouter un nouvel utilisateur du site
      */
     #[Route("/admin/users/add", name: 'app_users_add')]
     public function addUser(
@@ -91,6 +96,9 @@ final class AdminController extends AbstractController
         ]);
     }
 
+    /*
+     * Permet de transformer un utilisateur en administrateur et inversement
+     */
     #[Route('/admin/users/promote/{id}', name: 'app_users_promote', requirements: ['id' => '\d+'])]
     public function promoteUser(User $user, EntityManagerInterface $em): Response
     {
@@ -110,6 +118,9 @@ final class AdminController extends AbstractController
         return $this->redirectToRoute('app_users_list');
     }
 
+    /*
+     * Permet de supprimer un utilisateur du site
+     */
     #[Route("/admin/users/delete/{id}", name: 'app_users_delete', requirements: ['id' => '\d+'])]
     public function deleteUser(User $user, EntityManagerInterface $em, Request $request): Response
     {
@@ -128,10 +139,13 @@ final class AdminController extends AbstractController
         return $this->redirectToRoute('app_users_list');
     }
 
+    /*
+     * Affiche la liste des salariés sous forme de formulaire pour les modifier directement
+     */
     #[Route("/admin/salaries/list", name: 'app_salaries_list')]
     public function listSalaries(
-        SalarieRepository      $salarieRepository,
-        FormFactoryInterface   $formFactory
+        SalarieRepository    $salarieRepository,
+        FormFactoryInterface $formFactory
     ): Response
     {
         $salaries = $salarieRepository->findBy([], ['nom' => 'ASC']);
@@ -157,6 +171,9 @@ final class AdminController extends AbstractController
         ]);
     }
 
+    /*
+     * Permet d'ajouter un nouveau salarié à la liste
+     */
     #[Route("/admin/salaries/add", name: 'app_salaries_add')]
     public function addSalarie(
         Request                $request,
@@ -182,12 +199,15 @@ final class AdminController extends AbstractController
         ]);
     }
 
+    /*
+     * Met à jour le salarié modifié
+     */
     #[Route('/admin/salaries/update/{id}', name: 'app_salaries_update', methods: ['POST'])]
     public function updateSalarie(
-        Salarie $salarie,
-        Request $request,
+        Salarie                $salarie,
+        Request                $request,
         EntityManagerInterface $em,
-        FormFactoryInterface $formFactory
+        FormFactoryInterface   $formFactory
     ): Response
     {
         $form = $formFactory->createNamed(

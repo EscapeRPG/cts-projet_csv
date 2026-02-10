@@ -11,10 +11,13 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 final class UserController extends AbstractController
 {
+    /*
+     * Affiche le profil de l'utilisateur connecté
+     */
     #[Route('/profile/{id}', name: 'app_profile', requirements: ['id' => '\d+'])]
     public function profile(
-        UserRepository              $userRepository,
-        int                         $id,
+        UserRepository $userRepository,
+        int            $id,
     ): Response
     {
         $userConnected = $this->getUser();

@@ -8,6 +8,7 @@ export default class extends Controller {
         this.onOutsideClick = this.onOutsideClick.bind(this);
     }
 
+    // Affiche une modal
     show(form) {
         this.form = form;
         this.overlayTarget.classList.add('is-visible');
@@ -17,6 +18,7 @@ export default class extends Controller {
         }, 0);
     }
 
+    // Cache une modal
     hide() {
         this.overlayTarget.classList.remove('is-visible');
         this.form = null;
@@ -24,13 +26,14 @@ export default class extends Controller {
         document.removeEventListener('click', this.onOutsideClick);
     }
 
-
+    // Demande confirmation de l'action avant de soumettre le formulaire
     confirm() {
         if (this.form) {
             this.form.submit();
         }
     }
 
+    // Permet de fermer la modal en cliquant en dehors
     onOutsideClick(event) {
         if (!this.modalTarget.contains(event.target)) {
             this.hide();

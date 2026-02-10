@@ -39,13 +39,16 @@ final class SecurityController extends AbstractController
         throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
 
+    /*
+     * Vérifie la conformité du token csrf pour activation du compte du nouvel utilisateur
+     */
     #[Route('/activate/{token}', name: 'app_activate_account')]
     public function activate(
-        string $token,
-        Request $request,
-        UserRepository $repo,
+        string                      $token,
+        Request                     $request,
+        UserRepository              $repo,
         UserPasswordHasherInterface $hasher,
-        EntityManagerInterface $em
+        EntityManagerInterface      $em
     ): Response
     {
         $user = $repo->findOneBy(['activationToken' => $token]);

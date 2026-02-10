@@ -1,9 +1,4 @@
 <div class="sidenav">
-    {% set route = app.request.attributes.get('_route') %}
-
-    <a href="{{ path('app_suivi_activite') }}" class="{{ route == 'app_suivi_activite' ? 'active' : '' }}">Synthèse</a>
-    <a href="{{ path('app_suivi_controleurs') }}" class="{{ route == 'app_suivi_controleurs' ? 'active' : '' }}">Contrôleurs</a>
-
     <form method="get" class="filter-form">
         <div class="filters-container">
             <div class="filter-dropdown">
@@ -34,9 +29,9 @@
                         <label>
                             <input type="checkbox"
                                    name="societe[]"
-                                   value="{{ societe.nom }}"
-                                   {% if societe.nom in selected.societe %}checked{% endif %}>
-                            {{ societe.nom }}
+                                   value="{{ societe }}"
+                                   {% if societe in selected.societe %}checked{% endif %}>
+                            {{ societe }}
                         </label>
                     {% endfor %}
                 </div>
@@ -50,11 +45,9 @@
                 <div class="dropdown-menu">
                     {% for centre in centres %}
                         <label>
-                            <input type="checkbox"
-                                   name="centre[]"
-                                   value="{{ centre.agr_centre }}"
+                            <input type="checkbox" name="centre[]" value="{{ centre.agr_centre }}"
                                    {% if centre.agr_centre in selected.centre %}checked{% endif %}>
-                            {{ centre.nom }} {{ centre.ville }}
+                            {{ centre.label }}
                         </label>
                     {% endfor %}
                 </div>
@@ -86,4 +79,15 @@
             <button type="submit">Filtrer</button>
         </div>
     </form>
+
+    {% set route = app.request.attributes.get('_route') %}
+
+    <div class="onglets">
+        <a href="{{ path('app_suivi_activite') }}"
+           class="{{ route == 'app_suivi_activite' ? 'active' : '' }}">Synthèse</a>
+        <a href="{{ path('app_suivi_controleurs') }}" class="{{ route == 'app_suivi_controleurs' ? 'active' : '' }}">Contrôleurs</a>
+        <a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'active' : '' }}">Focus pro</a>
+        <a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'active' : '' }}">Multicentre</a>
+        <a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'active' : '' }}">Panneau 5</a>
+    </div>
 </div>

@@ -12,6 +12,7 @@ export default class extends Controller {
         document.addEventListener('click', this.onOutsideClick);
     }
 
+    // Cache la modal
     hide() {
         this.overlayTarget.classList.remove('is-visible');
 
@@ -20,6 +21,7 @@ export default class extends Controller {
         }, 250);
     }
 
+    // Permet de cacher la modal en cliquant en dehors
     onOutsideClick(event) {
         if (!this.modalTarget.contains(event.target)) {
             this.hide();

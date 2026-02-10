@@ -2,9 +2,12 @@
 
 namespace App\Utils;
 
+use DateTimeImmutable;
+use RuntimeException;
+
 final class DateParser
 {
-    private const FORMATS = [
+    private const array FORMATS = [
         'd/m/Y H:i:s',
         'd/m/Y H:i',
         'd/m/Y',
@@ -21,20 +24,23 @@ final class DateParser
         'H:i',
     ];
 
-    public static function parseDate(?string $value): ?\DateTimeImmutable
+    /*
+     * Renvoie une date formatée pour enregistrement correct en bdd
+     */
+    public static function parseDate(?string $value): ?DateTimeImmutable
     {
         if ($value === null || trim($value) === '') {
             return null;
         }
 
         foreach (self::FORMATS as $format) {
-            $date = \DateTimeImmutable::createFromFormat($format, trim($value));
+            $date = DateTimeImmutable::createFromFormat($format, trim($value));
             if ($date !== false) {
                 return $date;
             }
         }
 
-        throw new \RuntimeException(
+        throw new RuntimeException(
             sprintf('Format de date invalide : "%s"', $value)
         );
     }

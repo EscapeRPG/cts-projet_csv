@@ -31,6 +31,9 @@ final class CsvReader
         fclose($handle);
     }
 
+    /*
+     * S'assure que les titres des colonnes des fichiers csv ne possèdent pas de caractères invisbles pour matcher la bdd lors de l'importation
+     */
     private function normalizeHeader(string $header): string
     {
         $header = preg_replace('/^\x{FEFF}/u', '', $header);

@@ -6,11 +6,13 @@ use App\Import\ImportRouter;
 use App\Repository\ReseauRepository;
 use App\Service\Import\SftpClient;
 use App\Utils\FileDateExtractor;
+use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Throwable;
 
 #[AsCommand(
     name: 'app:import:sftp',
@@ -19,18 +21,23 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class ImportSftpCommand extends Command
 {
     public function __construct(
-        private SftpClient $sftpClient,
-        private ImportRouter $importRouter,
-        private ReseauRepository $reseauRepository
-    ) {
+        private readonly SftpClient   $sftpClient,
+        private readonly ImportRouter $importRouter,
+        private readonly ReseauRepository $reseauRepository
+    )
+    {
         parent::__construct();
     }
 
+    /*
+     * Exécute la commande d'importation des fichiers csv depuis le dossier d'import sftp
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         foreach ($this->sftpClient->listReseaux() as $reseauCode) {
             $output->writeln("Réseau : $reseauCode");
 
+            // Vérifie que le réseau importé existe bel et bien
             $reseau = $this->reseauRepository->findOneBy([
                 'nom' => $reseauCode,
                 'isActive' => true
@@ -69,16 +76,14 @@ class ImportSftpCommand extends Command
 
                     $importer->importFromFile($uploadedFile, $reseau);
 
-                    // Si moveToProcessed échoue, on lève une exception
+                    // Si moveToProcessed échoue, lève une exception
                     if (!$this->sftpClient->moveToProcessed($reseauCode, $file)) {
-                        throw new \RuntimeException("Impossible de déplacer vers processed");
+                        throw new RuntimeException("Impossible de déplacer vers processed");
                     }
-
-                } catch (\Throwable $e) {
-
+                } catch (Throwable $e) {
                     $output->writeln("<error>Erreur : {$e->getMessage()}</error>");
 
-                    // ici on déplace vers error *depuis le dossier où le fichier se trouve réellement*
+                    // Déplace vers error
                     $this->sftpClient->moveToErrorSafe($reseauCode, $file);
                 }
             }

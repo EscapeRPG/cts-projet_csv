@@ -18,8 +18,10 @@ abstract class AbstractCsvImportService implements CsvImportInterface
 
     public function __construct(
         protected EntityManagerInterface $em,
-        protected CsvReader $csvReader
-    ) {}
+        protected CsvReader              $csvReader
+    )
+    {
+    }
 
     public function setFileDate(?\DateTimeImmutable $fileDate): void
     {
@@ -31,21 +33,25 @@ abstract class AbstractCsvImportService implements CsvImportInterface
         $this->reseau = $reseau;
     }
 
-    // ----------------------------
-    // À définir dans le service concret
-    // ----------------------------
+    /*
+    * À définir dans le service concret pour connaître les noms et types de tables
+    */
     abstract protected static function getTableName(): string;
+
     abstract protected static function getColumns(): array;
+
     abstract protected static function getUniqueKeys(): array;
+
     abstract protected static function getColumnMapping(): array;
+
     abstract protected static function getDateColumns(): array;
+
     abstract protected static function getDecimalColumns(): array;
 
-    // ----------------------------
-    // Import générique
-    // ----------------------------
     /**
      * @throws Exception
+     *
+     *  Import générique
      */
     public function importFromFile(UploadedFile $file, Reseau $reseau): int
     {
@@ -79,9 +85,9 @@ abstract class AbstractCsvImportService implements CsvImportInterface
         return $count;
     }
 
-    // ----------------------------
-    // Mappe une ligne CSV aux colonnes
-    // ----------------------------
+    /*
+     * Mappe une ligne CSV aux colonnes
+     */
     protected function mapRow(array $data): array
     {
         $mapping = static::getColumnMapping();
@@ -139,18 +145,16 @@ abstract class AbstractCsvImportService implements CsvImportInterface
         return $row;
     }
 
-
-    // ----------------------------
-    // Vérifie si le fichier a déjà été importé
-    // ----------------------------
     /**
      * @throws Exception
+     *
+     * Vérifie si le fichier a déjà été importé
      */
     protected function shouldSkipFile(UploadedFile $file, Reseau $reseau): bool
     {
         $hash = $this->getFileHash($file);
 
-        return (bool) $this->em->getConnection()->fetchOne(
+        return (bool)$this->em->getConnection()->fetchOne(
             'SELECT 1 FROM imported_files WHERE filename = :name AND file_hash = :hash AND reseau_id = :reseau',
             [
                 'name' => $file->getClientOriginalName(),
@@ -161,11 +165,10 @@ abstract class AbstractCsvImportService implements CsvImportInterface
     }
 
 
-    // ----------------------------
-    // Insert un batch en SQL
-    // ----------------------------
     /**
      * @throws Exception
+     *
+     * Insert un batch en SQL
      */
     protected function insertBatch(array $batch): void
     {
@@ -194,25 +197,24 @@ abstract class AbstractCsvImportService implements CsvImportInterface
         $this->em->getConnection()->executeStatement($sql);
     }
 
-    // ----------------------------
-    // Récupère le nom du fichier pour enregistrement BDD
-    // ----------------------------
+    /*
+     * Récupère le nom du fichier pour enregistrement BDD
+     */
     private function getFileHash(UploadedFile $file): string
     {
         return hash_file('sha256', $file->getPathname());
     }
 
-    // ----------------------------
-    // Enregistre le nom du fichier en BDD pour éviter multi-import
-    // ----------------------------
     /**
      * @throws Exception
+     *
+     * Enregistre le nom du fichier en BDD pour éviter multi-import
      */
     protected function markFileAsImported(UploadedFile $file, Reseau $reseau): void
     {
         $this->em->getConnection()->insert('imported_files', [
-            'filename'    => $file->getClientOriginalName(),
-            'file_hash'   => $this->getFileHash($file),
+            'filename' => $file->getClientOriginalName(),
+            'file_hash' => $this->getFileHash($file),
             'imported_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
             'reseau_id' => $reseau->getId(),
             'data_date' => $this->fileDate?->format('Y-m-d'),

@@ -13,12 +13,16 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class SupportController extends AbstractController
 {
+    /*
+     * Affiche une page permettant d'envoyer un email à l'administrateur réseau en cas de demande de réinitialisation de mot de passe non sollicitée
+     */
     #[Route('/support', name: 'app_support')]
     public function support(
-        Request $request,
+        Request         $request,
         MailerInterface $mailer,
-        Security $security
-    ): Response {
+        Security        $security
+    ): Response
+    {
         $user = $security->getUser();
 
         $form = $this->createForm(SupportRequestType::class, [
@@ -34,10 +38,10 @@ final class SupportController extends AbstractController
             $email = new Email()
                 ->from('no-reply@ker-milo.fr')
                 ->to('emilienfrancois.ct@gmail.com')
-                ->subject('[SUPPORT] '.$data['subject'])
+                ->subject('[SUPPORT] ' . $data['subject'])
                 ->text(
-                    "Utilisateur: ".($user?->getEmail() ?? 'anonyme')."\n".
-                    "IP: ".$request->getClientIp()."\n\n".
+                    "Utilisateur: " . ($user?->getEmail() ?? 'anonyme') . "\n" .
+                    "IP: " . $request->getClientIp() . "\n\n" .
                     $data['message']
                 );
 

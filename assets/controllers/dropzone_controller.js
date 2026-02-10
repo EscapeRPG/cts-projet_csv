@@ -13,15 +13,18 @@ export default class extends Controller {
         this.inputTarget.addEventListener("change", () => this.onFilesSelected());
     }
 
+    // Ajoute un style particulier lorsqu'on drag un élément sur la zone de drop
     onDragOver(event) {
         event.preventDefault();
         this.areaTarget.classList.add("dragover");
     }
 
+    // Revient au style par défaut
     onDragLeave() {
         this.areaTarget.classList.remove("dragover");
     }
 
+    // Revient au style par défaut et affiche une liste des éléments ajoutés
     onDrop(event) {
         event.preventDefault();
         this.areaTarget.classList.remove("dragover");
@@ -32,11 +35,13 @@ export default class extends Controller {
         this.showFiles(files);
     }
 
+    // Affiche une fenêtre de sélection de fichiers
     onFilesSelected() {
         const files = Array.from(this.inputTarget.files);
         this.showFiles(files);
     }
 
+    // Liste le noms des fichiers
     showFiles(files) {
         this.filesTarget.innerHTML = "";
 
