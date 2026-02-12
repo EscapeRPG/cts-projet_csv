@@ -37,7 +37,7 @@
     align-items: center;
     justify-content: center;
     margin: 20px auto;
-    width: 100%;
+    width: 80%;
     opacity: 0;
     transition: opacity 2s ease-in-out;
 

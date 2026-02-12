@@ -4,12 +4,17 @@ namespace App\Service\Suivi;
 
 class SuiviSyntheseBuilder
 {
-    public function build(array $rows): array
+    public function buildSynthese(array $rows): array
     {
         $data = $this->buildDataStructure($rows);
         $this->calculateCentreAverages($data);
 
         return $data;
+    }
+
+    public function buildClientPro(array $rows): array
+    {
+        return $this->buildDataClientsProStructure($rows);
     }
 
     /*
@@ -27,7 +32,7 @@ class SuiviSyntheseBuilder
             $societe = $row['societe_nom'] ?? 'Société inconnue';
             $centre = strtoupper($row['centre_agrement'] ?? '???');
 
-            // Change le nom des réseau pour affichage optimisé
+            // Change le nom des réseaux pour affichage optimisé
             $reseauCode = match ($row['reseau_nom']) {
                 'Dekra' => 'DE',
                 'Norisko' => 'NO',
@@ -162,5 +167,29 @@ class SuiviSyntheseBuilder
             }
         }
         unset($centre, $centres);
+    }
+
+    private function buildDataClientsProStructure(array $rows): array
+    {
+        $data = [];
+
+        foreach ($rows as $row) {
+            $societe = $row['societe_nom'] ?? 'Société inconnue';
+            $centre = strtoupper($row['centre_agrement'] ?? '???');
+
+            // Ajouter le client
+            $data[$societe][$centre]['client_pro'][] = [
+                'nom' => $row['nom'],
+                'ca_client_pro' => $row['ca_client_pro'],
+                'ca_now' => $row['ca_now'],
+                'ca_n1' => $row['ca_n1'],
+                'ca_n2' => $row['ca_n2'],
+                'nb_ctrl_now' => $row['nb_ctrl_now'],
+                'nb_ctrl_n1' => $row['nb_ctrl_n1'],
+                'nb_ctrl_n2' => $row['nb_ctrl_n2'],
+            ];
+        }
+
+        return $data;
     }
 }

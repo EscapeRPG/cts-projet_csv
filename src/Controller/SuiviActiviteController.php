@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Repository\SuiviActiviteRepository;
 use App\Service\Suivi\SuiviControleursService;
 use App\Service\Suivi\SuiviFiltersProvider;
+use App\Service\Suivi\SuiviProService;
 use App\Service\Suivi\SuiviSyntheseBuilder;
 use Doctrine\DBAL\Exception;
 use Psr\Cache\InvalidArgumentException;
@@ -34,7 +35,7 @@ final class SuiviActiviteController extends AbstractController
         $filters = $this->buildFilters($request);
 
         $rows = $repo->fetchSyntheseRows($filters);
-        $synthese = $builder->build($rows);
+        $synthese = $builder->buildSynthese($rows);
 
         return $this->render('suivis/activite.html.twig', array_merge(
             $this->getCommonViewData($filters, $filtersProvider),
@@ -65,7 +66,7 @@ final class SuiviActiviteController extends AbstractController
         $filters = $this->buildFilters($request);
 
         $rows = $repo->fetchSyntheseRows($filters);
-        $synthese = $builder->build($rows);
+        $synthese = $builder->buildSynthese($rows);
 
         [$controleursStats, $moyennesGlobales] = $controleursService->getControleursStats($synthese);
 
@@ -89,19 +90,22 @@ final class SuiviActiviteController extends AbstractController
         Request                 $request,
         SuiviActiviteRepository $repo,
         SuiviSyntheseBuilder    $builder,
-        SuiviFiltersProvider    $filtersProvider
+        SuiviFiltersProvider    $filtersProvider,
+        SuiviProService         $focusProService,
     ): Response
     {
         $filters = $this->buildFilters($request);
 
-        $rows = $repo->fetchSyntheseRows($filters);
-        $synthese = $builder->build($rows);
+        $rows = $repo->fetchProClients('pro_globals', $filters);
+        $synthese = $builder->buildClientPro($rows);
 
-        // TODO : focusProService->getFocusProData($synthese)
+        $clients = $focusProService->getFocusPro($synthese);
 
-        return $this->render('suivis/focus-pro.html.twig', array_merge(
+        return $this->render('suivis/professionnels.html.twig', array_merge(
             $this->getCommonViewData($filters, $filtersProvider),
-            ['synthese' => $synthese]
+            [
+                'clients' => $clients,
+            ]
         ));
     }
 

@@ -1,25 +1,29 @@
-.annees-filter a, .sidenav a {
-    background: none;
-    text-decoration: none;
-    font-weight: bold;
-    border: 2px solid var(--cts-main);
-    color: var(--cts-main);
+.annees-filter, .sidenav {
+    z-index: 2;
 
-    &.active {
-        background: var(--cts-main);
-        color: var(--nav-a-color);
+    a {
+        background: none;
+        text-decoration: none;
+        font-weight: bold;
+        border: 2px solid var(--cts-main);
+        color: var(--cts-main);
+
+        &.active {
+            background: var(--cts-main);
+            color: var(--nav-a-color);
+
+            &:hover {
+                background: var(--cts-main);
+                border-color: var(--cts-main);
+                color: var(--nav-a-color);
+            }
+        }
 
         &:hover {
-            background: var(--cts-main);
-            border-color: var(--cts-main);
+            background: var(--cts-alt);
+            border-color: var(--cts-alt);
             color: var(--nav-a-color);
         }
-    }
-
-    &:hover {
-        background: var(--cts-alt);
-        border-color: var(--cts-alt);
-        color: var(--nav-a-color);
     }
 }
 
@@ -28,7 +32,6 @@
     align-items: flex-end;
     width: calc(100% - 250px);
     margin: 20px auto 0 250px;
-    z-index: 100;
     gap: 10px;
 
     a {
@@ -53,7 +56,6 @@
     align-items: flex-end;
     justify-content: space-between;
     margin: 20px auto;
-    z-index: 100;
     flex: 1;
 
     .onglets {

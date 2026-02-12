@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Suivi contrôleurs{% endblock %}
+
+{% block body %}
+    <div class="suivi-container">
+        {% include 'partials/filters.html.twig' %}
+
+        <div class="pro-stats-container">
+            <div class="stats-wrapper">
+                <div class="stats-panel">
+                    <h2>Général</h2>
+
+                    {% set ca_total = 0 %}
+                    {% for client in clients %}
+                        {% set ca_total = ca_total + client.ca_client_pro %}
+                    {% endfor %}
+
+                    <div>
+                        <strong>CA total : {{ ca_total|number_format(2, ',', ' ') }} €</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <div class="stats-panel">
+                    <table class="table-pros">
+                        <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>CA N</th>
+                            <th>CA N-1</th>
+                            <th>CA N-2</th>
+                            <th>Vol. N</th>
+                            <th>Vol. N-1</th>
+                            <th>Vol. N-2</th>
+                            <th>// N-1</th>
+                            <th>// N-2</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {% for client in clients %}
+                            <tr>
+                                <td>{{ client.nom }}</td>
+                                <td class="{{ client.ca_now < client.ca_n1 ? 'malus' : 'bonus' }}">{{ client.ca_now|number_format(2, ',', ' ') }} €</td>
+                                <td>{{ client.ca_n1|number_format(2, ',', ' ') }} €</td>
+                                <td>{{ client.ca_n2|number_format(2, ',', ' ') }} €</td>
+                                <td>{{ client.nb_ctrl_now }}</td>
+                                <td>{{ client.nb_ctrl_n1 }}</td>
+                                <td>{{ client.nb_ctrl_n2 }}</td>
+                                <td class="{{ client.per_n1 < 0 ? 'decreased' : 'increased' }}">{{ client.per_n1 }}%</td>
+                                <td class="{{ client.per_n2 < 0 ? 'decreased' : 'increased' }}">{{ client.per_n2 }}%</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+{% endblock %}

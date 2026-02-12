@@ -11,16 +11,16 @@
                 <thead>
                 <tr>
                     <th>Société</th>
-                    <th>Agrément</th>
-                    <th>Agrément CL</th>
+                    <th>Agr</th>
+                    <th>Agr CL</th>
                     <th>Nom</th>
                     <th>Prénom</th>
                     <th>Date de naissance</th>
                     <th>Email</th>
                     <th>Téléphone</th>
                     <th>Échelons</th>
-                    <th>Salaire brut</th>
-                    <th>Nb heures</th>
+                    <th>Salaire</th>
+                    <th>Heures</th>
                     <th>Veste</th>
                     <th>Polaire</th>
                     <th>Pantalon</th>
@@ -46,7 +46,7 @@
                         <td>{{ form_widget(forms[salarie.id].email) }}</td>
                         <td>{{ form_widget(forms[salarie.id].telephone) }}</td>
                         <td>{{ form_widget(forms[salarie.id].echelons) }}</td>
-                        <td>{{ form_widget(forms[salarie.id].salaireBrut) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].salaireBrut) }} €</td>
                         <td>{{ form_widget(forms[salarie.id].nbHeures) }}</td>
                         <td>{{ form_widget(forms[salarie.id].vesteMancheAmovible) }}</td>
                         <td>{{ form_widget(forms[salarie.id].polaire) }}</td>

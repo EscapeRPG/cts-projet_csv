@@ -27,7 +27,6 @@ body {
 
 header {
     display: flex;
-    width: calc(100% - 40px);
     align-items: center;
     justify-content: space-between;
     padding: 15px 20px;
@@ -121,7 +120,7 @@ header {
             transition: transform .4s ease;
             background: linear-gradient(var(--cts-main), var(--cts-alt));
             margin: 0;
-            padding: var(--margin-top) 20px 0 20px;
+            padding: var(--margin-top) 30px;
 
             &.open {
                 transform: translateX(0);
@@ -175,13 +174,16 @@ header {
         }
     }
 
-    a {
+    a.home {
         display: inline-block;
-    }
+        position: fixed;
+        top: 15px;
+        right: 15px;
 
-    img {
-        display: block;
-        width: 100px;
+        img {
+            display: block;
+            width: 100px;
+        }
     }
 }
 

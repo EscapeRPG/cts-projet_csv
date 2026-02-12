@@ -25,4 +25,7 @@ return [
     '@hotwired/turbo' => [
         'version' => '8.0.23',
     ],
+    'sort_tables' => [
+        'path' => './assets/js/modules/sort_tables.js',
+    ],
 ];

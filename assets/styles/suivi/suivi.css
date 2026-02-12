@@ -6,17 +6,15 @@
     margin: 0 auto 20px auto;
 }
 
-.stats-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(3, 1fr);
+.pro-stats-container, .stats-container {
     gap: 20px;
-    width: 100%;
+    width: calc(100% - 40px);
     max-height: 80vh;
     padding: 20px;
     background: var(--cts-main);
     border-radius: 10px;
     position: relative;
+    box-shadow: var(--box-shadow);
 
     h2 {
         margin: 10px 0;
@@ -24,8 +22,60 @@
         position: sticky;
         top: 0;
         background: var(--blocks);
-        z-index: 2;
         font-size: 1em;
+        z-index: 3;
+    }
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+}
+
+.pro-stats-container {
+    display: flex;
+    flex-direction: column;
+
+    .table-wrapper {
+        width: 100%;
+        box-shadow: var(--box-shadow);
+    }
+
+    .table-pros {
+        tbody tr:hover {
+            filter: brightness(.9);
+        }
+
+        td {
+            background: var(--blocks);
+            text-align: center;
+
+            &:first-child {
+                white-space: wrap;
+                text-align: left;
+            }
+        }
+
+        .malus {
+            background: #de8383;
+        }
+
+        .bonus {
+            background: #94e594;
+        }
+
+        .decreased, .increased {
+            font-weight: bold;
+        }
+
+        .decreased {
+            color: red;
+        }
+
+        .increased {
+            color: #12ba12;
+        }
     }
 }
 
@@ -100,7 +150,7 @@
             background: rgba(0, 0, 0, 0.2);
             margin: 15px 0;
 
-            &:nth-child(2) {
+            &:first-child {
                 margin-top: 11px;
             }
 
@@ -112,7 +162,7 @@
         .bar {
             background: linear-gradient(90deg, var(--cts-main), var(--cts-alt));
             color: white;
-            padding: 4px 8px;
+            padding: 4px 0;
             white-space: nowrap;
             border-radius: 4px;
         }
@@ -151,6 +201,10 @@
             align-items: center;
             padding: 0;
         }
+    }
+
+    .nb {
+        text-align: right;
     }
 }
 
