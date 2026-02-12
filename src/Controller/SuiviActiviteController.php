@@ -96,7 +96,7 @@ final class SuiviActiviteController extends AbstractController
     {
         $filters = $this->buildFilters($request);
 
-        $rows = $repo->fetchProClients('pro_globals', $filters);
+        $rows = $repo->fetchProClients($filters);
         $synthese = $builder->buildClientPro($rows);
 
         $clients = $focusProService->getFocusPro($synthese);

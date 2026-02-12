@@ -17,6 +17,8 @@ class SuiviProService
                     if (!isset($clients[$id])) {
                         $clients[$id] = [
                             'nom' => $client_pro['nom'],
+                            'societe' => $client_pro['societe'],
+                            'centre' => $client_pro['centre'],
                             'ca_client_pro' => 0,
                             'ca_now' => 0,
                             'ca_n1' => 0,

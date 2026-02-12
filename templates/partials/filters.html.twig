@@ -1,4 +1,6 @@
 <div class="sidenav">
+    {% set route = app.request.attributes.get('_route') %}
+
     <form method="get" class="filter-form">
         <div class="filters-container">
             <div class="filter-dropdown">
@@ -53,6 +55,7 @@
                 </div>
             </div>
 
+            {% if route != 'app_suivi_focus_pro' %}
             <div class="filter-dropdown">
                 <button type="button" class="dropdown-toggle">
                     Contrôleurs
@@ -71,6 +74,7 @@
                     {% endfor %}
                 </div>
             </div>
+            {% endif %}
 
             {% if anneeCourante is not null %}
                 <input type="hidden" name="annee" value="{{ anneeCourante }}">
@@ -79,8 +83,6 @@
             <button type="submit">Filtrer</button>
         </div>
     </form>
-
-    {% set route = app.request.attributes.get('_route') %}
 
     <div class="onglets">
         <a href="{{ path('app_suivi_activite') }}"

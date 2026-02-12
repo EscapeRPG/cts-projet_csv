@@ -27,7 +27,7 @@
                     <table class="table-pros">
                         <thead>
                         <tr>
-                            <th>Client</th>
+                            <th>Client (société)</th>
                             <th>CA N</th>
                             <th>CA N-1</th>
                             <th>CA N-2</th>
@@ -42,7 +42,7 @@
                         <tbody>
                         {% for client in clients %}
                             <tr>
-                                <td>{{ client.nom }}</td>
+                                <td>{{ client.nom }} <small>({{ client.societe }} - {{ client.centre }})</small></td>
                                 <td class="{{ client.ca_now < client.ca_n1 ? 'malus' : 'bonus' }}">{{ client.ca_now|number_format(2, ',', ' ') }} €</td>
                                 <td>{{ client.ca_n1|number_format(2, ',', ' ') }} €</td>
                                 <td>{{ client.ca_n2|number_format(2, ',', ' ') }} €</td>
