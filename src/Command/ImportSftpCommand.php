@@ -64,12 +64,6 @@ class ImportSftpCommand extends Command
 
                     $importer = $this->importRouter->getImporterForFile($file);
 
-                    $fileDate = FileDateExtractor::extract($file);
-
-                    if (method_exists($importer, 'setFileDate')) {
-                        $importer->setFileDate($fileDate);
-                    }
-
                     if (method_exists($importer, 'setReseau')) {
                         $importer->setReseau($reseau);
                     }

@@ -30,7 +30,6 @@ class ImportPrestasNonFactureesService extends \App\Service\Import\AbstractCsvIm
             'pourcentage_tva',
             'montant_tva',
             'reseau_id',
-            'data_date',
         ];
     }
 

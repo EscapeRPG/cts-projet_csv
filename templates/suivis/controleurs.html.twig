@@ -21,61 +21,114 @@
                     <div class="stats-panel">
                         <h2>{{ label }}</h2>
 
-                        {% set values = [] %}
+                        {% set keyAuto = key ~ '_auto' %}
+                        {% set keyMoto = key ~ '_moto' %}
+                        {% set sorted = controleursStats | sort((a, b) => ((b[keyAuto] + b[keyMoto]) <=> (a[keyAuto] + a[keyMoto]))) %}
 
-                        {% for c in controleursStats %}
-                            {% set values = values | merge([c[key]]) %}
+                        {% set valuesAuto = [] %}
+                        {% set valuesMoto = [] %}
+                        {% for c in sorted %}
+                            {% set valuesAuto = valuesAuto | merge([c[keyAuto]]) %}
+                            {% set valuesMoto = valuesMoto | merge([c[keyMoto]]) %}
                         {% endfor %}
 
-                        {% set maxValue = values ? max(values) : 0 %}
-                        {% set moyenne = values ? moyennesGlobales[key] : 0 %}
-                        {% set moyennePercent = maxValue > 0 ? (moyenne / maxValue) * 100 : 0 %}
+                        {% set maxAuto = valuesAuto ? max(valuesAuto) : 0 %}
+                        {% set maxMoto = valuesMoto ? max(valuesMoto) : 0 %}
+                        {% set moyenneAuto = valuesAuto ? moyennesGlobales[keyAuto] : 0 %}
+                        {% set moyenneMoto = valuesMoto ? moyennesGlobales[keyMoto] : 0 %}
+                        {% set moyennePercentAuto = maxAuto > 0 ? (moyenneAuto / maxAuto) * 100 : 0 %}
+                        {% set moyennePercentMoto = maxMoto > 0 ? (moyenneMoto / maxMoto) * 100 : 0 %}
 
                         <div class="salaries-chart">
                             <div class="chart-cols names">
-                                {% for salarie in controleursStats | sort((a, b) => b[key] <=> a[key]) %}
+                                <div class="salarie-name">Salarié</div>
+                                {% for salarie in sorted %}
                                     <div class="salarie-name">{{ salarie.nom }}</div>
                                 {% endfor %}
                             </div>
 
                             <div class="chart-cols bars">
-                                {% for salarie in controleursStats | sort((a, b) => b[key] <=> a[key]) %}
-                                    {% set percent = maxValue > 0 ? (salarie[key] / maxValue) * 100 : 0 %}
+                                <div class="salarie-name">Autos</div>
+                                {% for salarie in sorted %}
+                                    {% set percent = maxAuto > 0 ? (salarie[keyAuto] / maxAuto) * 100 : 0 %}
 
                                     <div class="bar-container">
                                         <div class="bar" style="width: {{ percent }}%"></div>
                                     </div>
                                 {% endfor %}
 
-                                <div class="avg-line" style="left: {{ moyennePercent }}%">
+                                <div class="avg-line {{ moyennePercentAuto < 50 ? 'avg-line-left' : 'avg-line-right' }}" style="left: {{ moyennePercentAuto }}%">
                                     <span>
-                                        {% if key == 'prix_moyen' %}
-                                            {{ moyenne|number_format(2, ',', '.') }} €
+                                        {% if key == 'nb_controles' %}
+                                            {{ moyenneAuto|number_format(0, ',', ' ') }}
+                                        {% elseif key == 'prix_moyen' %}
+                                            {{ moyenneAuto|number_format(2, ',', ' ') }} €
                                         {% elseif key == 'temps_moyen' %}
-                                            {{ moyenne|number_format(2, '\'', '.') }}
-                                        {% elseif key == 'taux_refus' %}
-                                            {{ moyenne|number_format(2, ',', '.') }}%
+                                            {{ moyenneAuto|number_format(2, ',', ' ') }}
                                         {% else %}
-                                            {{ moyenne|number_format(2, ',', '.') }}
+                                            {{ moyenneAuto|number_format(2, ',', ' ') }}%
                                         {% endif %}
                                     </span>
                                 </div>
                             </div>
 
                             <div class="chart-cols nb">
-                                {% for salarie in controleursStats | sort((a, b) => b[key] <=> a[key]) %}
+                                <div class="salarie-name"><br></div>
+                                {% for salarie in sorted %}
                                     <div class="salarie-row">
                                         <div class="salarie-value">
                                             {% if key == 'nb_controles' %}
-                                                {{ salarie[key] }}
+                                                {{ salarie[keyAuto] }}
                                             {% elseif key == 'prix_moyen' %}
-                                                {{ salarie[key]|number_format(2, ',', '.') }} €
+                                                {{ salarie[keyAuto]|number_format(2, ',', ' ') }} €
                                             {% elseif key == 'temps_moyen' %}
-                                                {{ salarie[key]|number_format(2, '\'', '.') }}
-                                            {% elseif key == 'taux_refus' %}
-                                                {{ salarie[key]|number_format(2, ',', '.') }}%
+                                                {{ salarie[keyAuto]|number_format(2, ',', ' ') }}
                                             {% else %}
-                                                {{ salarie[key]|number_format(2, ',', '.') }}
+                                                {{ salarie[keyAuto]|number_format(2, ',', ' ') }}%
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="chart-cols bars">
+                                <div class="salarie-name">Motos</div>
+                                {% for salarie in sorted %}
+                                    {% set percent = maxMoto > 0 ? (salarie[keyMoto] / maxMoto) * 100 : 0 %}
+
+                                    <div class="bar-container">
+                                        <div class="bar" style="width: {{ percent }}%"></div>
+                                    </div>
+                                {% endfor %}
+
+                                <div class="avg-line {{ moyennePercentMoto < 50 ? 'avg-line-left' : 'avg-line-right' }}" style="left: {{ moyennePercentMoto }}%">
+                                    <span>
+                                        {% if key == 'nb_controles' %}
+                                            {{ moyenneMoto|number_format(0, ',', ' ') }}
+                                        {% elseif key == 'prix_moyen' %}
+                                            {{ moyenneMoto|number_format(2, ',', ' ') }} €
+                                        {% elseif key == 'temps_moyen' %}
+                                            {{ moyenneMoto|number_format(2, ',', ' ') }}
+                                        {% else %}
+                                            {{ moyenneMoto|number_format(2, ',', ' ') }}%
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="chart-cols nb">
+                                <div class="salarie-name"><br></div>
+                                {% for salarie in sorted %}
+                                    <div class="salarie-row">
+                                        <div class="salarie-value">
+                                            {% if key == 'nb_controles' %}
+                                                {{ salarie[keyMoto] }}
+                                            {% elseif key == 'prix_moyen' %}
+                                                {{ salarie[keyMoto]|number_format(2, ',', ' ') }} €
+                                            {% elseif key == 'temps_moyen' %}
+                                                {{ salarie[keyMoto]|number_format(2, ',', ' ') }}
+                                            {% else %}
+                                                {{ salarie[keyMoto]|number_format(2, ',', ' ') }}%
                                             {% endif %}
                                         </div>
                                     </div>
@@ -93,7 +146,7 @@
                     <div class="salaries-chart">
                         <div class="chart-cols names">
                             {% for salarie in controleursStats | sort((a,b) => a.nom <=> b.nom) %}
-                                <div class="salarie-name">{{ salarie.nom }}</div>
+                                <div class="salarie-name repartition">{{ salarie.nom }}</div>
                             {% endfor %}
                         </div>
 

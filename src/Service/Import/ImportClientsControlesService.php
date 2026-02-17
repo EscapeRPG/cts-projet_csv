@@ -17,7 +17,6 @@ class ImportClientsControlesService extends \App\Service\Import\AbstractCsvImpor
             'idclient',
             'idcontrole',
             'reseau_id',
-            'data_date',
         ];
     }
 

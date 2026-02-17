@@ -14,17 +14,6 @@ class SuiviSyntheseBuilder
         "Vérif'Autos" => 'VA',
     ];
 
-    private array $years;
-
-    public function __construct()
-    {
-        $this->years = [
-            'now' => date('Y'),
-            'n1' => date('Y', strtotime('-1 year')),
-            'n2' => date('Y', strtotime('-2 year')),
-        ];
-    }
-
     public function buildSynthese(array $rows): array
     {
         $data = $this->buildDataStructure($rows);
@@ -84,8 +73,14 @@ class SuiviSyntheseBuilder
                 'prenom' => mb_ucfirst($row['salarie_prenom']),
                 'agr' => $row['salarie_agr'],
                 'nb_controles' => (int)$row['nb_controles'],
+                'nb_auto' => (int)($row['nb_auto'] ?? 0),
+                'nb_moto' => (int)($row['nb_moto'] ?? 0),
                 'temps_total' => (int)$row['temps_total'],
+                'temps_total_auto' => (int)($row['temps_total_auto'] ?? 0),
+                'temps_total_moto' => (int)($row['temps_total_moto'] ?? 0),
                 'taux_refus' => (float)$row['taux_refus'],
+                'refus_auto' => (int)($row['refus_auto'] ?? 0),
+                'refus_moto' => (int)($row['refus_moto'] ?? 0),
                 'nb_particuliers' => (int)$row['nb_particuliers'],
                 'nb_professionnels' => (int)$row['nb_professionnels'],
                 'total_presta_ht' => (float)$row['total_presta_ht'],
@@ -142,25 +137,55 @@ class SuiviSyntheseBuilder
     private function buildDataClientsProStructure(array $rows): array
     {
         $data = [];
+        $yearNow = (int)date('Y');
+        $yearN1  = $yearNow - 1;
+        $yearN2  = $yearNow - 2;
 
         foreach ($rows as $row) {
-            $rowAnnee = $row['annee'];
-            $societe = $row['societe_nom'] ?? 'Société inconnue';
-            $centre = strtoupper($row['centre_agrement'] ?? '???');
+            $nomClient = $row['code_client'];
+            $societe   = $row['societe_nom'] ?: 'Société inconnue';
+            $centre    = strtoupper($row['agr_centre'] ?? '???');
 
-            $clientProData = [
-                'nom' => $row['nom_code_client'],
-                'societe' => $row['societe_nom'],
-                'centre' => $row['agr_centre'],
-                'ca_client_pro' => $row['ca'],
-            ];
+            // clé unique pour chaque client + société + centre
+            $keyClient = $nomClient . '|' . $societe . '|' . $centre;
 
-            foreach ($this->years as $key => $year) {
-                $clientProData['ca_' . $key] = $rowAnnee == $year ? $row['ca'] : 0;
-                $clientProData['nb_ctrl_' . $key] = $rowAnnee == $year ? $row['nb_controles'] : 0;
+            // Initialisation si client inexistant pour cette société/centre
+            if (!isset($data[$societe][$centre]['client_pro'][$keyClient])) {
+                $data[$societe][$centre]['client_pro'][$keyClient] = [
+                    'nom'           => $nomClient,
+                    'societe'       => $societe,
+                    'centre'        => $centre,
+                    'ca_client_pro' => 0,
+                    'ca_now'        => 0,
+                    'ca_n1'         => 0,
+                    'ca_n2'         => 0,
+                    'nb_ctrl_now'   => 0,
+                    'nb_ctrl_n1'    => 0,
+                    'nb_ctrl_n2'    => 0,
+                ];
             }
 
-            $data[$societe][$centre]['client_pro'][] = $clientProData;
+            // Référence vers le client pour accumulation
+            $clientData = &$data[$societe][$centre]['client_pro'][$keyClient];
+
+            $annee = (int)$row['annee'];
+
+            // Accumulation du CA et du nombre de contrôles selon l'année
+            if ($annee === $yearNow) {
+                $clientData['ca_now']      += (float)$row['ca'];
+                $clientData['nb_ctrl_now'] += (int)$row['nb_controles'];
+            } elseif ($annee === $yearN1) {
+                $clientData['ca_n1']      += (float)$row['ca'];
+                $clientData['nb_ctrl_n1'] += (int)$row['nb_controles'];
+            } elseif ($annee === $yearN2) {
+                $clientData['ca_n2']      += (float)$row['ca'];
+                $clientData['nb_ctrl_n2'] += (int)$row['nb_controles'];
+            }
+
+            // Recalcul du CA total pour le client
+            $clientData['ca_client_pro'] = $clientData['ca_now'] + $clientData['ca_n1'] + $clientData['ca_n2'];
+
+            unset($clientData);
         }
 
         return $data;

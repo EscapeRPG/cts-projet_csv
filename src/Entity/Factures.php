@@ -7,6 +7,12 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: FacturesRepository::class)]
+#[ORM\Table(name: 'factures', indexes: [
+    new ORM\Index(name: 'idx_factures_idfacture', columns: ['idfacture']),
+    new ORM\Index(name: 'idx_factures_type_facture', columns: ['type_facture']),
+    new ORM\Index(name: 'idx_factures_type_date_facture', columns: ['type_facture', 'date_facture']),
+    new ORM\Index(name: 'idx_factures_type_total', columns: ['type_facture', 'total_ht']),
+])]
 class Factures
 {
     #[ORM\Id]
@@ -85,9 +91,6 @@ class Factures
 
     #[ORM\ManyToOne(inversedBy: 'factures')]
     private ?Reseau $reseau = null;
-
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $dataDate = null;
 
     public function getId(): ?int
     {
@@ -378,18 +381,6 @@ class Factures
     public function setReseau(?Reseau $reseau): static
     {
         $this->reseau = $reseau;
-
-        return $this;
-    }
-
-    public function getDataDate(): ?\DateTime
-    {
-        return $this->dataDate;
-    }
-
-    public function setDataDate(\DateTime $dataDate): static
-    {
-        $this->dataDate = $dataDate;
 
         return $this;
     }

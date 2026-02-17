@@ -1,8 +1,9 @@
 .table-wrapper {
-    max-height: 70vh;
+    max-height: 100%;
     overflow: auto;
     border-radius: 10px;
     border: 2px solid var(--cts-main);
+    box-sizing: border-box;
 }
 
 table {

@@ -17,7 +17,6 @@ class ImportControlesNonFacturesService extends \App\Service\Import\AbstractCsvI
             'idcontrole',
             'idclient',
             'reseau_id',
-            'data_date',
         ];
     }
 

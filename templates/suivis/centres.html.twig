@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Suivi professionnels{% endblock %}
+{% block title %}Suivi centres{% endblock %}
 
 {% block body %}
     <div class="suivi-container">
@@ -8,47 +8,59 @@
 
         <div class="pro-stats-container">
             <div class="pro-stats-panel">
+                {% set ca_now, ca_n1, ca_n2, vol_now, vol_n1, vol_n2 = 0, 0, 0, 0, 0, 0 %}
+                {% for client in clients %}
+                    {% set ca_now, ca_n1, ca_n2, vol_now, vol_n1, vol_n2 = ca_now + client.ca_now, ca_n1 + client.ca_n1, ca_n2 + client.ca_n2, vol_now + client.nb_ctrl_now, vol_n1 + client.nb_ctrl_n1, vol_n2 + client.nb_ctrl_n2 %}
+                {% endfor %}
+                {% set per_ctrl_n1, per_ctrl_n2, per_ca_n1, per_ca_n2 = 0, 0, 0, 0 %}
+                {% set per_ctrl_n1 = (vol_n1 != 0 ? ((vol_now - vol_n1) / vol_n1) * 100 : 0) ~ "%" %}
+                {% set per_ctrl_n2 = (vol_n2 != 0 ? ((vol_now - vol_n2) / vol_n2) * 100 : 0) ~ "%" %}
+                {% set per_ca_n1 = (ca_n1 != 0 ? ((ca_now - ca_n1) / ca_n1) * 100 : 0) ~ "%" %}
+                {% set per_ca_n2 = (ca_n2 != 0 ? ((ca_now - ca_n2) / ca_n2) * 100 : 0) ~ "%" %}
+
                 <div class="summary">
                     <div class="ca-summary">
                         <h2>Contrôles {{ "now"|date('Y') }}</h2>
-                        <strong>{{ summary.vol_now }}</strong>
+                        <strong>{{ vol_now }}</strong>
 
                         <div class="previous">
                             <div class="row">
                                 <strong>{{ "now"|date('Y') - 1 }}</strong>
-                                {{ summary.vol_n1 }}
-                                <div class="{{ summary.per_ctrl_n1 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ctrl_n1|number_format(2, ',', ' ') }}%</div>
+                                {{ vol_n1 }}
+                                <div class="{{ per_ctrl_n1 < 0 ? 'decreased' : 'increased' }}">{{ per_ctrl_n1 }}</div>
                             </div>
 
                             <div class="row">
                                 <strong>{{ "now"|date('Y') - 2 }}</strong>
-                                {{ summary.vol_n2 }}
-                                <div class="{{ summary.per_ctrl_n2 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ctrl_n2|number_format(2, ',', ' ') }}%</div>
+                                {{ vol_n2 }}
+                                <div class="{{ per_ctrl_n2 < 0 ? 'decreased' : 'increased' }}">{{ per_ctrl_n2 }}</div>
                             </div>
                         </div>
                     </div>
 
                     <div class="ca-summary">
                         <h2>CA {{ "now"|date('Y') }}</h2>
-                        <strong>{{ summary.ca_now|number_format(2, ',', ' ') }} €</strong>
+                        <strong>{{ ca_now|number_format(2, ',', ' ') }} €</strong>
 
                         <div class="previous">
                             <div class="row">
                                 <strong>{{ "now"|date('Y') - 1 }}</strong>
-                                {{ summary.ca_n1|number_format(2, ',', ' ') }} €
-                                <div class="{{ summary.per_ca_n1 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ca_n1|number_format(2, ',', ' ') }}%</div>
+                                {{ ca_n1|number_format(2, ',', ' ') }} €
+                                <div class="{{ per_ca_n1 < 0 ? 'decreased' : 'increased' }}">{{ per_ca_n1 }}</div>
                             </div>
 
                             <div class="row">
                                 <strong>{{ "now"|date('Y') - 2 }}</strong>
-                                {{ summary.ca_n2|number_format(2, ',', ' ') }} €
-                                <div class="{{ summary.per_ca_n2 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ca_n2|number_format(2, ',', ' ') }}%</div>
+                                {{ ca_n2|number_format(2, ',', ' ') }} €
+                                <div class="{{ per_ca_n2 < 0 ? 'decreased' : 'increased' }}">{{ per_ca_n2 }}</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="stats-wrapper"></div>
+                <div class="stats-wrapper">
+                    Hello
+                </div>
             </div>
 
             <div class="table-wrapper">
@@ -56,7 +68,7 @@
                     <table class="table-pros">
                         <thead>
                         <tr>
-                            <th>Client</th>
+                            <th>Client (société)</th>
                             <th>CA N</th>
                             <th>CA N-1</th>
                             <th>CA N-2</th>
@@ -71,7 +83,7 @@
                         <tbody>
                         {% for client in clients %}
                             <tr>
-                                <td>{{ client.nom }}</td>
+                                <td>{{ client.nom }} <small>({{ client.societe }} - {{ client.centre }})</small></td>
                                 <td class="{{ client.ca_now < client.ca_n1 ? 'malus' : 'bonus' }} right">{{ client.ca_now|number_format(2, ',', ' ') }}
                                     €
                                 </td>
@@ -80,25 +92,14 @@
                                 <td>{{ client.nb_ctrl_now }}</td>
                                 <td>{{ client.nb_ctrl_n1 }}</td>
                                 <td>{{ client.nb_ctrl_n2 }}</td>
-                                <td class="{{ client.per_n1 < 0 ? 'decreased' : 'increased' }}">{{ client.per_n1|number_format(2, ',', ' ') }}%
+                                <td class="{{ client.per_n1 < 0 ? 'decreased' : 'increased' }}">{{ client.per_n1 }}%
                                 </td>
-                                <td class="{{ client.per_n2 < 0 ? 'decreased' : 'increased' }}">{{ client.per_n2|number_format(2, ',', ' ') }}%
+                                <td class="{{ client.per_n2 < 0 ? 'decreased' : 'increased' }}">{{ client.per_n2 }}%
                                 </td>
                             </tr>
                         {% endfor %}
                         </tbody>
                     </table>
-                    {% if pagination.total_pages > 1 %}
-                        <div>
-                            {% if pagination.has_previous %}
-                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.previous_page})) }}">Page précédente</a>
-                            {% endif %}
-                            <span>Page {{ pagination.page }} / {{ pagination.total_pages }} ({{ pagination.total_items }} clients)</span>
-                            {% if pagination.has_next %}
-                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.next_page})) }}">Page suivante</a>
-                            {% endif %}
-                        </div>
-                    {% endif %}
                 </div>
             </div>
         </div>

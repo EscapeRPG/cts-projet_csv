@@ -7,6 +7,11 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClientsControlesRepository::class)]
+#[ORM\Table(name: 'clients_controles', indexes: [
+    new ORM\Index(name: 'idx_cc_idcontrole', columns: ['idcontrole']),
+    new ORM\Index(name: 'idx_cc_idclient', columns: ['idclient']),
+    new ORM\Index(name: 'idx_cc_client_controle', columns: ['idclient', 'idcontrole']),
+])]
 class ClientsControles
 {
     #[ORM\Id]
@@ -28,9 +33,6 @@ class ClientsControles
 
     #[ORM\ManyToOne(inversedBy: 'clientsControles')]
     private ?Reseau $reseau = null;
-
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $dataDate = null;
 
     public function getId(): ?int
     {
@@ -93,18 +95,6 @@ class ClientsControles
     public function setReseau(?Reseau $reseau): static
     {
         $this->reseau = $reseau;
-
-        return $this;
-    }
-
-    public function getDataDate(): ?\DateTime
-    {
-        return $this->dataDate;
-    }
-
-    public function setDataDate(\DateTime $dataDate): static
-    {
-        $this->dataDate = $dataDate;
 
         return $this;
     }

@@ -11,14 +11,6 @@ class SuiviControleursService
     {
         $controleursStats = [];
 
-        // À compléter suivant le besoin
-        $totauxGlobaux = [
-            'nb_controles' => 0,
-            'prix_moyen' => 0,
-            'temps_moyen' => 0,
-            'taux_refus' => 0,
-        ];
-
         foreach ($synthese as $societe => $centres) {
             foreach ($centres as $centre) {
                 foreach ($centre['salaries'] as $salarie) {
@@ -27,30 +19,33 @@ class SuiviControleursService
                     if (!isset($controleursStats[$id])) {
                         $controleursStats[$id] = [
                             'nom' => $salarie['nom'] . ' ' . $salarie['prenom'],
-                            'nb_controles' => 0,
-                            'total_presta_ht' => 0,
-                            'temps_moyen' => 0,
-                            'taux_refus' => 0,
+                            'nb_controles_auto' => 0,
+                            'nb_controles_moto' => 0,
+                            'ca_auto' => 0.0,
+                            'ca_moto' => 0.0,
+                            'temps_total_auto' => 0.0,
+                            'temps_total_moto' => 0.0,
+                            'refus_auto' => 0,
+                            'refus_moto' => 0,
+                            'prix_moyen_auto' => 0.0,
+                            'prix_moyen_moto' => 0.0,
+                            'temps_moyen_auto' => 0.0,
+                            'temps_moyen_moto' => 0.0,
+                            'taux_refus_auto' => 0.0,
+                            'taux_refus_moto' => 0.0,
                             'nb_particuliers' => 0,
                             'nb_professionnels' => 0,
                         ];
                     }
 
-                    // Nombre de contrôles
-                    $controleursStats[$id]['nb_controles'] += $salarie['nb_controles'];
-                    $totauxGlobaux['nb_controles'] += $salarie['nb_controles'];
-
-                    // Prix total (pour moyenne)
-                    $controleursStats[$id]['total_presta_ht'] += $salarie['total_presta_ht'];
-                    $totauxGlobaux['prix_moyen'] += $salarie['total_presta_ht'];
-
-                    // Temps total (pour moyenne)
-                    $controleursStats[$id]['temps_moyen'] += $salarie['temps_total'];
-                    $totauxGlobaux['temps_moyen'] += $salarie['temps_total'];
-
-                    // Taux de refus
-                    $controleursStats[$id]['taux_refus'] += $salarie['taux_refus'];
-                    $totauxGlobaux['taux_refus'] += $salarie['taux_refus'];
+                    $controleursStats[$id]['nb_controles_auto'] += (int)($salarie['nb_auto'] ?? 0);
+                    $controleursStats[$id]['nb_controles_moto'] += (int)($salarie['nb_moto'] ?? 0);
+                    $controleursStats[$id]['ca_auto'] += (float)($salarie['total_ht_vtp'] + $salarie['total_ht_cv'] + $salarie['total_ht_vtc'] + $salarie['total_ht_vol']);
+                    $controleursStats[$id]['ca_moto'] += (float)($salarie['total_ht_clvtp'] + $salarie['total_ht_clcv']);
+                    $controleursStats[$id]['temps_total_auto'] += (float)($salarie['temps_total_auto'] ?? 0);
+                    $controleursStats[$id]['temps_total_moto'] += (float)($salarie['temps_total_moto'] ?? 0);
+                    $controleursStats[$id]['refus_auto'] += (int)($salarie['refus_auto'] ?? 0);
+                    $controleursStats[$id]['refus_moto'] += (int)($salarie['refus_moto'] ?? 0);
 
                     // Nombre de clients particuliers/pros
                     $controleursStats[$id]['nb_particuliers'] += $salarie['nb_particuliers'];
@@ -59,29 +54,27 @@ class SuiviControleursService
             }
         }
 
-        // Moyenne de prix des contrôleurs
         foreach ($controleursStats as &$c) {
-            $c['prix_moyen'] = $c['nb_controles'] > 0 ? $c['total_presta_ht'] / $c['nb_controles'] : 0;
-
-            // Moyenne de temps des contrôleurs
-            $c['temps_moyen'] = $c['nb_controles'] > 0 ? $c['temps_moyen'] / $c['nb_controles'] : 0;
-
-            $minutes = (int)$c['temps_moyen'];
-            $seconds = (int)(($c['temps_moyen'] - $minutes) * 60);
-
-            $c['temps_moyen'] = (float)($minutes . '.' . $seconds);
-
-            // Moyenne de refus des contrôleurs
-            $c['taux_refus'] = $c['nb_controles'] > 0 ? ($c['taux_refus'] / $c['nb_controles'] * 100) : 0;
+            $c['prix_moyen_auto'] = $c['nb_controles_auto'] > 0 ? $c['ca_auto'] / $c['nb_controles_auto'] : 0.0;
+            $c['prix_moyen_moto'] = $c['nb_controles_moto'] > 0 ? $c['ca_moto'] / $c['nb_controles_moto'] : 0.0;
+            $c['temps_moyen_auto'] = $c['nb_controles_auto'] > 0 ? $c['temps_total_auto'] / $c['nb_controles_auto'] : 0.0;
+            $c['temps_moyen_moto'] = $c['nb_controles_moto'] > 0 ? $c['temps_total_moto'] / $c['nb_controles_moto'] : 0.0;
+            $c['taux_refus_auto'] = $c['nb_controles_auto'] > 0 ? ($c['refus_auto'] / $c['nb_controles_auto']) * 100 : 0.0;
+            $c['taux_refus_moto'] = $c['nb_controles_moto'] > 0 ? ($c['refus_moto'] / $c['nb_controles_moto']) * 100 : 0.0;
 
             // Répartition particuliers/pros
             $total = $c['nb_particuliers'] + $c['nb_professionnels'];
             $c['pct_part'] = $total > 0 ? ($c['nb_particuliers'] / $total * 100) : 0;
             $c['pct_pro'] = $total > 0 ? ($c['nb_professionnels'] / $total * 100) : 0;
         }
+        unset($c);
 
-        // Moyennes globales pour chaque stat
-        $statsPourMoyennes = ['nb_controles', 'prix_moyen', 'temps_moyen', 'taux_refus'];
+        $statsPourMoyennes = [
+            'nb_controles_auto', 'nb_controles_moto',
+            'prix_moyen_auto', 'prix_moyen_moto',
+            'temps_moyen_auto', 'temps_moyen_moto',
+            'taux_refus_auto', 'taux_refus_moto',
+        ];
         $moyennesGlobales = [];
 
         foreach ($statsPourMoyennes as $stat) {
@@ -89,8 +82,9 @@ class SuiviControleursService
             $moyennesGlobales[$stat] = count($valeurs) > 0 ? array_sum($valeurs) / count($valeurs) : 0;
         }
 
-        // Trier par nombre de contrôles décroissant
-        usort($controleursStats, fn($a, $b) => $b['nb_controles'] <=> $a['nb_controles']);
+        usort($controleursStats, fn($a, $b) =>
+            ($b['nb_controles_auto'] + $b['nb_controles_moto']) <=> ($a['nb_controles_auto'] + $a['nb_controles_moto'])
+        );
 
         return [$controleursStats, $moyennesGlobales];
     }

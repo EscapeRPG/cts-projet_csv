@@ -12,13 +12,16 @@ class SuiviProService
             foreach ($centres as $centre) {
                 foreach ($centre['client_pro'] as $client_pro) {
 
-                    $id = $client_pro['nom'];
+                    $id = mb_strtoupper(trim((string)$client_pro['nom']));
+
+                    if ($id === '') {
+                        continue;
+                    }
 
                     if (!isset($clients[$id])) {
+                        // Initialisation du client
                         $clients[$id] = [
                             'nom' => $client_pro['nom'],
-                            'societe' => $client_pro['societe'],
-                            'centre' => $client_pro['centre'],
                             'ca_client_pro' => 0,
                             'ca_now' => 0,
                             'ca_n1' => 0,
@@ -31,31 +34,31 @@ class SuiviProService
                         ];
                     }
 
-                    $clients[$id]['ca_client_pro'] += (float)$client_pro['ca_client_pro'];
-                    $clients[$id]['ca_now'] += (float)$client_pro['ca_now'];
-                    $clients[$id]['ca_n1'] += (float)$client_pro['ca_n1'];
-                    $clients[$id]['ca_n2'] += (float)$client_pro['ca_n2'];
-                    $clients[$id]['nb_ctrl_now'] += (int)$client_pro['nb_ctrl_now'];
-                    $clients[$id]['nb_ctrl_n1'] += (int)$client_pro['nb_ctrl_n1'];
-                    $clients[$id]['nb_ctrl_n2'] += (int)$client_pro['nb_ctrl_n2'];
+                    // Remplir les années avec la correspondance fixe
+                    $clients[$id]['ca_now'] += $client_pro['ca_now'] ?? 0;
+                    $clients[$id]['ca_n1'] += $client_pro['ca_n1'] ?? 0;
+                    $clients[$id]['ca_n2'] += $client_pro['ca_n2'] ?? 0;
+
+                    $clients[$id]['nb_ctrl_now'] += $client_pro['nb_ctrl_now'] ?? 0;
+                    $clients[$id]['nb_ctrl_n1'] += $client_pro['nb_ctrl_n1'] ?? 0;
+                    $clients[$id]['nb_ctrl_n2'] += $client_pro['nb_ctrl_n2'] ?? 0;
+
+                    $clients[$id]['ca_client_pro'] += $client_pro['ca_client_pro'] ?? 0;
                 }
             }
         }
 
-        // Calcul des pourcentages APRÈS aggregation
+        // Calcul des pourcentages après aggrégation
         foreach ($clients as &$client) {
-            if ($client['nb_ctrl_n1'] != 0) {
-                $client['per_n1'] = (($client['nb_ctrl_now'] - $client['nb_ctrl_n1']) / $client['nb_ctrl_n1']) * 100;
-            } else {
-                $client['per_n1'] = $client['nb_ctrl_now'] == 0 ? 0: 100;
-            }
+            $client['per_n1'] = $client['nb_ctrl_n1'] != 0
+                ? (($client['nb_ctrl_now'] - $client['nb_ctrl_n1']) / $client['nb_ctrl_n1']) * 100
+                : ($client['nb_ctrl_now'] == 0 ? 0 : 100);
 
-            if ($client['nb_ctrl_n2'] != 0) {
-                $client['per_n2'] = (($client['nb_ctrl_now'] - $client['nb_ctrl_n2']) / $client['nb_ctrl_n2']) * 100;
-            } else {
-                $client['per_n2'] = $client['nb_ctrl_now'] == 0 ? 0: 100;
-            }
+            $client['per_n2'] = $client['nb_ctrl_n2'] != 0
+                ? (($client['nb_ctrl_now'] - $client['nb_ctrl_n2']) / $client['nb_ctrl_n2']) * 100
+                : ($client['nb_ctrl_now'] == 0 ? 0 : 100);
         }
+        unset($client);
 
         // Trier par CA décroissant
         usort($clients, fn($a, $b) => $b['ca_client_pro'] <=> $a['ca_client_pro']);

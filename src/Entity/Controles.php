@@ -9,6 +9,14 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ControlesRepository::class)]
+#[ORM\Table(name: 'controles', indexes: [
+    new ORM\Index(name: 'idx_controles_idcontrole', columns: ['idcontrole']),
+    new ORM\Index(name: 'idx_controles_date_ctrl', columns: ['date_ctrl']),
+    new ORM\Index(name: 'idx_controles_type_ctrl', columns: ['type_ctrl']),
+    new ORM\Index(name: 'idx_controles_res_ctrl', columns: ['res_ctrl']),
+    new ORM\Index(name: 'idx_controles_immat', columns: ['immat_vehicule']),
+    new ORM\Index(name: 'idx_controles_date_type', columns: ['date_ctrl', 'type_ctrl'])
+])]
 class Controles
 {
     #[ORM\Id]
@@ -69,9 +77,6 @@ class Controles
 
     #[ORM\ManyToOne(inversedBy: 'controles')]
     private ?Reseau $reseau = null;
-
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $dataDate = null;
 
     public function getId(): ?int
     {
@@ -290,18 +295,6 @@ class Controles
     public function setReseau(?Reseau $reseau): static
     {
         $this->reseau = $reseau;
-
-        return $this;
-    }
-
-    public function getDataDate(): ?\DateTime
-    {
-        return $this->dataDate;
-    }
-
-    public function setDataDate(\DateTime $dataDate): static
-    {
-        $this->dataDate = $dataDate;
 
         return $this;
     }

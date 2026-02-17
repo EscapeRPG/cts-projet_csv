@@ -189,7 +189,7 @@ header {
 
 .container {
     width: 95%;
-    min-height: 100%;
+    height: 100%;
     background: var(--blocks);
     box-shadow: var(--box-shadow);
     border-radius: 10px;

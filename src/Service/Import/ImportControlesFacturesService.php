@@ -18,7 +18,6 @@ class ImportControlesFacturesService extends \App\Service\Import\AbstractCsvImpo
             'idfacture',
             'idclient',
             'reseau_id',
-            'data_date',
         ];
     }
 

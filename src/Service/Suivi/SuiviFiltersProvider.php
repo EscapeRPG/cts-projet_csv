@@ -26,7 +26,7 @@ readonly class SuiviFiltersProvider
         // Garde en cache les informations nécessaires aux filtres pour éviter de relancer les requêtes SQL
         return $this->cache->get('suivi_filters', function () {
             return [
-                'annees' => $this->connection->fetchFirstColumn('SELECT DISTINCT YEAR(data_date) FROM controles'),
+                'annees' => $this->connection->fetchFirstColumn('SELECT DISTINCT YEAR(date_ctrl) FROM controles ORDER BY YEAR(date_ctrl)'),
                 'mois' => [
                     1 => 'Janvier',
                     2 => 'Février',
@@ -41,7 +41,7 @@ readonly class SuiviFiltersProvider
                     11 => 'Novembre',
                     12 => 'Décembre',
                 ],
-                'societes' => $this->connection->fetchFirstColumn('SELECT nom FROM societe ORDER BY nom'),
+                'societes' => $this->connection->fetchFirstColumn("SELECT nom FROM societe WHERE nom != 'CTS' AND nom != 'KERMILO' ORDER BY nom"),
                 'centres' => array_map(function ($c) {
                     // mapping réseau -> code
                     $codes = [

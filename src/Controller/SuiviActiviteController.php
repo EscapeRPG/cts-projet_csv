@@ -99,12 +99,33 @@ final class SuiviActiviteController extends AbstractController
         $rows = $repo->fetchProClients($filters);
         $synthese = $builder->buildClientPro($rows);
 
-        $clients = $focusProService->getFocusPro($synthese);
+        $allClients = $focusProService->getFocusPro($synthese);
+        $summary = $this->buildProSummary($allClients);
+
+        $perPage = 17;
+        $totalItems = count($allClients);
+        $totalPages = max(1, (int)ceil($totalItems / $perPage));
+        $page = max(1, min($request->query->getInt('page', 1), $totalPages));
+        $offset = ($page - 1) * $perPage;
+        $clients = array_slice($allClients, $offset, $perPage);
+
+        $pagination = [
+            'page' => $page,
+            'per_page' => $perPage,
+            'total_items' => $totalItems,
+            'total_pages' => $totalPages,
+            'has_previous' => $page > 1,
+            'has_next' => $page < $totalPages,
+            'previous_page' => $page > 1 ? $page - 1 : 1,
+            'next_page' => $page < $totalPages ? $page + 1 : $totalPages,
+        ];
 
         return $this->render('suivis/professionnels.html.twig', array_merge(
             $this->getCommonViewData($filters, $filtersProvider),
             [
                 'clients' => $clients,
+                'summary' => $summary,
+                'pagination' => $pagination,
             ]
         ));
     }
@@ -142,5 +163,45 @@ final class SuiviActiviteController extends AbstractController
             'centres' => $filtersData['centres'],
             'controleurs' => $filtersData['controleurs'],
         ];
+    }
+
+    private function buildProSummary(array $clients): array
+    {
+        $summary = [
+            'ca_now' => 0.0,
+            'ca_n1' => 0.0,
+            'ca_n2' => 0.0,
+            'vol_now' => 0,
+            'vol_n1' => 0,
+            'vol_n2' => 0,
+            'per_ctrl_n1' => 0.0,
+            'per_ctrl_n2' => 0.0,
+            'per_ca_n1' => 0.0,
+            'per_ca_n2' => 0.0,
+        ];
+
+        foreach ($clients as $client) {
+            $summary['ca_now'] += (float)$client['ca_now'];
+            $summary['ca_n1'] += (float)$client['ca_n1'];
+            $summary['ca_n2'] += (float)$client['ca_n2'];
+            $summary['vol_now'] += (int)$client['nb_ctrl_now'];
+            $summary['vol_n1'] += (int)$client['nb_ctrl_n1'];
+            $summary['vol_n2'] += (int)$client['nb_ctrl_n2'];
+        }
+
+        $summary['per_ctrl_n1'] = $summary['vol_n1'] !== 0
+            ? (($summary['vol_now'] - $summary['vol_n1']) / $summary['vol_n1']) * 100
+            : 0.0;
+        $summary['per_ctrl_n2'] = $summary['vol_n2'] !== 0
+            ? (($summary['vol_now'] - $summary['vol_n2']) / $summary['vol_n2']) * 100
+            : 0.0;
+        $summary['per_ca_n1'] = $summary['ca_n1'] !== 0.0
+            ? (($summary['ca_now'] - $summary['ca_n1']) / $summary['ca_n1']) * 100
+            : 0.0;
+        $summary['per_ca_n2'] = $summary['ca_n2'] !== 0.0
+            ? (($summary['ca_now'] - $summary['ca_n2']) / $summary['ca_n2']) * 100
+            : 0.0;
+
+        return $summary;
     }
 }

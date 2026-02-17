@@ -36,7 +36,6 @@ class ImportFacturesService extends \App\Service\Import\AbstractCsvImportService
             'num_facture',
             'numero_releve',
             'reseau_id',
-            'data_date',
         ];
     }
 

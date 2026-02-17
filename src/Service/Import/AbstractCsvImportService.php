@@ -14,18 +14,12 @@ abstract class AbstractCsvImportService implements CsvImportInterface
 {
     protected int $batchSize = 500;
     protected ?Reseau $reseau = null;
-    protected ?\DateTimeImmutable $fileDate = null;
 
     public function __construct(
         protected EntityManagerInterface $em,
         protected CsvReader              $csvReader
     )
     {
-    }
-
-    public function setFileDate(?\DateTimeImmutable $fileDate): void
-    {
-        $this->fileDate = $fileDate;
     }
 
     public function setReseau(Reseau $reseau): void
@@ -55,11 +49,13 @@ abstract class AbstractCsvImportService implements CsvImportInterface
      */
     public function importFromFile(UploadedFile $file, Reseau $reseau): int
     {
+        $this->em->getConnection()->getConfiguration()->setMiddlewares([]);
+
         if ($this->shouldSkipFile($file, $reseau)) {
             return 0;
         }
 
-        $generator = $this->csvReader->read($file, ';');
+        $generator = $this->csvReader->read($file, ';', $reseau->getNom());
 
         $count = 0;
         $batch = [];
@@ -97,11 +93,6 @@ abstract class AbstractCsvImportService implements CsvImportInterface
         $row = [];
 
         foreach (static::getColumns() as $column) {
-            if ($column === 'data_date') {
-                $row[] = $this->fileDate?->format('Y-m-d');
-                continue;
-            }
-
             if ($column === 'reseau_id') {
                 if (!$this->reseau) {
                     throw new \LogicException("Reseau non défini pour l'import");
@@ -181,6 +172,7 @@ abstract class AbstractCsvImportService implements CsvImportInterface
                 if ($v === null) {
                     return 'NULL';
                 }
+
                 return $this->em->getConnection()->quote((string)$v);
             }, $row);
 
@@ -195,6 +187,8 @@ abstract class AbstractCsvImportService implements CsvImportInterface
         );
 
         $this->em->getConnection()->executeStatement($sql);
+
+        unset($values, $sql, $batch);
     }
 
     /*
@@ -202,7 +196,7 @@ abstract class AbstractCsvImportService implements CsvImportInterface
      */
     private function getFileHash(UploadedFile $file): string
     {
-        return hash_file('sha256', $file->getPathname());
+        return hash_file('sha256', $file->getPathname(), false);
     }
 
     /**
@@ -217,7 +211,6 @@ abstract class AbstractCsvImportService implements CsvImportInterface
             'file_hash' => $this->getFileHash($file),
             'imported_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
             'reseau_id' => $reseau->getId(),
-            'data_date' => $this->fileDate?->format('Y-m-d'),
         ]);
     }
 

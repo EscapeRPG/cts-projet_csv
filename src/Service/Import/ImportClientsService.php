@@ -29,7 +29,6 @@ class ImportClientsService extends \App\Service\Import\AbstractCsvImportService
             'mobile',
             'num_tva_intra',
             'reseau_id',
-            'data_date',
         ];
     }
 

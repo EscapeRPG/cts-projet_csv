@@ -7,6 +7,11 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ControlesFacturesRepository::class)]
+#[ORM\Table(name: 'controles_factures', indexes: [
+    new ORM\Index(name: 'idx_cf_idcontrole', columns: ['idcontrole']),
+    new ORM\Index(name: 'idx_cf_idfacture', columns: ['idfacture']),
+    new ORM\Index(name: 'idx_cf_facture_controle', columns: ['idfacture', 'idcontrole']),
+])]
 class ControlesFactures
 {
     #[ORM\Id]
@@ -31,9 +36,6 @@ class ControlesFactures
 
     #[ORM\ManyToOne(inversedBy: 'controlesFactures')]
     private ?Reseau $reseau = null;
-
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $dataDate = null;
 
     public function getId(): ?int
     {
@@ -108,18 +110,6 @@ class ControlesFactures
     public function setReseau(?Reseau $reseau): static
     {
         $this->reseau = $reseau;
-
-        return $this;
-    }
-
-    public function getDataDate(): ?\DateTime
-    {
-        return $this->dataDate;
-    }
-
-    public function setDataDate(\DateTime $dataDate): static
-    {
-        $this->dataDate = $dataDate;
 
         return $this;
     }
