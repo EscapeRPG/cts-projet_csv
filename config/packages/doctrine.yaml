@@ -6,7 +6,7 @@ doctrine:
         # either here or in the DATABASE_URL env var (see .env file)
         #server_version: '16'
 
-        profiling_collect_backtrace: '%kernel.debug%'
+        profiling_collect_backtrace: false
         server_version: '8.4'
     orm:
         auto_generate_proxy_classes: true
@@ -32,6 +32,13 @@ when@test:
         dbal:
             # "TEST_TOKEN" is typically set by ParaTest
             dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+
+when@dev:
+    doctrine:
+        dbal:
+            # Évite l'accumulation mémoire du profiler SQL pendant les commandes lourdes.
+            profiling: false
+            logging: false
 
 when@prod:
     doctrine:

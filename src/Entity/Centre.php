@@ -9,7 +9,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: CentreRepository::class)]
-#[UniqueEntity('agr_centre')]
 class Centre
 {
     #[ORM\Id]
@@ -21,7 +20,7 @@ class Centre
     private ?string $ville = null;
 
     #[ORM\Column(length: 50, unique: true, nullable: true)]
-    private ?string $agr_centre = null;
+    private ?string $agrCentre = null;
 
     #[ORM\ManyToOne(inversedBy: 'centres')]
     #[ORM\JoinColumn(nullable: false)]
@@ -43,7 +42,7 @@ class Centre
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $siteWeb = null;
 
-    #[ORM\Column(length: 20)]
+    #[ORM\Column(length: 20, nullable: true)]
     private ?string $numSiret = null;
 
     #[ORM\Column(length: 50)]
@@ -70,12 +69,12 @@ class Centre
 
     public function getAgrCentre(): ?string
     {
-        return $this->agr_centre;
+        return $this->agrCentre;
     }
 
-    public function setAgrCentre(?string $agr_centre): static
+    public function setAgrCentre(?string $agrCentre): static
     {
-        $this->agr_centre = $agr_centre;
+        $this->agrCentre = $agrCentre;
         return $this;
     }
 
@@ -87,6 +86,12 @@ class Centre
     public function setReseau(?Reseau $reseau): static
     {
         $this->reseau = $reseau;
+
+        // Garde reseau_nom synchronisé avec la relation reseau.
+        if ($reseau !== null) {
+            $this->reseauNom = $reseau->getNom();
+        }
+
         return $this;
     }
 

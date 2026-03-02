@@ -93,6 +93,21 @@
         </div>
     {% endif %}
 
+    {% set warningMessages = app.flashes('warning') %}
+    {% if warningMessages is not empty %}
+        <div id="modal" class="modal-overlay" data-controller="modals" data-modals-target="overlay">
+            <div class="modal error-modal" data-modals-target="modal">
+                <h2>Attention</h2>
+
+                {% for message in warningMessages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+
+                <button id="close-modal" data-action="click->modals#hide">OK</button>
+            </div>
+        </div>
+    {% endif %}
+
     <div id="confirmModal" class="modal-overlay" data-controller="confirm-modal" data-confirm-modal-target="overlay">
         <div class="modal error-modal" data-confirm-modal-target="modal">
             <img src="{{ asset("/img/warning.png") }}" alt="attention">

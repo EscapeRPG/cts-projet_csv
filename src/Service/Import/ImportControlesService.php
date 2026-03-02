@@ -57,7 +57,7 @@ class ImportControlesService extends \App\Service\Import\AbstractCsvImportServic
             'res_ctrl' => ['res_ctrl'],
             'type_ctrl' => ['type_ctrl'],
             'modele_vehicule' => ['modele_vehicule'],
-            'annee_circulation' => ['annee_circulation'],
+            'annee_circulation' => ['annee_circulation', 'datemise_en_service_vehicule'],
         ];
     }
 

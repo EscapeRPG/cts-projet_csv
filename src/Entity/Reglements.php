@@ -14,7 +14,7 @@ class Reglements
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
+    #[ORM\Column(length: 50)]
     private ?string $idreglement = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
@@ -38,7 +38,7 @@ class Reglements
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $numeroReleve = null;
 
-    #[ORM\ManyToOne(inversedBy: 'reglements')]
+    #[ORM\ManyToOne]
     private ?Reseau $reseau = null;
 
     public function getId(): ?int

@@ -1,7 +1,7 @@
 <div class="sidenav">
     {% set route = app.request.attributes.get('_route') %}
 
-    <form method="get" class="filter-form">
+    <form method="get" class="filter-form" data-dependent-url="{{ path('app_suivi_filters_dependent') }}">
         <div class="filters-container">
             <div class="filter-dropdown">
                 <button type="button" class="dropdown-toggle">
@@ -17,6 +17,28 @@
                                    {% if key in selected.mois %}checked{% endif %}>
                             {{ label }}
                         </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="filter-dropdown">
+                <button type="button" class="dropdown-toggle">
+                    Réseaux
+                </button>
+
+                <div class="dropdown-menu">
+                    {% for r in reseaux %}
+                        {% set value = r is iterable ? (attribute(r, 'id') is defined ? attribute(r, 'id') : (attribute(r, 'nom') is defined ? attribute(r, 'nom') : '')) : r %}
+                        {% set label = r is iterable ? (attribute(r, 'nom') is defined ? attribute(r, 'nom') : value) : r %}
+                        {% if value != '' %}
+                            <label>
+                                <input type="checkbox"
+                                       name="reseau[]"
+                                       value="{{ value }}"
+                                       {% if value in selected.reseau %}checked{% endif %}>
+                                {{ label|upper }}
+                            </label>
+                        {% endif %}
                     {% endfor %}
                 </div>
             </div>
@@ -44,7 +66,7 @@
                     Centres
                 </button>
 
-                <div class="dropdown-menu">
+                <div class="dropdown-menu" data-filter-list="centre">
                     {% for centre in centres %}
                         <label>
                             <input type="checkbox" name="centre[]" value="{{ centre.agr_centre }}"
@@ -56,40 +78,76 @@
             </div>
 
             {% if route != 'app_suivi_focus_pro' %}
-            <div class="filter-dropdown">
-                <button type="button" class="dropdown-toggle">
-                    Contrôleurs
-                </button>
+                <div class="filter-dropdown">
+                    <button type="button" class="dropdown-toggle">
+                        Contrôleurs
+                    </button>
 
-                <div class="dropdown-menu">
-                    {% for c in controleurs %}
-                        {% set value = c.id %}
-                        <label>
-                            <input type="checkbox"
-                                   name="controleur[]"
-                                   value="{{ value }}"
-                                   {% if value in selected.controleur %}checked{% endif %}>
-                            {{ c.nom }} {{ c.prenom }}
-                        </label>
-                    {% endfor %}
+                    <div class="dropdown-menu" data-filter-list="controleur">
+                        {% for c in controleurs %}
+                            {% set value = c.id %}
+                            <label>
+                                <input type="checkbox"
+                                       name="controleur[]"
+                                       value="{{ value }}"
+                                       {% if value in selected.controleur %}checked{% endif %}>
+                                {{ c.nom }} {{ c.prenom }}
+                            </label>
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
+            {% endif %}
+
+            {% if route != 'app_suivi_activite' %}
+                <div class="filter-dropdown">
+                    <button type="button" class="dropdown-toggle">
+                        Types
+                    </button>
+
+                    <div class="dropdown-menu">
+                        {% for type in types_controles %}
+                            <label>
+                                <input type="checkbox"
+                                       name="type[]"
+                                       value="{{ type }}"
+                                       {% if type in selected.type %}checked{% endif %}>
+                                {{ type }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if route != 'app_suivi_activite' %}
+                <label>
+                    <input type="checkbox"
+                           name="vehicule[]"
+                           value="VL"
+                           {% if 'VL' in selected.vehicule %}checked{% endif %}>
+                    VL
+                </label>
+
+                <label>
+                    <input type="checkbox"
+                           name="vehicule[]"
+                           value="CL"
+                           {% if 'CL' in selected.vehicule %}checked{% endif %}>
+                    CL
+                </label>
             {% endif %}
 
             {% if anneeCourante is not null %}
                 <input type="hidden" name="annee" value="{{ anneeCourante }}">
             {% endif %}
 
-            <button type="submit">Filtrer</button>
+            <button type="button" data-clear-filters>Vider les filtres</button>
         </div>
     </form>
 
     <div class="onglets">
-        <a href="{{ path('app_suivi_activite') }}"
-           class="{{ route == 'app_suivi_activite' ? 'active' : '' }}">Synthèse</a>
+        <a href="{{ path('app_suivi_activite') }}" class="{{ route == 'app_suivi_activite' ? 'active' : '' }}">Synthèse</a>
         <a href="{{ path('app_suivi_controleurs') }}" class="{{ route == 'app_suivi_controleurs' ? 'active' : '' }}">Contrôleurs</a>
+        <a href="{{ path('app_suivi_centres') }}" class="{{ route == 'app_suivi_centres' ? 'active' : '' }}">Centres</a>
         <a href="{{ path('app_suivi_focus_pro') }}" class="{{ route == 'app_suivi_focus_pro' ? 'active' : '' }}">Professionnels</a>
-        <a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'active' : '' }}">Multicentre</a>
-        <a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'active' : '' }}">Panneau 5</a>
     </div>
 </div>

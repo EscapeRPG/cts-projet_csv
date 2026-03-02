@@ -14,19 +14,19 @@ class FacturesReglements
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
+    #[ORM\Column(length: 50)]
     private ?string $idfacture = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
+    #[ORM\Column(length: 50)]
     private ?string $idreglement = null;
 
     #[ORM\Column(length: 8)]
     private ?string $agrCentre = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
+    #[ORM\Column(length: 50)]
     private ?string $idclient = null;
 
-    #[ORM\ManyToOne(inversedBy: 'facturesReglements')]
+    #[ORM\ManyToOne]
     private ?Reseau $reseau = null;
 
     public function getId(): ?int

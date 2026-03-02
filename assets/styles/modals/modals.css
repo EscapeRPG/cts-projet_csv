@@ -58,7 +58,7 @@
     background: red;
 
     &:hover {
-        background: white;
-        color: red;
+        background: white !important;
+        color: red !important;
     }
 }

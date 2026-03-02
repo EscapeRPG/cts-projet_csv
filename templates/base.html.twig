@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="{{ asset('styles/users/users.css') }}">
     <link rel="stylesheet" href="{{ asset('styles/dashboard/dashboard.css') }}">
     <link rel="stylesheet" href="{{ asset('styles/loader/loader.css') }}">
-    <link rel="stylesheet" href="{{ asset('styles/suivi/synthese.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/suivi/graphique.css') }}">
     <link rel="stylesheet" href="{{ asset('styles/forms/salaries.css') }}">
 
     {% block stylesheets %}
@@ -62,6 +62,34 @@
                     </li>
                 </ul>
 
+                <h3>Sociétés</h3>
+                <ul>
+                    <li>
+                        <a href="{{ path('app_societes_list') }}">
+                            → Liste des sociétés
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_societes_add') }}">
+                            → Ajouter une société
+                        </a>
+                    </li>
+                </ul>
+
+                <h3>Centres</h3>
+                <ul>
+                    <li>
+                        <a href="{{ path('app_centres_list') }}">
+                            → Liste des centres
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_centres_add') }}">
+                            → Ajouter un centre
+                        </a>
+                    </li>
+                </ul>
+
                 <h3>Salariés</h3>
                 <ul>
                     <li>
@@ -86,13 +114,18 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ path('app_suivi_controleurs') }}">
-                            → Contrôleurs
+                        <a href="{{ path('app_suivi_centres') }}">
+                            → Centres
                         </a>
                     </li>
                     <li>
                         <a href="{{ path('app_suivi_focus_pro') }}">
-                            → Professionnels
+                            → Clients pros
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_suivi_controleurs') }}">
+                            → Contrôleurs
                         </a>
                     </li>
                 </ul>
@@ -137,7 +170,10 @@
     </div>
 </main>
 
+<script src="{{ asset('js/filters.js') }}" type="module"></script>
 <script src="{{ asset('js/clients_pros.js') }}" type="module"></script>
+<script src="{{ asset('js/centres_list.js') }}" type="module"></script>
+<script src="{{ asset('js/societes_list.js') }}" type="module"></script>
 <script src="{{ asset('js/salaries_list.js') }}" type="module"></script>
 <script src="{{ asset('js/loader.js') }}"></script>
 </body>

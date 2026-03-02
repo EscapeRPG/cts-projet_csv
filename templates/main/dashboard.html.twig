@@ -3,27 +3,50 @@
 {% block title %}Tableau de bord{% endblock %}
 
 {% block body %}
-        <h1>Bonjour {{ user.username }},</h1>
+    <h1>Bonjour {{ user.username }},</h1>
 
-        <p>Bienvenue sur votre tableau de bord.</p>
+    <p>Bienvenue sur votre tableau de bord.</p>
 
-        <div class="app-container">
+    <div class="app-container">
+        <div class="app-category">
             {% if is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('app_societes_list') }}" class="app">
+                    <img src="{{ asset('img/liste-societes.png') }}" alt="liste des sociétés">
+                    <div class="inner-div">Liste des sociétés</div>
+                </a>
+
+                <a href="{{ path('app_centres_list') }}" class="app">
+                    <img src="{{ asset('img/liste-centres.png') }}" alt="liste des centres">
+                    <div class="inner-div">Liste des centres</div>
+                </a>
+
                 <a href="{{ path('app_salaries_list') }}" class="app">
-                    Liste des salariés
+                    <img src="{{ asset('img/liste-salaries.png') }}" alt="liste des salariés">
+                    <div class="inner-div">Liste des salariés</div>
                 </a>
             {% endif %}
+        </div>
 
+        <div class="app-category">
             <a href="{{ path('app_suivi_activite') }}" class="app">
-                Suivi activité
+                <img src="{{ asset('img/suivi-activite.png') }}" alt="suivi activité">
+                <div class="inner-div">Suivi activité</div>
             </a>
 
-            <a href="{{ path('app_suivi_controleurs') }}" class="app">
-                Suivi contrôleurs
+            <a href="{{ path('app_suivi_centres') }}" class="app">
+                <img src="{{ asset('img/suivi-centres.png') }}" alt="suivi centres">
+                <div class="inner-div">Suivi centres</div>
             </a>
 
             <a href="{{ path('app_suivi_focus_pro') }}" class="app">
-                Suivi professionnels
+                <img src="{{ asset('img/suivi-pros.png') }}" alt="suivi clients professionnels">
+                <div class="inner-div">Suivi clients professionnels</div>
+            </a>
+
+            <a href="{{ path('app_suivi_controleurs') }}" class="app">
+                <img src="{{ asset('img/suivi-controleurs.png') }}" alt="suivi contrôleurs">
+                <div class="inner-div">Suivi contrôleurs</div>
             </a>
         </div>
+    </div>
 {% endblock %}

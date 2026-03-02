@@ -1,7 +1,63 @@
-<h1>Bienvenue {{ username }}</h1>
+<div style="background: #ddeff4; width: 100%; padding: 20px;">
+    <h1 style="text-align: center;">Bienvenue {{ username }}</h1>
 
-<p>Votre compte sur le site Ker-Milo a été créé.</p>
+    <div
+        style="background: white; border-radius: 20px; width: 60%; margin: 20px auto; box-shadow: 2px 2px 10px rgba(0,0,0,0.4); text-align: center; padding: 40px;">
+        <p>Votre compte sur le site Ker-Milo a été créé.</p>
 
-<p>
-    <a href="{{ activationUrl }}">Activer mon compte</a>
-</p>
+        <p>Pour pouvoir l'utiliser, merci de cliquer sur le lien ci-dessous et de définir un mot de passe sécurisé.</p>
+
+        <p style="text-align: center; margin: 40px auto;">
+            <a href="{{ activationUrl }}"
+               style="padding: 10px 15px; background: #0097A7; color: white; text-decoration: none; border-radius: 5px;">Activer
+                mon compte</a>
+        </p>
+
+        <p>
+            <small>
+                Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer ce message et prévenir
+                l'administrateur réseau
+                via <a href="{{ supportUrl }}">ce lien</a>
+            </small>
+        </p>
+    </div>
+</div>
+
+<p>---</p>
+
+<table style="font-family: Arial, sans-serif; font-size: 13px; color: #333;">
+    <tr>
+        <!-- Logo -->
+        <td style="padding-right: 15px; vertical-align: middle;">
+            <img src="https://www.controletechniqueservices.fr/wp-content/uploads/2025/11/design-sans-titre.png"
+                 alt="CTS - Contrôle Technique Services"
+                 width="150"
+                 height="auto"
+                 style="display:block; border:0;"/>
+        </td>
+
+        <!-- Texte principal -->
+        <td style="border-left: 2px solid #0097A7; padding-left: 15px; vertical-align: middle;">
+            <p style="margin: 0; font-weight: bold; font-size: 15px; color: #000;">EMILIEN FRANCOIS</p>
+            <p style="margin: 0 0 10px 0; font-size: 13px; color: #555;">Développeur Web</p>
+
+            <p style="margin: 0; color: #555;">20 boulevard Van Iseghem, 44000 Nantes</p>
+
+            <p style="margin: 6px 0 0 0;">
+                <span style="color:#0097A7;">📞</span> <a href="tel:+33684416708"
+                                                         style="text-decoration: none; color: #0097A7;">06 84 41 67
+                    08</a>
+            </p>
+
+            <p style="margin: 3px 0 0 0;">
+                <span style="color:#0097A7;">✉️</span> <a href="mailto:emilienfrancois.ct@gmail.com"
+                                                          style="text-decoration: none; color: #0097A7;">emilienfrancois.ct@gmail.com</a>
+            </p>
+
+            <p style="margin: 3px 0 0 0;">
+                <span style="color:#0097A7;">🌐</span> <a href="https://www.controletechniqueservices.fr"
+                                                         style="text-decoration: none; color: #0097A7; font-weight: bold;">www.controletechniqueservices.fr</a>
+            </p>
+        </td>
+    </tr>
+</table>

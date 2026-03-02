@@ -8,7 +8,7 @@
     <div class="suivi-container">
         {% include 'partials/filters.html.twig' %}
 
-        <div class="container">
+        <div class="container" data-ajax-results>
             <div class="table-wrapper">
                 <table>
                     <thead>
@@ -23,6 +23,7 @@
                         <th>CLCV</th>
                         <th>VTC</th>
                         <th>VOL</th>
+                        <th>CLVOL</th>
                         <th>Total</th>
                         <th>CA HT VTP</th>
                         <th>CA HT CLVTP</th>
@@ -30,6 +31,7 @@
                         <th>CA HT CLCV</th>
                         <th>CA HT VTC</th>
                         <th>CA HT VOL</th>
+                        <th>CA HT CLVOL</th>
                         <th>Total CA HT</th>
                         <th>Prix moyen VTP</th>
                         <th>Prix moyen CLVTP</th>
@@ -37,6 +39,7 @@
                         <th>Prix moyen CLCV</th>
                         <th>Prix moyen VTC</th>
                         <th>Prix moyen VOL</th>
+                        <th>Prix moyen CLVOL</th>
                     </tr>
                     </thead>
 
@@ -73,6 +76,7 @@
                                     <td class="int-row">{{ salarie.nb_clcv }}</td>
                                     <td class="int-row">{{ salarie.nb_vtc }}</td>
                                     <td class="int-row">{{ salarie.nb_vol }}</td>
+                                    <td class="int-row">{{ salarie.nb_clvol }}</td>
                                     <td class="int-row">{{ salarie.nb_controles }}</td>
                                     <td class="int-row">{{ salarie.total_ht_vtp | number_format(2, ',', ' ') }}€</td>
                                     <td class="int-row">{{ salarie.total_ht_clvtp | number_format(2, ',', ' ') }}€</td>
@@ -80,6 +84,7 @@
                                     <td class="int-row">{{ salarie.total_ht_clcv | number_format(2, ',', ' ') }}€</td>
                                     <td class="int-row">{{ salarie.total_ht_vtc | number_format(2, ',', ' ') }}€</td>
                                     <td class="int-row">{{ salarie.total_ht_vol | number_format(2, ',', ' ') }}€</td>
+                                    <td class="int-row">{{ salarie.total_ht_clvol | number_format(2, ',', ' ') }}€</td>
                                     <td class="int-row">{{ salarie.total_presta_ht | number_format(2, ',', ' ') }}€</td>
                                     <td class="int-row">{{ salarie.prix_moyen_vtp | number_format(2, ',', ' ') }}€</td>
                                     <td class="int-row">{{ salarie.prix_moyen_clvtp | number_format(2, ',', ' ') }}€
@@ -88,6 +93,7 @@
                                     <td class="int-row">{{ salarie.prix_moyen_clcv | number_format(2, ',', ' ') }}€</td>
                                     <td class="int-row">{{ salarie.prix_moyen_vtc | number_format(2, ',', ' ') }}€</td>
                                     <td class="int-row">{{ salarie.prix_moyen_vol | number_format(2, ',', ' ') }}€</td>
+                                    <td class="int-row">{{ salarie.prix_moyen_clvol | number_format(2, ',', ' ') }}€</td>
                                 </tr>
                             {% endfor %}
 
@@ -101,6 +107,7 @@
                                 <td>{{ centreData.totaux.nb_clcv }}</td>
                                 <td>{{ centreData.totaux.nb_vtc }}</td>
                                 <td>{{ centreData.totaux.nb_vol }}</td>
+                                <td>{{ centreData.totaux.nb_clvol }}</td>
                                 <td>{{ centreData.totaux.nb_controles }}</td>
                                 <td>{{ centreData.totaux.ca_total_ht_vtp | number_format(2, ',', ' ') }}€</td>
                                 <td>{{ centreData.totaux.ca_total_ht_clvtp | number_format(2, ',', ' ') }}€</td>
@@ -108,6 +115,7 @@
                                 <td>{{ centreData.totaux.ca_total_ht_clcv | number_format(2, ',', ' ') }}€</td>
                                 <td>{{ centreData.totaux.ca_total_ht_vtc | number_format(2, ',', ' ') }}€</td>
                                 <td>{{ centreData.totaux.ca_total_ht_vol | number_format(2, ',', ' ') }}€</td>
+                                <td>{{ centreData.totaux.ca_total_ht_clvol | number_format(2, ',', ' ') }}€</td>
                                 <td>{{ centreData.totaux.ca_total_ht | number_format(2, ',', ' ') }}€</td>
                                 <td>{{ centreData.totaux.prix_moyen_vtp | number_format(2, ',', ' ') }}€</td>
                                 <td>{{ centreData.totaux.prix_moyen_clvtp | number_format(2, ',', ' ') }}€</td>
@@ -115,9 +123,72 @@
                                 <td>{{ centreData.totaux.prix_moyen_clcv | number_format(2, ',', ' ') }}€</td>
                                 <td>{{ centreData.totaux.prix_moyen_vtc | number_format(2, ',', ' ') }}€</td>
                                 <td>{{ centreData.totaux.prix_moyen_vol | number_format(2, ',', ' ') }}€</td>
+                                <td>{{ centreData.totaux.prix_moyen_clvol | number_format(2, ',', ' ') }}€</td>
                             </tr>
+
                         {% endfor %}
+
+                        {% set societeTotal = societeTotals[societe] ?? null %}
+                        {% if societeTotal %}
+                        <tr class="total-row societe">
+                            <td colspan="3">{{ societe }}</td>
+                            <td>TOTAL SOCIETE</td>
+                            <td>{{ societeTotal.nb_vtp }}</td>
+                            <td>{{ societeTotal.nb_clvtp }}</td>
+                            <td>{{ societeTotal.nb_cv }}</td>
+                            <td>{{ societeTotal.nb_clcv }}</td>
+                            <td>{{ societeTotal.nb_vtc }}</td>
+                            <td>{{ societeTotal.nb_vol }}</td>
+                            <td>{{ societeTotal.nb_clvol }}</td>
+                            <td>{{ societeTotal.nb_controles }}</td>
+                            <td>{{ societeTotal.ca_total_ht_vtp | number_format(2, ',', ' ') }}€</td>
+                            <td>{{ societeTotal.ca_total_ht_clvtp | number_format(2, ',', ' ') }}€</td>
+                            <td>{{ societeTotal.ca_total_ht_cv | number_format(2, ',', ' ') }}€</td>
+                            <td>{{ societeTotal.ca_total_ht_clcv | number_format(2, ',', ' ') }}€</td>
+                            <td>{{ societeTotal.ca_total_ht_vtc | number_format(2, ',', ' ') }}€</td>
+                            <td>{{ societeTotal.ca_total_ht_vol | number_format(2, ',', ' ') }}€</td>
+                            <td>{{ societeTotal.ca_total_ht_clvol | number_format(2, ',', ' ') }}€</td>
+                            <td>{{ societeTotal.ca_total_ht | number_format(2, ',', ' ') }}€</td>
+                            <td>{{ societeTotal.prix_moyen_vtp | number_format(2, ',', ' ') }}€</td>
+                            <td>{{ societeTotal.prix_moyen_clvtp | number_format(2, ',', ' ') }}€</td>
+                            <td>{{ societeTotal.prix_moyen_cv | number_format(2, ',', ' ') }}€</td>
+                            <td>{{ societeTotal.prix_moyen_clcv | number_format(2, ',', ' ') }}€</td>
+                            <td>{{ societeTotal.prix_moyen_vtc | number_format(2, ',', ' ') }}€</td>
+                            <td>{{ societeTotal.prix_moyen_vol | number_format(2, ',', ' ') }}€</td>
+                            <td>{{ societeTotal.prix_moyen_clvol | number_format(2, ',', ' ') }}€</td>
+                        </tr>
+                        {% endif %}
                     {% endfor %}
+
+                    {% if globalTotals is defined %}
+                    <tr class="total-row global">
+                        <td colspan="3">TOUS RESEAUX / TOUTES SOCIETES</td>
+                        <td>TOTAL GLOBAL</td>
+                        <td>{{ globalTotals.nb_vtp }}</td>
+                        <td>{{ globalTotals.nb_clvtp }}</td>
+                        <td>{{ globalTotals.nb_cv }}</td>
+                        <td>{{ globalTotals.nb_clcv }}</td>
+                        <td>{{ globalTotals.nb_vtc }}</td>
+                        <td>{{ globalTotals.nb_vol }}</td>
+                        <td>{{ globalTotals.nb_clvol }}</td>
+                        <td>{{ globalTotals.nb_controles }}</td>
+                        <td>{{ globalTotals.ca_total_ht_vtp | number_format(2, ',', ' ') }}€</td>
+                        <td>{{ globalTotals.ca_total_ht_clvtp | number_format(2, ',', ' ') }}€</td>
+                        <td>{{ globalTotals.ca_total_ht_cv | number_format(2, ',', ' ') }}€</td>
+                        <td>{{ globalTotals.ca_total_ht_clcv | number_format(2, ',', ' ') }}€</td>
+                        <td>{{ globalTotals.ca_total_ht_vtc | number_format(2, ',', ' ') }}€</td>
+                        <td>{{ globalTotals.ca_total_ht_vol | number_format(2, ',', ' ') }}€</td>
+                        <td>{{ globalTotals.ca_total_ht_clvol | number_format(2, ',', ' ') }}€</td>
+                        <td>{{ globalTotals.ca_total_ht | number_format(2, ',', ' ') }}€</td>
+                        <td>{{ globalTotals.prix_moyen_vtp | number_format(2, ',', ' ') }}€</td>
+                        <td>{{ globalTotals.prix_moyen_clvtp | number_format(2, ',', ' ') }}€</td>
+                        <td>{{ globalTotals.prix_moyen_cv | number_format(2, ',', ' ') }}€</td>
+                        <td>{{ globalTotals.prix_moyen_clcv | number_format(2, ',', ' ') }}€</td>
+                        <td>{{ globalTotals.prix_moyen_vtc | number_format(2, ',', ' ') }}€</td>
+                        <td>{{ globalTotals.prix_moyen_vol | number_format(2, ',', ' ') }}€</td>
+                        <td>{{ globalTotals.prix_moyen_clvol | number_format(2, ',', ' ') }}€</td>
+                    </tr>
+                    {% endif %}
                     </tbody>
                 </table>
             </div>

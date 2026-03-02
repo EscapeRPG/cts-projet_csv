@@ -24,7 +24,7 @@ class Controles
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
+    #[ORM\Column(length: 50)]
     private ?string $idcontrole = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
@@ -75,7 +75,7 @@ class Controles
     #[ORM\Column]
     private ?int $anneeCirculation = null;
 
-    #[ORM\ManyToOne(inversedBy: 'controles')]
+    #[ORM\ManyToOne]
     private ?Reseau $reseau = null;
 
     public function getId(): ?int

@@ -23,7 +23,7 @@ class ImportedFiles
     #[ORM\Column]
     private ?\DateTimeImmutable $imported_at = null;
 
-    #[ORM\ManyToOne(inversedBy: 'importedFiles')]
+    #[ORM\ManyToOne]
     private ?Reseau $reseau = null;
 
     public function getId(): ?int

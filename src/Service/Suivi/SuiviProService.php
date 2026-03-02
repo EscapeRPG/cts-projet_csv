@@ -12,7 +12,7 @@ class SuiviProService
             foreach ($centres as $centre) {
                 foreach ($centre['client_pro'] as $client_pro) {
 
-                    $id = mb_strtoupper(trim((string)$client_pro['nom']));
+                    $id = $this->safeUpper(trim((string)$client_pro['nom']));
 
                     if ($id === '') {
                         continue;
@@ -64,5 +64,14 @@ class SuiviProService
         usort($clients, fn($a, $b) => $b['ca_client_pro'] <=> $a['ca_client_pro']);
 
         return $clients;
+    }
+
+    private function safeUpper(string $value): string
+    {
+        if (function_exists('mb_strtoupper')) {
+            return mb_strtoupper($value);
+        }
+
+        return strtoupper($value);
     }
 }

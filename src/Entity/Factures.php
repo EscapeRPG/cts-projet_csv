@@ -20,7 +20,7 @@ class Factures
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
+    #[ORM\Column(length: 50)]
     private ?string $idfacture = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
@@ -89,7 +89,7 @@ class Factures
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $numeroReleve = null;
 
-    #[ORM\ManyToOne(inversedBy: 'factures')]
+    #[ORM\ManyToOne]
     private ?Reseau $reseau = null;
 
     public function getId(): ?int

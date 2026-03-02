@@ -6,7 +6,7 @@
     <div class="suivi-container">
         {% include 'partials/filters.html.twig' %}
 
-        <div class="pro-stats-container">
+        <div class="pro-stats-container" data-ajax-results>
             <div class="pro-stats-panel">
                 <div class="summary">
                     <div class="ca-summary">
@@ -48,7 +48,16 @@
                     </div>
                 </div>
 
-                <div class="stats-wrapper"></div>
+                <div class="stats-wrapper graphique"
+                     data-pro-charts='{{ proCharts|json_encode|e('html_attr') }}'>
+                    <div class="chart-toolbar">
+                        <button type="button" class="chart-toggle active" data-chart-kind="ca">CA</button>
+                        <button type="button" class="chart-toggle" data-chart-kind="volumes">Contrôles</button>
+                    </div>
+                    <div class="chart-canvas-wrap">
+                        <canvas class="pro-chart-canvas" aria-label="Graphique professionnels"></canvas>
+                    </div>
+                </div>
             </div>
 
             <div class="table-wrapper">
@@ -88,14 +97,17 @@
                         {% endfor %}
                         </tbody>
                     </table>
+
                     {% if pagination.total_pages > 1 %}
-                        <div>
+                        <div class="pagination">
                             {% if pagination.has_previous %}
-                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.previous_page})) }}">Page précédente</a>
+                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': 1})) }}">&lt;&lt;</a>
+                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.previous_page})) }}">&lt;</a>
                             {% endif %}
                             <span>Page {{ pagination.page }} / {{ pagination.total_pages }} ({{ pagination.total_items }} clients)</span>
                             {% if pagination.has_next %}
-                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.next_page})) }}">Page suivante</a>
+                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.next_page})) }}">&gt;</a>
+                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.total_pages})) }}">&gt;&gt;</a>
                             {% endif %}
                         </div>
                     {% endif %}

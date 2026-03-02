@@ -14,6 +14,12 @@ abstract class AbstractCsvImportService implements CsvImportInterface
 {
     protected int $batchSize = 500;
     protected ?Reseau $reseau = null;
+    protected array $lastImportStats = [
+        'rows_read' => 0,
+        'rows_inserted' => 0,
+        'rows_ignored' => 0,
+        'batches' => 0,
+    ];
 
     public function __construct(
         protected EntityManagerInterface $em,
@@ -50,6 +56,12 @@ abstract class AbstractCsvImportService implements CsvImportInterface
     public function importFromFile(UploadedFile $file, Reseau $reseau): int
     {
         $this->em->getConnection()->getConfiguration()->setMiddlewares([]);
+        $this->lastImportStats = [
+            'rows_read' => 0,
+            'rows_inserted' => 0,
+            'rows_ignored' => 0,
+            'batches' => 0,
+        ];
 
         if ($this->shouldSkipFile($file, $reseau)) {
             return 0;
@@ -59,6 +71,9 @@ abstract class AbstractCsvImportService implements CsvImportInterface
 
         $count = 0;
         $batch = [];
+        $insertedTotal = 0;
+        $ignoredTotal = 0;
+        $batchCount = 0;
 
         foreach ($generator as $row) {
             $row = $this->mapRow($row);
@@ -67,16 +82,28 @@ abstract class AbstractCsvImportService implements CsvImportInterface
             $count++;
 
             if (count($batch) >= $this->batchSize) {
-                $this->insertBatch($batch);
+                $inserted = $this->insertBatch($batch);
+                $insertedTotal += $inserted;
+                $ignoredTotal += count($batch) - $inserted;
+                $batchCount++;
                 $batch = [];
             }
         }
 
         if (!empty($batch)) {
-            $this->insertBatch($batch);
+            $inserted = $this->insertBatch($batch);
+            $insertedTotal += $inserted;
+            $ignoredTotal += count($batch) - $inserted;
+            $batchCount++;
         }
 
         $this->markFileAsImported($file, $reseau);
+        $this->lastImportStats = [
+            'rows_read' => $count,
+            'rows_inserted' => $insertedTotal,
+            'rows_ignored' => $ignoredTotal,
+            'batches' => $batchCount,
+        ];
 
         return $count;
     }
@@ -161,7 +188,7 @@ abstract class AbstractCsvImportService implements CsvImportInterface
      *
      * Insert un batch en SQL
      */
-    protected function insertBatch(array $batch): void
+    protected function insertBatch(array $batch): int
     {
         $columns = static::getColumns();
         $table = static::getTableName();
@@ -186,9 +213,11 @@ abstract class AbstractCsvImportService implements CsvImportInterface
             implode(',', $values)
         );
 
-        $this->em->getConnection()->executeStatement($sql);
+        $inserted = (int)$this->em->getConnection()->executeStatement($sql);
 
         unset($values, $sql, $batch);
+
+        return $inserted;
     }
 
     /*
@@ -212,6 +241,11 @@ abstract class AbstractCsvImportService implements CsvImportInterface
             'imported_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
             'reseau_id' => $reseau->getId(),
         ]);
+    }
+
+    public function getLastImportStats(): array
+    {
+        return $this->lastImportStats;
     }
 
 }

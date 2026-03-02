@@ -1,4 +1,4 @@
-.salaries-list {
+.salaries-list, .centres-list, .societes-list {
     th, td {
         padding: 5px;
     }
@@ -7,6 +7,7 @@
         border: none;
         background: none;
         padding: 0;
+        max-width: 250px;
     }
 
     button:disabled {
@@ -16,5 +17,9 @@
         &:hover {
             transform: none;
         }
+    }
+
+    td:last-of-type {
+        text-align: center;
     }
 }

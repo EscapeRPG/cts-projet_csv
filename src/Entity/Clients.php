@@ -20,7 +20,7 @@ class Clients
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
+    #[ORM\Column(length: 50)]
     private ?string $idclient = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
@@ -68,7 +68,7 @@ class Clients
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $numTvaIntra = null;
 
-    #[ORM\ManyToOne(inversedBy: 'clients')]
+    #[ORM\ManyToOne]
     private ?Reseau $reseau = null;
 
     public function getId(): ?int

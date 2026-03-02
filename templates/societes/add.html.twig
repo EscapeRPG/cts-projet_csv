@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter une société{% endblock %}
+
+{% block body %}
+    {% set errors = [] %}
+
+    {% for error in form.vars.errors %}
+        {% set errors = errors|merge(['[Global] ' ~ error.message]) %}
+    {% endfor %}
+
+    {% for child in form %}
+        {% for error in child.vars.errors %}
+            {% set errors = errors|merge([child.vars.label ~ error.message]) %}
+        {% endfor %}
+
+        {% if child is iterable %}
+            {% for sub in child %}
+                {% for error in sub.vars.errors %}
+                    {% set errors = errors|merge([sub.vars.label ~ error.message]) %}
+                {% endfor %}
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+
+    {% if errors|length > 0 %}
+        <div class="alert alert-danger">
+            <ul>
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="form-wrapper">
+        <small class="required-inputs">Les champs marqués d'un * sont obligatoires.</small><br><br>
+
+        {{ form_start(form, {'attr': {'data-turbo': 'false'}}) }}
+        <button type="submit">Enregistrer</button>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

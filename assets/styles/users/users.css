@@ -30,7 +30,7 @@
     aspect-ratio: 1 / 1;
 
     &:hover {
-        background: red;
-        color: white;
+        background: red !important;
+        color: white !important;
     }
 }

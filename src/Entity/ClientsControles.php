@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\ClientsControlesRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClientsControlesRepository::class)]
@@ -19,10 +18,10 @@ class ClientsControles
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
+    #[ORM\Column(length: 50)]
     private ?string $idclient = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
+    #[ORM\Column(length: 50)]
     private ?string $idcontrole = null;
 
     #[ORM\Column(length: 8)]
@@ -31,7 +30,7 @@ class ClientsControles
     #[ORM\Column(length: 8)]
     private ?string $agrControleur = null;
 
-    #[ORM\ManyToOne(inversedBy: 'clientsControles')]
+    #[ORM\ManyToOne]
     private ?Reseau $reseau = null;
 
     public function getId(): ?int

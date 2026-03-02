@@ -14,7 +14,7 @@ class PrestasNonFacturees
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
+    #[ORM\Column(length: 50)]
     private ?string $idcontrole = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
@@ -65,7 +65,7 @@ class PrestasNonFacturees
     #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2)]
     private ?string $montantTva = null;
 
-    #[ORM\ManyToOne(inversedBy: 'prestasNonFacturees')]
+    #[ORM\ManyToOne]
     private ?Reseau $reseau = null;
 
     public function getId(): ?int

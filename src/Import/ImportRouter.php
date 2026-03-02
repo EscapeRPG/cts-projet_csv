@@ -33,6 +33,7 @@ class ImportRouter
             str_contains($filename, 'controles_non_factures') => $this->controlesNonFacturesImport,
             str_contains($filename, 'controles_factures') => $this->controlesFacturesImport,
             str_contains($filename, 'factures_reglements') => $this->facturesReglementsImport,
+            str_contains($filename, 'prestas_non_factures') => $this->prestasNonFactureesImport,
             str_contains($filename, 'prestas_non_facturees') => $this->prestasNonFactureesImport,
             str_contains($filename, 'controles') => $this->controlesImport,
             str_contains($filename, 'factures') => $this->facturesImport,

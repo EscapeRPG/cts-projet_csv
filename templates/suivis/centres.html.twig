@@ -6,60 +6,57 @@
     <div class="suivi-container">
         {% include 'partials/filters.html.twig' %}
 
-        <div class="pro-stats-container">
+        <div class="pro-stats-container" data-ajax-results>
             <div class="pro-stats-panel">
-                {% set ca_now, ca_n1, ca_n2, vol_now, vol_n1, vol_n2 = 0, 0, 0, 0, 0, 0 %}
-                {% for client in clients %}
-                    {% set ca_now, ca_n1, ca_n2, vol_now, vol_n1, vol_n2 = ca_now + client.ca_now, ca_n1 + client.ca_n1, ca_n2 + client.ca_n2, vol_now + client.nb_ctrl_now, vol_n1 + client.nb_ctrl_n1, vol_n2 + client.nb_ctrl_n2 %}
-                {% endfor %}
-                {% set per_ctrl_n1, per_ctrl_n2, per_ca_n1, per_ca_n2 = 0, 0, 0, 0 %}
-                {% set per_ctrl_n1 = (vol_n1 != 0 ? ((vol_now - vol_n1) / vol_n1) * 100 : 0) ~ "%" %}
-                {% set per_ctrl_n2 = (vol_n2 != 0 ? ((vol_now - vol_n2) / vol_n2) * 100 : 0) ~ "%" %}
-                {% set per_ca_n1 = (ca_n1 != 0 ? ((ca_now - ca_n1) / ca_n1) * 100 : 0) ~ "%" %}
-                {% set per_ca_n2 = (ca_n2 != 0 ? ((ca_now - ca_n2) / ca_n2) * 100 : 0) ~ "%" %}
-
                 <div class="summary">
                     <div class="ca-summary">
                         <h2>Contrôles {{ "now"|date('Y') }}</h2>
-                        <strong>{{ vol_now }}</strong>
+                        <strong>{{ summary.vol_now }}</strong>
 
                         <div class="previous">
                             <div class="row">
                                 <strong>{{ "now"|date('Y') - 1 }}</strong>
-                                {{ vol_n1 }}
-                                <div class="{{ per_ctrl_n1 < 0 ? 'decreased' : 'increased' }}">{{ per_ctrl_n1 }}</div>
+                                {{ summary.vol_n1 }}
+                                <div class="{{ summary.per_ctrl_n1 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ctrl_n1|number_format(2, ',', ' ') }}%</div>
                             </div>
 
                             <div class="row">
                                 <strong>{{ "now"|date('Y') - 2 }}</strong>
-                                {{ vol_n2 }}
-                                <div class="{{ per_ctrl_n2 < 0 ? 'decreased' : 'increased' }}">{{ per_ctrl_n2 }}</div>
+                                {{ summary.vol_n2 }}
+                                <div class="{{ summary.per_ctrl_n2 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ctrl_n2|number_format(2, ',', ' ') }}%</div>
                             </div>
                         </div>
                     </div>
 
                     <div class="ca-summary">
                         <h2>CA {{ "now"|date('Y') }}</h2>
-                        <strong>{{ ca_now|number_format(2, ',', ' ') }} €</strong>
+                        <strong>{{ summary.ca_now|number_format(2, ',', ' ') }} €</strong>
 
                         <div class="previous">
                             <div class="row">
                                 <strong>{{ "now"|date('Y') - 1 }}</strong>
-                                {{ ca_n1|number_format(2, ',', ' ') }} €
-                                <div class="{{ per_ca_n1 < 0 ? 'decreased' : 'increased' }}">{{ per_ca_n1 }}</div>
+                                {{ summary.ca_n1|number_format(2, ',', ' ') }} €
+                                <div class="{{ summary.per_ca_n1 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ca_n1|number_format(2, ',', ' ') }}%</div>
                             </div>
 
                             <div class="row">
                                 <strong>{{ "now"|date('Y') - 2 }}</strong>
-                                {{ ca_n2|number_format(2, ',', ' ') }} €
-                                <div class="{{ per_ca_n2 < 0 ? 'decreased' : 'increased' }}">{{ per_ca_n2 }}</div>
+                                {{ summary.ca_n2|number_format(2, ',', ' ') }} €
+                                <div class="{{ summary.per_ca_n2 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ca_n2|number_format(2, ',', ' ') }}%</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="stats-wrapper">
-                    Hello
+                <div class="stats-wrapper graphique"
+                     data-pro-charts='{{ proCharts|json_encode|e('html_attr') }}'>
+                    <div class="chart-toolbar">
+                        <button type="button" class="chart-toggle active" data-chart-kind="ca">CA</button>
+                        <button type="button" class="chart-toggle" data-chart-kind="volumes">Contrôles</button>
+                    </div>
+                    <div class="chart-canvas-wrap">
+                        <canvas class="pro-chart-canvas" aria-label="Graphique centres"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -68,7 +65,7 @@
                     <table class="table-pros">
                         <thead>
                         <tr>
-                            <th>Client (société)</th>
+                            <th>Centre</th>
                             <th>CA N</th>
                             <th>CA N-1</th>
                             <th>CA N-2</th>
@@ -83,7 +80,7 @@
                         <tbody>
                         {% for client in clients %}
                             <tr>
-                                <td>{{ client.nom }} <small>({{ client.societe }} - {{ client.centre }})</small></td>
+                                <td>{{ client.nom }} <small>({{ client.societe }}{% if client.reseau is not empty %} - {{ client.reseau }}{% endif %})</small></td>
                                 <td class="{{ client.ca_now < client.ca_n1 ? 'malus' : 'bonus' }} right">{{ client.ca_now|number_format(2, ',', ' ') }}
                                     €
                                 </td>
@@ -92,9 +89,9 @@
                                 <td>{{ client.nb_ctrl_now }}</td>
                                 <td>{{ client.nb_ctrl_n1 }}</td>
                                 <td>{{ client.nb_ctrl_n2 }}</td>
-                                <td class="{{ client.per_n1 < 0 ? 'decreased' : 'increased' }}">{{ client.per_n1 }}%
+                                <td class="{{ client.per_n1 < 0 ? 'decreased' : 'increased' }}">{{ client.per_n1|number_format(2, ',', ' ') }}%
                                 </td>
-                                <td class="{{ client.per_n2 < 0 ? 'decreased' : 'increased' }}">{{ client.per_n2 }}%
+                                <td class="{{ client.per_n2 < 0 ? 'decreased' : 'increased' }}">{{ client.per_n2|number_format(2, ',', ' ') }}%
                                 </td>
                             </tr>
                         {% endfor %}

@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\CentresClientsRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CentresClientsRepository::class)]
@@ -17,10 +16,10 @@ class CentresClients
     #[ORM\Column(length: 8)]
     private ?string $agrCentre = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
+    #[ORM\Column(length: 50)]
     private ?string $idclient = null;
 
-    #[ORM\ManyToOne(inversedBy: 'centresClients')]
+    #[ORM\ManyToOne]
     private ?Reseau $reseau = null;
 
     public function getId(): ?int

@@ -24,11 +24,18 @@ class SftpClient
     public function listIncomingFiles(string $reseau): array
     {
         $path = $this->getIncomingPath($reseau);
+        if (!is_dir($path)) {
+            return [];
+        }
 
-        return array_values(array_filter(
+        $files = array_values(array_filter(
             scandir($path),
-            fn($f) => str_ends_with($f, '.csv')
+            fn($f) => str_ends_with(strtolower($f), '.csv') && is_file($path . '/' . $f)
         ));
+
+        sort($files, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return $files;
     }
 
     public function getIncomingPath(string $reseau): string
@@ -66,5 +73,35 @@ class SftpClient
         }
 
         return false;
+    }
+
+    public function isIncomingFileStable(string $reseau, string $filename, int $minAgeSeconds = 120): bool
+    {
+        $path = "{$this->basePath}/{$reseau}/incoming/{$filename}";
+        if (!is_file($path)) {
+            return false;
+        }
+
+        $firstSize = filesize($path);
+        $firstMTime = filemtime($path);
+        if ($firstSize === false || $firstMTime === false) {
+            return false;
+        }
+
+        // Évite d'importer un fichier encore en cours de dépôt.
+        if ((time() - (int)$firstMTime) < $minAgeSeconds) {
+            return false;
+        }
+
+        usleep(300000);
+        clearstatcache(true, $path);
+
+        $secondSize = filesize($path);
+        $secondMTime = filemtime($path);
+        if ($secondSize === false || $secondMTime === false) {
+            return false;
+        }
+
+        return (int)$firstSize === (int)$secondSize && (int)$firstMTime === (int)$secondMTime;
     }
 }

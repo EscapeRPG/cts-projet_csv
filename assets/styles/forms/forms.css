@@ -1,5 +1,7 @@
 .form-wrapper {
     width: 60%;
+    max-height: 85vh;
+    overflow-y: auto;
     border-radius: 20px;
     box-shadow: var(--box-shadow);
     padding: 40px 20px;

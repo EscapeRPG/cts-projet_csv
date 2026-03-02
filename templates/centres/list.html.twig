@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des centres{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="table-wrapper">
+            <table class="centres-list">
+                <thead>
+                <tr>
+                    <th>Société</th>
+                    <th>Réseau</th>
+                    <th>Agrément</th>
+                    <th>Coordonnées</th>
+                    <th>CP</th>
+                    <th>Ville</th>
+                    <th>Téléphone</th>
+                    <th>Email</th>
+                    <th>Site web</th>
+                    <th>SIRET</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for centre in centres %}
+                    {% set formId = 'centre-form-' ~ centre.id %}
+
+                    <tr>
+                        <td>{{ form_widget(forms[centre.id].societe, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[centre.id].reseau, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[centre.id].agrCentre, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[centre.id].coordonnees, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[centre.id].cp, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[centre.id].ville, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[centre.id].telephone, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[centre.id].email, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[centre.id].siteWeb, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[centre.id].numSiret, {'attr': {'form': formId}}) }}</td>
+                        <td>
+                            {{ form_start(forms[centre.id], {
+                                'action': path('app_centres_update', {'id': centre.id}),
+                                'method': 'POST',
+                                'attr': {'data-turbo': 'false', 'id': formId}
+                            }) }}
+                            {{ form_errors(forms[centre.id]) }}
+                            <button type="submit" disabled form="{{ formId }}">Enregistrer</button>
+                            {{ form_end(forms[centre.id]) }}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

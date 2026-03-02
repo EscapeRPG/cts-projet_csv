@@ -4,7 +4,7 @@ namespace App\Service\Suivi;
 
 class SuiviSyntheseBuilder
 {
-    private array $types = ['vtp', 'clvtp', 'cv', 'clcv', 'vtc', 'vol'];
+    private array $types = ['vtp', 'clvtp', 'cv', 'clcv', 'vtc', 'vol', 'clvol'];
     private array $reseaux = [
         'Dekra' => 'DE',
         'Norisko' => 'NO',
@@ -20,6 +20,43 @@ class SuiviSyntheseBuilder
         $this->calculateCentreAverages($data);
 
         return $data;
+    }
+
+    public function buildActivityTotals(array $synthese): array
+    {
+        $societeTotals = [];
+        $globalTotals = $this->initActivityTotals();
+
+        foreach ($synthese as $societe => $centres) {
+            $totals = $this->initActivityTotals();
+
+            foreach ($centres as $centreData) {
+                $centreTotals = $centreData['totaux'];
+                foreach ($this->types as $type) {
+                    $totals['nb_' . $type] += (int)$centreTotals['nb_' . $type];
+                    $totals['ca_total_ht_' . $type] += (float)$centreTotals['ca_total_ht_' . $type];
+                }
+                $totals['nb_controles'] += (int)$centreTotals['nb_controles'];
+                $totals['ca_total_ht'] += (float)$centreTotals['ca_total_ht'];
+            }
+
+            $this->computeActivityAverages($totals);
+            $societeTotals[$societe] = $totals;
+
+            foreach ($this->types as $type) {
+                $globalTotals['nb_' . $type] += $totals['nb_' . $type];
+                $globalTotals['ca_total_ht_' . $type] += $totals['ca_total_ht_' . $type];
+            }
+            $globalTotals['nb_controles'] += $totals['nb_controles'];
+            $globalTotals['ca_total_ht'] += $totals['ca_total_ht'];
+        }
+
+        $this->computeActivityAverages($globalTotals);
+
+        return [
+            'societes' => $societeTotals,
+            'global' => $globalTotals,
+        ];
     }
 
     public function buildClientPro(array $rows): array
@@ -69,8 +106,8 @@ class SuiviSyntheseBuilder
             // Construire les données du salarié
             $salarieData = [
                 'id' => $row['salarie_id'],
-                'nom' => mb_strtoupper($row['salarie_nom']),
-                'prenom' => mb_ucfirst($row['salarie_prenom']),
+                'nom' => $this->safeUpper((string)$row['salarie_nom']),
+                'prenom' => $this->safeUcfirst((string)$row['salarie_prenom']),
                 'agr' => $row['salarie_agr'],
                 'nb_controles' => (int)$row['nb_controles'],
                 'nb_auto' => (int)($row['nb_auto'] ?? 0),
@@ -189,5 +226,54 @@ class SuiviSyntheseBuilder
         }
 
         return $data;
+    }
+
+    private function initActivityTotals(): array
+    {
+        return array_merge(
+            array_fill_keys(array_map(fn($t) => 'nb_' . $t, $this->types), 0),
+            array_fill_keys(array_map(fn($t) => 'ca_total_ht_' . $t, $this->types), 0.0),
+            [
+                'nb_controles' => 0,
+                'ca_total_ht' => 0.0,
+            ],
+            array_fill_keys(array_map(fn($t) => 'prix_moyen_' . $t, $this->types), 0.0),
+        );
+    }
+
+    private function computeActivityAverages(array &$totals): void
+    {
+        foreach ($this->types as $type) {
+            $totals['prix_moyen_' . $type] = $totals['nb_' . $type] > 0
+                ? $totals['ca_total_ht_' . $type] / $totals['nb_' . $type]
+                : 0.0;
+        }
+    }
+
+    private function safeUpper(string $value): string
+    {
+        if (function_exists('mb_strtoupper')) {
+            return mb_strtoupper($value);
+        }
+
+        return strtoupper($value);
+    }
+
+    private function safeUcfirst(string $value): string
+    {
+        $value = trim($value);
+        if ($value == '') {
+            return '';
+        }
+
+        if (function_exists('mb_ucfirst')) {
+            return mb_ucfirst($value);
+        }
+
+        if (function_exists('mb_strtoupper') && function_exists('mb_substr')) {
+            return mb_strtoupper(mb_substr($value, 0, 1)) . mb_substr($value, 1);
+        }
+
+        return ucfirst($value);
     }
 }

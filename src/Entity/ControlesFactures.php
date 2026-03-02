@@ -19,10 +19,10 @@ class ControlesFactures
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
+    #[ORM\Column(length: 50)]
     private ?string $idcontrole = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
+    #[ORM\Column(length: 50)]
     private ?string $idfacture = null;
 
     #[ORM\Column(length: 8)]
@@ -31,10 +31,10 @@ class ControlesFactures
     #[ORM\Column(length: 8)]
     private ?string $agrControleur = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
+    #[ORM\Column(length: 50)]
     private ?string $idclient = null;
 
-    #[ORM\ManyToOne(inversedBy: 'controlesFactures')]
+    #[ORM\ManyToOne]
     private ?Reseau $reseau = null;
 
     public function getId(): ?int

@@ -14,8 +14,13 @@
             'temps_moyen': 'Temps moyen',
             'taux_refus': 'Taux de refus',
         } %}
+        {% set selectedVehicules = selected.vehicule|default([]) %}
+        {% set onlyCL = ('CL' in selectedVehicules) and ('VL' not in selectedVehicules) %}
+        {% set onlyVL = ('VL' in selectedVehicules) and ('CL' not in selectedVehicules) %}
+        {% set showAutos = not onlyCL %}
+        {% set showMotos = not onlyVL %}
 
-        <div class="stats-container">
+        <div class="stats-container" data-ajax-results>
             {% for key, label in stats %}
                 <div class="stats-wrapper">
                     <div class="stats-panel">
@@ -23,7 +28,7 @@
 
                         {% set keyAuto = key ~ '_auto' %}
                         {% set keyMoto = key ~ '_moto' %}
-                        {% set sorted = controleursStats | sort((a, b) => ((b[keyAuto] + b[keyMoto]) <=> (a[keyAuto] + a[keyMoto]))) %}
+                        {% set sorted = controleursStats | sort((a, b) => (((showAutos ? b[keyAuto] : 0) + (showMotos ? b[keyMoto] : 0)) <=> ((showAutos ? a[keyAuto] : 0) + (showMotos ? a[keyMoto] : 0)))) %}
 
                         {% set valuesAuto = [] %}
                         {% set valuesMoto = [] %}
@@ -47,93 +52,97 @@
                                 {% endfor %}
                             </div>
 
-                            <div class="chart-cols bars">
-                                <div class="salarie-name">Autos</div>
-                                {% for salarie in sorted %}
-                                    {% set percent = maxAuto > 0 ? (salarie[keyAuto] / maxAuto) * 100 : 0 %}
+                            {% if showAutos %}
+                                <div class="chart-cols bars">
+                                    <div class="salarie-name">Autos</div>
+                                    {% for salarie in sorted %}
+                                        {% set percent = maxAuto > 0 ? (salarie[keyAuto] / maxAuto) * 100 : 0 %}
 
-                                    <div class="bar-container">
-                                        <div class="bar" style="width: {{ percent }}%"></div>
-                                    </div>
-                                {% endfor %}
-
-                                <div class="avg-line {{ moyennePercentAuto < 50 ? 'avg-line-left' : 'avg-line-right' }}" style="left: {{ moyennePercentAuto }}%">
-                                    <span>
-                                        {% if key == 'nb_controles' %}
-                                            {{ moyenneAuto|number_format(0, ',', ' ') }}
-                                        {% elseif key == 'prix_moyen' %}
-                                            {{ moyenneAuto|number_format(2, ',', ' ') }} €
-                                        {% elseif key == 'temps_moyen' %}
-                                            {{ moyenneAuto|number_format(2, ',', ' ') }}
-                                        {% else %}
-                                            {{ moyenneAuto|number_format(2, ',', ' ') }}%
-                                        {% endif %}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div class="chart-cols nb">
-                                <div class="salarie-name"><br></div>
-                                {% for salarie in sorted %}
-                                    <div class="salarie-row">
-                                        <div class="salarie-value">
-                                            {% if key == 'nb_controles' %}
-                                                {{ salarie[keyAuto] }}
-                                            {% elseif key == 'prix_moyen' %}
-                                                {{ salarie[keyAuto]|number_format(2, ',', ' ') }} €
-                                            {% elseif key == 'temps_moyen' %}
-                                                {{ salarie[keyAuto]|number_format(2, ',', ' ') }}
-                                            {% else %}
-                                                {{ salarie[keyAuto]|number_format(2, ',', ' ') }}%
-                                            {% endif %}
+                                        <div class="bar-container">
+                                            <div class="bar" style="width: {{ percent }}%"></div>
                                         </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
+                                    {% endfor %}
 
-                            <div class="chart-cols bars">
-                                <div class="salarie-name">Motos</div>
-                                {% for salarie in sorted %}
-                                    {% set percent = maxMoto > 0 ? (salarie[keyMoto] / maxMoto) * 100 : 0 %}
-
-                                    <div class="bar-container">
-                                        <div class="bar" style="width: {{ percent }}%"></div>
-                                    </div>
-                                {% endfor %}
-
-                                <div class="avg-line {{ moyennePercentMoto < 50 ? 'avg-line-left' : 'avg-line-right' }}" style="left: {{ moyennePercentMoto }}%">
-                                    <span>
-                                        {% if key == 'nb_controles' %}
-                                            {{ moyenneMoto|number_format(0, ',', ' ') }}
-                                        {% elseif key == 'prix_moyen' %}
-                                            {{ moyenneMoto|number_format(2, ',', ' ') }} €
-                                        {% elseif key == 'temps_moyen' %}
-                                            {{ moyenneMoto|number_format(2, ',', ' ') }}
-                                        {% else %}
-                                            {{ moyenneMoto|number_format(2, ',', ' ') }}%
-                                        {% endif %}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div class="chart-cols nb">
-                                <div class="salarie-name"><br></div>
-                                {% for salarie in sorted %}
-                                    <div class="salarie-row">
-                                        <div class="salarie-value">
+                                    <div class="avg-line {{ moyennePercentAuto < 50 ? 'avg-line-left' : 'avg-line-right' }}" style="left: {{ moyennePercentAuto }}%">
+                                        <span>
                                             {% if key == 'nb_controles' %}
-                                                {{ salarie[keyMoto] }}
+                                                {{ moyenneAuto|number_format(0, ',', ' ') }}
                                             {% elseif key == 'prix_moyen' %}
-                                                {{ salarie[keyMoto]|number_format(2, ',', ' ') }} €
+                                                {{ moyenneAuto|number_format(2, ',', ' ') }} €
                                             {% elseif key == 'temps_moyen' %}
-                                                {{ salarie[keyMoto]|number_format(2, ',', ' ') }}
+                                                {{ moyenneAuto|number_format(2, '\'', '') }}
                                             {% else %}
-                                                {{ salarie[keyMoto]|number_format(2, ',', ' ') }}%
+                                                {{ moyenneAuto|number_format(2, ',', ' ') }}%
                                             {% endif %}
-                                        </div>
+                                        </span>
                                     </div>
-                                {% endfor %}
-                            </div>
+                                </div>
+
+                                <div class="chart-cols nb">
+                                    <div class="salarie-name"><br></div>
+                                    {% for salarie in sorted %}
+                                        <div class="salarie-row">
+                                            <div class="salarie-value">
+                                                {% if key == 'nb_controles' %}
+                                                    {{ salarie[keyAuto] }}
+                                                {% elseif key == 'prix_moyen' %}
+                                                    {{ salarie[keyAuto]|number_format(2, ',', ' ') }} €
+                                                {% elseif key == 'temps_moyen' %}
+                                                    {{ salarie[keyAuto]|number_format(2, '\'', '') }}
+                                                {% else %}
+                                                    {{ salarie[keyAuto]|number_format(2, ',', ' ') }}%
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                            {% if showMotos %}
+                                <div class="chart-cols bars">
+                                    <div class="salarie-name">Motos</div>
+                                    {% for salarie in sorted %}
+                                        {% set percent = maxMoto > 0 ? (salarie[keyMoto] / maxMoto) * 100 : 0 %}
+
+                                        <div class="bar-container">
+                                            <div class="bar" style="width: {{ percent }}%"></div>
+                                        </div>
+                                    {% endfor %}
+
+                                    <div class="avg-line {{ moyennePercentMoto < 50 ? 'avg-line-left' : 'avg-line-right' }}" style="left: {{ moyennePercentMoto }}%">
+                                        <span>
+                                            {% if key == 'nb_controles' %}
+                                                {{ moyenneMoto|number_format(0, ',', ' ') }}
+                                            {% elseif key == 'prix_moyen' %}
+                                                {{ moyenneMoto|number_format(2, ',', ' ') }} €
+                                            {% elseif key == 'temps_moyen' %}
+                                                {{ moyenneMoto|number_format(2, '\'', '') }}
+                                            {% else %}
+                                                {{ moyenneMoto|number_format(2, ',', ' ') }}%
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="chart-cols nb">
+                                    <div class="salarie-name"><br></div>
+                                    {% for salarie in sorted %}
+                                        <div class="salarie-row">
+                                            <div class="salarie-value">
+                                                {% if key == 'nb_controles' %}
+                                                    {{ salarie[keyMoto] }}
+                                                {% elseif key == 'prix_moyen' %}
+                                                    {{ salarie[keyMoto]|number_format(2, ',', ' ') }} €
+                                                {% elseif key == 'temps_moyen' %}
+                                                    {{ salarie[keyMoto]|number_format(2, '\'', '') }}
+                                                {% else %}
+                                                    {{ salarie[keyMoto]|number_format(2, ',', ' ') }}%
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

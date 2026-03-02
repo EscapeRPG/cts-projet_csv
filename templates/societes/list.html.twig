@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des sociétés{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="table-wrapper">
+            <table class="societes-list">
+                <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Numéro de TVA</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for societe in societes %}
+                    {% set formId = 'societe-form-' ~ societe.id %}
+
+                    <tr>
+                        <td>{{ form_widget(forms[societe.id].nom, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[societe.id].numTva, {'attr': {'form': formId}}) }}</td>
+                        <td>
+                            {{ form_start(forms[societe.id], {
+                                'action': path('app_societes_update', {'id': societe.id}),
+                                'method': 'POST',
+                                'attr': {'data-turbo': 'false', 'id': formId}
+                            }) }}
+                            {{ form_errors(forms[societe.id]) }}
+                            <button type="submit" disabled form="{{ formId }}">Enregistrer</button>
+                            {{ form_end(forms[societe.id]) }}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

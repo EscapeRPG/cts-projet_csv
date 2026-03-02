@@ -62,5 +62,35 @@ table {
         background: var(--cts-main-light);
         font-weight: bold;
         text-align: center;
+
+        &.societe {
+            background: var(--cts-alt);
+            color: var(--blocks);
+        }
+
+        &.global {
+            background: var(--cts-main);
+            position: sticky;
+            bottom: 0;
+        }
+    }
+}
+
+.pagination {
+    position: sticky;
+    bottom: 0;
+    text-align: center;
+    background: var(--cts-alt);
+    padding: 5px 0;
+
+    a {
+        color: black;
+        text-decoration: none;
+        font-weight: bold;
+        margin: 0 5px;
+
+        &:hover {
+            color: var(--blocks);
+        }
     }
 }

@@ -3,8 +3,6 @@
 {% block title %}Liste des salariés{% endblock %}
 
 {% block body %}
-    <h1>Liste des salariés</h1>
-
     <div class="container">
         <div class="table-wrapper">
             <table class="salaries-list">
@@ -28,38 +26,43 @@
                     <th>Polo</th>
                     <th>Chaussures</th>
                     <th>Actif</th>
-                    <th>Actions</th>
+                    <th>Action</th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for salarie in salaries %}
-                    {{ form_start(forms[salarie.id], {'action': path('app_salaries_update', {'id': salarie.id}), 'method': 'POST', 'attr': {'data-turbo': 'false'}}) }}
-                    {{ form_errors(forms[salarie.id]) }}
+                    {% set formId = 'salarie-form-' ~ salarie.id %}
 
                     <tr>
-                        <td>{{ form_widget(forms[salarie.id].societe) }}</td>
-                        <td>{{ form_widget(forms[salarie.id].agrControleur) }}</td>
-                        <td>{{ form_widget(forms[salarie.id].agrClControleur) }}</td>
-                        <td>{{ form_widget(forms[salarie.id].nom) }}</td>
-                        <td>{{ form_widget(forms[salarie.id].prenom) }}</td>
-                        <td>{{ form_widget(forms[salarie.id].dateNaissance) }}</td>
-                        <td>{{ form_widget(forms[salarie.id].email) }}</td>
-                        <td>{{ form_widget(forms[salarie.id].telephone) }}</td>
-                        <td>{{ form_widget(forms[salarie.id].echelons) }}</td>
-                        <td>{{ form_widget(forms[salarie.id].salaireBrut) }} €</td>
-                        <td>{{ form_widget(forms[salarie.id].nbHeures) }}</td>
-                        <td>{{ form_widget(forms[salarie.id].vesteMancheAmovible) }}</td>
-                        <td>{{ form_widget(forms[salarie.id].polaire) }}</td>
-                        <td>{{ form_widget(forms[salarie.id].pantalon) }}</td>
-                        <td>{{ form_widget(forms[salarie.id].teeShirts) }}</td>
-                        <td>{{ form_widget(forms[salarie.id].polo) }}</td>
-                        <td>{{ form_widget(forms[salarie.id].chaussures) }}</td>
-                        <td>{{ form_widget(forms[salarie.id].isActive) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].societe, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].agrControleur, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].agrClControleur, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].nom, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].prenom, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].dateNaissance, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].email, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].telephone, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].echelons, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].salaireBrut, {'attr': {'form': formId}}) }} €</td>
+                        <td>{{ form_widget(forms[salarie.id].nbHeures, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].vesteMancheAmovible, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].polaire, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].pantalon, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].teeShirts, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].polo, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].chaussures, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[salarie.id].isActive, {'attr': {'form': formId}}) }}</td>
                         <td>
-                            <button type="submit" disabled>Enregistrer</button>
+                            {{ form_start(forms[salarie.id], {
+                                'action': path('app_salaries_update', {'id': salarie.id}),
+                                'method': 'POST',
+                                'attr': {'data-turbo': 'false', 'id': formId}
+                            }) }}
+                            {{ form_errors(forms[salarie.id]) }}
+                            <button type="submit" disabled form="{{ formId }}">Enregistrer</button>
+                            {{ form_end(forms[salarie.id]) }}
                         </td>
                     </tr>
-                    {{ form_end(forms[salarie.id]) }}
                 {% endfor %}
                 </tbody>
             </table>

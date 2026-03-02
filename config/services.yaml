@@ -13,6 +13,10 @@ services:
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            string $mailerFromAddress: '%env(string:MAILER_FROM_ADDRESS)%'
+            string $mailerFromName: '%env(string:MAILER_FROM_NAME)%'
+            string $supportToAddress: '%env(string:SUPPORT_TO_ADDRESS)%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name

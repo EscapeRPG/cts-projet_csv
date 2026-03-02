@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\ControlesNonFacturesRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ControlesNonFacturesRepository::class)]
@@ -14,7 +13,7 @@ class ControlesNonFactures
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
+    #[ORM\Column(length: 50)]
     private ?string $idcontrole = null;
 
     #[ORM\Column(length: 8)]
@@ -23,10 +22,10 @@ class ControlesNonFactures
     #[ORM\Column(length: 8)]
     private ?string $agrControleur = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
+    #[ORM\Column(length: 50)]
     private ?string $idclient = null;
 
-    #[ORM\ManyToOne(inversedBy: 'controlesNonFactures')]
+    #[ORM\ManyToOne]
     private ?Reseau $reseau = null;
 
     public function getId(): ?int

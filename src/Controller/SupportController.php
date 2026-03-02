@@ -13,6 +13,14 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class SupportController extends AbstractController
 {
+    public function __construct(
+        private readonly string $mailerFromAddress,
+        private readonly string $mailerFromName,
+        private readonly string $supportToAddress
+    )
+    {
+    }
+
     /*
      * Affiche une page permettant d'envoyer un email à l'administrateur réseau en cas de demande de réinitialisation de mot de passe non sollicitée
      */
@@ -24,10 +32,19 @@ final class SupportController extends AbstractController
     ): Response
     {
         $user = $security->getUser();
+        $context = strtolower(trim((string)$request->query->get('context', 'reset')));
+
+        $subject = 'Problème réinitialisation mot de passe';
+        $message = "Bonjour,\n\nJe pense qu'il y a un problème avec mon compte, je viens de recevoir une demande de réinitialisation de mot de passe non sollicitée.\n\nMerci.";
+
+        if ($context === 'creation') {
+            $subject = 'Problème création de compte';
+            $message = "Bonjour,\n\nJe pense qu'il y a un problème avec mon compte, je viens de recevoir un email de création de compte non sollicité.\n\nMerci.";
+        }
 
         $form = $this->createForm(SupportRequestType::class, [
-            'subject' => 'Problème réinitialisation mot de passe',
-            'message' => "Bonjour,\n\nJe pense qu'il y a un problème avec mon compte, je viens de recevoir une demande de réinitialisation de mot de passe non sollicitée.\n\nMerci."
+            'subject' => $subject,
+            'message' => $message
         ]);
 
         $form->handleRequest($request);
@@ -36,11 +53,12 @@ final class SupportController extends AbstractController
             $data = $form->getData();
 
             $email = new Email()
-                ->from('no-reply@ker-milo.fr')
-                ->to('emilienfrancois.ct@gmail.com')
+                ->from(new \Symfony\Component\Mime\Address($this->mailerFromAddress, $this->mailerFromName))
+                ->to($this->supportToAddress)
                 ->subject('[SUPPORT] ' . $data['subject'])
                 ->text(
                     "Utilisateur: " . ($user?->getEmail() ?? 'anonyme') . "\n" .
+                    "Contexte: " . $context . "\n" .
                     "IP: " . $request->getClientIp() . "\n\n" .
                     $data['message']
                 );

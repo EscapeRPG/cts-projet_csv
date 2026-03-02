@@ -16,6 +16,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\ResetPassword\Controller\ResetPasswordControllerTrait;
 use SymfonyCasts\Bundle\ResetPassword\Exception\ResetPasswordExceptionInterface;
@@ -27,8 +28,10 @@ class ResetPasswordController extends AbstractController
     use ResetPasswordControllerTrait;
 
     public function __construct(
-        private ResetPasswordHelperInterface $resetPasswordHelper,
-        private EntityManagerInterface       $entityManager
+        private readonly ResetPasswordHelperInterface $resetPasswordHelper,
+        private readonly EntityManagerInterface       $entityManager,
+        private readonly string                       $mailerFromAddress,
+        private readonly string                       $mailerFromName
     )
     {
     }
@@ -162,12 +165,17 @@ class ResetPasswordController extends AbstractController
         }
 
         $email = new TemplatedEmail()
-            ->from(new Address('emilienfrancois.ct@gmail.com', 'Ker-Milo'))
+            ->from(new Address($this->mailerFromAddress, $this->mailerFromName))
             ->to((string)$user->getEmail())
             ->subject('Votre demande de réinitialisation de mot de passe')
             ->htmlTemplate('reset_password/email.html.twig')
             ->context([
                 'resetToken' => $resetToken,
+                'supportUrl' => $this->generateUrl(
+                    'app_support',
+                    ['context' => 'reset'],
+                    UrlGeneratorInterface::ABSOLUTE_URL
+                ),
             ]);
 
         $mailer->send($email);

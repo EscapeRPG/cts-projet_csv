@@ -16,30 +16,32 @@ final class CsvReader
 
         $headers = null;
 
-        while (($row = fgetcsv($handle, 0, $delimiter, '"', '')) !== false) {
-            if ($headers === null) {
-                $headers = array_map(
-                    fn($h) => $this->normalizeHeader($h),
-                    $row
-                );
+        try {
+            while (($row = fgetcsv($handle, 0, $delimiter, '"', '')) !== false) {
+                if ($headers === null) {
+                    $headers = array_map(
+                        fn($h) => $this->normalizeHeader($h),
+                        $row
+                    );
 
-                $headers = $this->remapHeaders($headers, $file, $reseauCode);
+                    $headers = $this->remapHeaders($headers, $file, $reseauCode);
 
-                continue;
-            }
-
-            if (count($row) !== count($headers)) {
-                if (count($row) > count($headers)) {
-                    $row = array_slice($row, 0, count($headers));
-                } else {
-                    $row = array_pad($row, count($headers), null);
+                    continue;
                 }
+
+                if (count($row) !== count($headers)) {
+                    if (count($row) > count($headers)) {
+                        $row = array_slice($row, 0, count($headers));
+                    } else {
+                        $row = array_pad($row, count($headers), null);
+                    }
+                }
+
+                yield array_combine($headers, $row);
             }
-
-            yield array_combine($headers, $row);
+        } finally {
+            fclose($handle);
         }
-
-        fclose($handle);
     }
 
     /*
