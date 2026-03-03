@@ -5,6 +5,9 @@ namespace App\Utils;
 use DateTimeImmutable;
 use RuntimeException;
 
+/**
+ * Parses date strings using a predefined list of accepted input formats.
+ */
 final class DateParser
 {
     private const array FORMATS = [
@@ -24,8 +27,14 @@ final class DateParser
         'H:i',
     ];
 
-    /*
-     * Renvoie une date formatée pour enregistrement correct en bdd
+    /**
+     * Parses a date string into an immutable date object.
+     *
+     * @param string|null $value Raw date value.
+     *
+     * @return DateTimeImmutable|null Parsed date, or null for empty input.
+     *
+     * @throws RuntimeException When the input does not match any supported format.
      */
     public static function parseDate(?string $value): ?DateTimeImmutable
     {

@@ -1,17 +1,27 @@
 import { sortTableByColumn, enableSubmitOnChange, adjustColumnWidths } from "sort_tables";
 
+/**
+ * Applies dynamic column width adjustments.
+ *
+ * @param {HTMLTableElement} table
+ * @returns {void}
+ */
 function initTable(table) {
     adjustColumnWidths(table);
 }
 
-// Ajoute une fonction de tri sur certaines colonnes de la table de salariés et prépare la table pour un affichage optimisé
+/**
+ * Initializes sortable columns and inline submit behavior for salaries table.
+ *
+ * @returns {void}
+ */
 function init() {
     const table = document.querySelector('.salaries-list');
     if (!table) return;
 
     const headers = table.querySelectorAll('th');
 
-    // Ajout de la fonction de tri
+    // Enable sorting only for selected columns.
     headers.forEach((th, index) => {
         const sortableColumns = ['Société', 'Nom', 'Nb heures', 'Salaire brut'];
         if (sortableColumns.includes(th.textContent.trim())) {

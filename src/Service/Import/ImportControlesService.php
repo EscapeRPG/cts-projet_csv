@@ -2,13 +2,22 @@
 
 namespace App\Service\Import;
 
+/**
+ * Imports CSV rows into the `controles` table.
+ */
 class ImportControlesService extends \App\Service\Import\AbstractCsvImportService
 {
+    /**
+     * @return string Target table name.
+     */
     protected static function getTableName(): string
     {
         return 'controles';
     }
 
+    /**
+     * @return array<int, string> Target table columns.
+     */
     protected static function getColumns(): array
     {
         return [
@@ -33,11 +42,17 @@ class ImportControlesService extends \App\Service\Import\AbstractCsvImportServic
         ];
     }
 
+    /**
+     * @return array<int, string> Unique key columns.
+     */
     protected static function getUniqueKeys(): array
     {
         return ['idcontrole'];
     }
 
+    /**
+     * @return array<string, array<int, string>> CSV-to-database mapping.
+     */
     protected static function getColumnMapping(): array
     {
         return [
@@ -61,11 +76,17 @@ class ImportControlesService extends \App\Service\Import\AbstractCsvImportServic
         ];
     }
 
+    /**
+     * @return array<int, string> Date/time columns.
+     */
     protected static function getDateColumns(): array
     {
         return ['date_export', 'date_prise_rdv', 'deb_ctrl', 'fin_ctrl', 'date_ctrl'];
     }
 
+    /**
+     * @return array<int, string> Decimal columns.
+     */
     protected static function getDecimalColumns(): array
     {
         return [];

@@ -31,8 +31,16 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Uid\Uuid;
 
 #[IsGranted("ROLE_ADMIN")]
+/**
+ * Provides administrative CRUD actions for users, employees, companies, and centers.
+ */
 final class AdminController extends AbstractController
 {
+    /**
+     * @param string $mailerFromAddress Sender email address used for administrative notifications.
+     * @param string $mailerFromName Sender display name used for administrative notifications.
+     * @param LoggerInterface $logger Application logger for admin-related warnings and errors.
+     */
     public function __construct(
         private readonly string          $mailerFromAddress,
         private readonly string          $mailerFromName,
@@ -41,8 +49,12 @@ final class AdminController extends AbstractController
     {
     }
 
-    /*
-     * Affiche la liste des utilisateurs du site
+    /**
+     * Displays the list of application users.
+     *
+     * @param UserRepository $userRepository Repository used to retrieve users.
+     *
+     * @return Response Rendered HTML response containing the users list.
      */
     #[Route("/admin/users/list", name: 'app_users_list')]
     public function list(UserRepository $userRepository): Response
@@ -54,8 +66,14 @@ final class AdminController extends AbstractController
         ]);
     }
 
-    /*
-     * Permet d'ajouter un nouvel utilisateur du site
+    /**
+     * Creates a new user, persists it, and sends the account activation email.
+     *
+     * @param Request $request Current HTTP request containing form submission data.
+     * @param EntityManagerInterface $em Doctrine entity manager.
+     * @param MailerInterface $mailer Mailer service used to send activation emails.
+     *
+     * @return Response Rendered add form on GET/invalid submit, or redirect after creation.
      */
     #[Route("/admin/users/add", name: 'app_users_add')]
     public function addUser(
@@ -136,8 +154,13 @@ final class AdminController extends AbstractController
         ]);
     }
 
-    /*
-     * Permet de transformer un utilisateur en administrateur et inversement
+    /**
+     * Toggles user role between import and administrator privileges.
+     *
+     * @param User $user User entity resolved from route parameter.
+     * @param EntityManagerInterface $em Doctrine entity manager.
+     *
+     * @return Response Redirect response to the users list.
      */
     #[Route('/admin/users/promote/{id}', name: 'app_users_promote', requirements: ['id' => '\d+'])]
     public function promoteUser(User $user, EntityManagerInterface $em): Response
@@ -158,8 +181,14 @@ final class AdminController extends AbstractController
         return $this->redirectToRoute('app_users_list');
     }
 
-    /*
-     * Permet de supprimer un utilisateur du site
+    /**
+     * Deletes a user after CSRF token validation.
+     *
+     * @param User $user User entity resolved from route parameter.
+     * @param EntityManagerInterface $em Doctrine entity manager.
+     * @param Request $request Current HTTP request containing the CSRF token.
+     *
+     * @return Response Redirect response to the users list.
      */
     #[Route("/admin/users/delete/{id}", name: 'app_users_delete', requirements: ['id' => '\d+'])]
     public function deleteUser(User $user, EntityManagerInterface $em, Request $request): Response
@@ -179,8 +208,13 @@ final class AdminController extends AbstractController
         return $this->redirectToRoute('app_users_list');
     }
 
-    /*
-     * Affiche la liste des salariés sous forme de formulaire pour les modifier directement
+    /**
+     * Displays employees with one inline edit form per row.
+     *
+     * @param SalarieRepository $salarieRepository Repository used to retrieve employees.
+     * @param FormFactoryInterface $formFactory Form factory used to build per-employee forms.
+     *
+     * @return Response Rendered HTML response containing employees and their forms.
      */
     #[Route("/admin/salaries/list", name: 'app_salaries_list')]
     public function listSalaries(
@@ -211,8 +245,13 @@ final class AdminController extends AbstractController
         ]);
     }
 
-    /*
-     * Permet d'ajouter un nouveau salarié à la liste
+    /**
+     * Creates a new employee entry.
+     *
+     * @param Request $request Current HTTP request containing form submission data.
+     * @param EntityManagerInterface $em Doctrine entity manager.
+     *
+     * @return Response Rendered add form on GET/invalid submit, or redirect after creation.
      */
     #[Route("/admin/salaries/add", name: 'app_salaries_add')]
     public function addSalarie(
@@ -239,8 +278,15 @@ final class AdminController extends AbstractController
         ]);
     }
 
-    /*
-     * Met à jour le salarié modifié
+    /**
+     * Updates an existing employee using the inline list form.
+     *
+     * @param Salarie $salarie Employee entity resolved from route parameter.
+     * @param Request $request Current HTTP request containing form submission data.
+     * @param EntityManagerInterface $em Doctrine entity manager.
+     * @param FormFactoryInterface $formFactory Form factory used to rebuild inline forms.
+     *
+     * @return Response Redirect response on success, or rendered list with validation errors.
      */
     #[Route('/admin/salaries/update/{id}', name: 'app_salaries_update', methods: ['POST'])]
     public function updateSalarie(
@@ -292,8 +338,13 @@ final class AdminController extends AbstractController
         ]);
     }
 
-    /*
-     * Affiche la liste des sociétés sous forme de formulaire pour les modifier directement
+    /**
+     * Displays companies with one inline edit form per row.
+     *
+     * @param SocieteRepository $societeRepository Repository used to retrieve companies.
+     * @param FormFactoryInterface $formFactory Form factory used to build per-company forms.
+     *
+     * @return Response Rendered HTML response containing companies and their forms.
      */
     #[Route('/admin/societes/list', name: 'app_societes_list')]
     public function listSocietes(
@@ -324,8 +375,13 @@ final class AdminController extends AbstractController
         ]);
     }
 
-    /*
-     * Permet d'ajouter une nouvelle société à la liste
+    /**
+     * Creates a new company entry.
+     *
+     * @param Request $request Current HTTP request containing form submission data.
+     * @param EntityManagerInterface $em Doctrine entity manager.
+     *
+     * @return Response Rendered add form on GET/invalid submit, or redirect after creation.
      */
     #[Route('/admin/societes/add', name: 'app_societes_add')]
     public function addSociete(
@@ -353,8 +409,15 @@ final class AdminController extends AbstractController
         ]);
     }
 
-    /*
-     * Met à jour la société modifiée
+    /**
+     * Updates an existing company using the inline list form.
+     *
+     * @param Societe $societe Company entity resolved from route parameter.
+     * @param Request $request Current HTTP request containing form submission data.
+     * @param EntityManagerInterface $em Doctrine entity manager.
+     * @param FormFactoryInterface $formFactory Form factory used to rebuild inline forms.
+     *
+     * @return Response Redirect response on success, or rendered list with validation errors.
      */
     #[Route('/admin/societes/update/{id}', name: 'app_societes_update', methods: ['POST'])]
     public function updateSociete(
@@ -406,8 +469,13 @@ final class AdminController extends AbstractController
         ]);
     }
 
-    /*
-     * Affiche la liste des centres sous forme de formulaire pour les modifier directement
+    /**
+     * Displays centers with one inline edit form per row.
+     *
+     * @param CentreRepository $centreRepository Repository used to retrieve centers.
+     * @param FormFactoryInterface $formFactory Form factory used to build per-center forms.
+     *
+     * @return Response Rendered HTML response containing centers and their forms.
      */
     #[Route("/admin/centres/list", name: 'app_centres_list')]
     public function listCentres(
@@ -438,9 +506,13 @@ final class AdminController extends AbstractController
         ]);
     }
 
-
-    /*
-     * Permet d'ajouter un nouveau centre à la liste
+    /**
+     * Creates a new center entry.
+     *
+     * @param Request $request Current HTTP request containing form submission data.
+     * @param EntityManagerInterface $em Doctrine entity manager.
+     *
+     * @return Response Rendered add form on GET/invalid submit, or redirect after creation.
      */
     #[Route("/admin/centres/add", name: 'app_centres_add')]
     public function addCentre(
@@ -470,8 +542,15 @@ final class AdminController extends AbstractController
         ]);
     }
 
-    /*
-     * Met à jour le centre modifié
+    /**
+     * Updates an existing center using the inline list form.
+     *
+     * @param Centre $centre Center entity resolved from route parameter.
+     * @param Request $request Current HTTP request containing form submission data.
+     * @param EntityManagerInterface $em Doctrine entity manager.
+     * @param FormFactoryInterface $formFactory Form factory used to rebuild inline forms.
+     *
+     * @return Response Redirect response on success, or rendered list with validation errors.
      */
     #[Route('/admin/centres/update/{id}', name: 'app_centres_update', methods: ['POST'])]
     public function updateCentre(

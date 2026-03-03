@@ -1,4 +1,8 @@
-// Affiche un loader le temps que toute la page soit chargée
+/**
+ * Hides the loading overlay and reveals page content.
+ *
+ * @returns {void}
+ */
 function loadContent() {
     const loader = document.getElementById('loader');
     const wrapper = document.getElementById('loadingContent');

@@ -4,8 +4,22 @@ namespace App\Import;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+/**
+ * Streams CSV files row-by-row with normalized headers.
+ */
 final class CsvReader
 {
+    /**
+     * Reads a CSV file and yields associative rows using normalized headers.
+     *
+     * @param UploadedFile $file Uploaded CSV file.
+     * @param string $delimiter CSV delimiter.
+     * @param string|null $reseauCode Optional network code used for header remapping rules.
+     *
+     * @return \Generator<int, array<string, mixed>> Generator yielding normalized CSV rows.
+     *
+     * @throws \RuntimeException When the CSV file cannot be opened.
+     */
     public function read(UploadedFile $file, string $delimiter = ';', ?string $reseauCode = null): \Generator
     {
         $handle = fopen($file->getPathname(), 'r');
@@ -44,8 +58,12 @@ final class CsvReader
         }
     }
 
-    /*
-     * S'assure que les titres des colonnes des fichiers csv ne possèdent pas de caractères invisbles pour matcher la bdd lors de l'importation
+    /**
+     * Normalizes a CSV header label for stable database-field matching.
+     *
+     * @param string $header Raw CSV header label.
+     *
+     * @return string Normalized header label.
      */
     private function normalizeHeader(string $header): string
     {
@@ -53,8 +71,14 @@ final class CsvReader
         return trim(mb_strtolower($header));
     }
 
-    /*
-     * Renomme les headers des fichiers csv CONTROLES de SGS suite à un souci de nommage
+    /**
+     * Applies network-specific header remapping rules.
+     *
+     * @param array<int, string> $headers Normalized headers from the source CSV file.
+     * @param UploadedFile $file Uploaded CSV file.
+     * @param string|null $reseauCode Optional network code.
+     *
+     * @return array<int, string> Remapped headers when a rule matches, original headers otherwise.
      */
     private function remapHeaders(array $headers, UploadedFile $file, ?string $reseauCode): array
     {

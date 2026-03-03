@@ -10,25 +10,6 @@
             <div class="pro-stats-panel">
                 <div class="summary">
                     <div class="ca-summary">
-                        <h2>Contrôles {{ "now"|date('Y') }}</h2>
-                        <strong>{{ summary.vol_now }}</strong>
-
-                        <div class="previous">
-                            <div class="row">
-                                <strong>{{ "now"|date('Y') - 1 }}</strong>
-                                {{ summary.vol_n1 }}
-                                <div class="{{ summary.per_ctrl_n1 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ctrl_n1|number_format(2, ',', ' ') }}%</div>
-                            </div>
-
-                            <div class="row">
-                                <strong>{{ "now"|date('Y') - 2 }}</strong>
-                                {{ summary.vol_n2 }}
-                                <div class="{{ summary.per_ctrl_n2 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ctrl_n2|number_format(2, ',', ' ') }}%</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="ca-summary">
                         <h2>CA {{ "now"|date('Y') }}</h2>
                         <strong>{{ summary.ca_now|number_format(2, ',', ' ') }} €</strong>
 
@@ -46,6 +27,25 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="ca-summary">
+                        <h2>Contrôles {{ "now"|date('Y') }}</h2>
+                        <strong>{{ summary.vol_now|number_format(0, ',', ' ') }}</strong>
+
+                        <div class="previous">
+                            <div class="row">
+                                <strong>{{ "now"|date('Y') - 1 }}</strong>
+                                {{ summary.vol_n1|number_format(0, ',', ' ') }}
+                                <div class="{{ summary.per_ctrl_n1 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ctrl_n1|number_format(2, ',', ' ') }}%</div>
+                            </div>
+
+                            <div class="row">
+                                <strong>{{ "now"|date('Y') - 2 }}</strong>
+                                {{ summary.vol_n2|number_format(0, ',', ' ') }}
+                                <div class="{{ summary.per_ctrl_n2 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ctrl_n2|number_format(2, ',', ' ') }}%</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="stats-wrapper graphique"
@@ -55,14 +55,14 @@
                         <button type="button" class="chart-toggle" data-chart-kind="volumes">Contrôles</button>
                     </div>
                     <div class="chart-canvas-wrap">
-                        <canvas class="pro-chart-canvas" aria-label="Graphique professionnels"></canvas>
+                        <canvas class="pro-chart-canvas" aria-label="Comparatif {{ "now"|date('Y') - 2 }} à {{ "now"|date('Y') }}"></canvas>
                     </div>
                 </div>
             </div>
 
-            <div class="table-wrapper">
-                <div class="stats-panel">
-                    <table class="table-pros">
+            <div class="stats-wrapper">
+                <div class="stats-panel table-panel">
+                    <table class="table-pros pro-table-wrapper">
                         <thead>
                         <tr>
                             <th>Client</th>

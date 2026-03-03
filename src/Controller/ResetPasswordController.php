@@ -23,10 +23,19 @@ use SymfonyCasts\Bundle\ResetPassword\Exception\ResetPasswordExceptionInterface;
 use SymfonyCasts\Bundle\ResetPassword\ResetPasswordHelperInterface;
 
 #[Route('/reset-password')]
+/**
+ * Manages the password reset workflow (request, email confirmation, and password update).
+ */
 class ResetPasswordController extends AbstractController
 {
     use ResetPasswordControllerTrait;
 
+    /**
+     * @param ResetPasswordHelperInterface $resetPasswordHelper Helper handling reset token lifecycle.
+     * @param EntityManagerInterface $entityManager Doctrine entity manager.
+     * @param string $mailerFromAddress Sender email address for reset messages.
+     * @param string $mailerFromName Sender display name for reset messages.
+     */
     public function __construct(
         private readonly ResetPasswordHelperInterface $resetPasswordHelper,
         private readonly EntityManagerInterface       $entityManager,
@@ -38,6 +47,12 @@ class ResetPasswordController extends AbstractController
 
     /**
      * Display & process form to request a password reset.
+     *
+     * @param Request $request Current HTTP request containing form submission data.
+     * @param MailerInterface $mailer Mailer service used to send password reset emails.
+     * @param TranslatorInterface $translator Translator used for reset flow messages.
+     *
+     * @return Response Rendered request form or redirect to check-email confirmation page.
      */
     #[Route('', name: 'app_forgot_password_request')]
     public function request(Request $request, MailerInterface $mailer, TranslatorInterface $translator): Response
@@ -60,6 +75,8 @@ class ResetPasswordController extends AbstractController
 
     /**
      * Confirmation page after a user has requested a password reset.
+     *
+     * @return Response Rendered check-email page with real or fake token data.
      */
     #[Route('/check-email', name: 'app_check_email')]
     public function checkEmail(): Response
@@ -77,6 +94,13 @@ class ResetPasswordController extends AbstractController
 
     /**
      * Validates and process the reset URL that the user clicked in their email.
+     *
+     * @param Request $request Current HTTP request containing form submission data.
+     * @param UserPasswordHasherInterface $passwordHasher Password hasher used to persist the new password.
+     * @param TranslatorInterface $translator Translator used for reset validation errors.
+     * @param string|null $token Reset token from URL when present.
+     *
+     * @return Response Rendered reset form or redirect depending on token/form state.
      */
     #[Route('/reset/{token}', name: 'app_reset_password')]
     public function reset(Request $request, UserPasswordHasherInterface $passwordHasher, TranslatorInterface $translator, ?string $token = null): Response
@@ -135,6 +159,14 @@ class ResetPasswordController extends AbstractController
     }
 
     /**
+     * Generates and sends a password reset email for a known user account.
+     *
+     * @param string $emailFormData Email address submitted by the user.
+     * @param MailerInterface $mailer Mailer service used to send the reset email.
+     * @param TranslatorInterface $translator Translator service.
+     *
+     * @return RedirectResponse Redirect response to the check-email page.
+     *
      * @throws TransportExceptionInterface
      */
     private function processSendingPasswordResetEmail(string $emailFormData, MailerInterface $mailer, TranslatorInterface $translator): RedirectResponse

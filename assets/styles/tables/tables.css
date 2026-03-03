@@ -1,9 +1,12 @@
-.table-wrapper {
+.table-wrapper, .pro-table-wrapper {
     max-height: 100%;
     overflow: auto;
+    box-sizing: border-box;
+}
+
+.table-wrapper {
     border-radius: 10px;
     border: 2px solid var(--cts-main);
-    box-sizing: border-box;
 }
 
 table {
@@ -70,6 +73,7 @@ table {
 
         &.global {
             background: var(--cts-main);
+            color: var(--blocks);
             position: sticky;
             bottom: 0;
         }

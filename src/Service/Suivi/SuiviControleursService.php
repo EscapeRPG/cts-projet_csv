@@ -2,10 +2,17 @@
 
 namespace App\Service\Suivi;
 
+/**
+ * Computes per-controller and global controller performance metrics.
+ */
 class SuiviControleursService
 {
-    /*
-     * Traite les données récupérées en SQL pour obtenir une moyenne pour chaque salarié
+    /**
+     * Builds controller statistics and global averages from synthesized data.
+     *
+     * @param array<string, mixed> $synthese Synthesized activity tree.
+     *
+     * @return array{0:array<int, array<string, mixed>>, 1:array<string, float>} Per-controller stats and global averages.
      */
     public function getControleursStats(array $synthese): array
     {

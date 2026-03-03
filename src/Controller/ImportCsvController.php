@@ -21,11 +21,18 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted('ROLE_IMPORT')]
+/**
+ * Handles CSV upload and orchestrates business-ordered import execution.
+ */
 final class ImportCsvController extends AbstractController
 {
-    /*
-     * Détermine l'ordre d'importation des fichiers csv
-     * Importe les fichiers en bdd
+    /**
+     * Uploads CSV files and imports them using a predefined business execution order.
+     *
+     * @param Request $request Current HTTP request containing uploaded files.
+     * @param ImportRouter $importRouter Router that resolves the correct importer for each file.
+     *
+     * @return Response Rendered import page with form state and optional success message.
      */
     #[Route('/import', name: 'import_csv')]
     public function import(

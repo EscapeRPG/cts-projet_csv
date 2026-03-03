@@ -10,6 +10,9 @@ use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+/**
+ * Base implementation for CSV import services with batching and deduplication.
+ */
 abstract class AbstractCsvImportService implements CsvImportInterface
 {
     protected int $batchSize = 500;
@@ -21,6 +24,10 @@ abstract class AbstractCsvImportService implements CsvImportInterface
         'batches' => 0,
     ];
 
+    /**
+     * @param EntityManagerInterface $em Entity manager used for low-level insert operations.
+     * @param CsvReader $csvReader CSV reader used to stream rows from uploaded files.
+     */
     public function __construct(
         protected EntityManagerInterface $em,
         protected CsvReader              $csvReader
@@ -28,30 +35,69 @@ abstract class AbstractCsvImportService implements CsvImportInterface
     {
     }
 
+    /**
+     * Sets the current network context for mapping imported rows.
+     *
+     * @param Reseau $reseau Current network.
+     *
+     * @return void
+     */
     public function setReseau(Reseau $reseau): void
     {
         $this->reseau = $reseau;
     }
 
-    /*
-    * À définir dans le service concret pour connaître les noms et types de tables
+    /**
+    * Returns the target database table name.
+    *
+    * @return string Table name.
     */
     abstract protected static function getTableName(): string;
 
+    /**
+     * Returns target table columns in insertion order.
+     *
+     * @return array<int, string> Table column names.
+     */
     abstract protected static function getColumns(): array;
 
+    /**
+     * Returns unique key columns for the target table.
+     *
+     * @return array<int, string> Unique key column names.
+     */
     abstract protected static function getUniqueKeys(): array;
 
+    /**
+     * Returns CSV-to-database column mapping.
+     *
+     * @return array<string, array<int, string>> Mapping by DB column name.
+     */
     abstract protected static function getColumnMapping(): array;
 
+    /**
+     * Returns date/time columns requiring parsing.
+     *
+     * @return array<int, string> Date/time column names.
+     */
     abstract protected static function getDateColumns(): array;
 
+    /**
+     * Returns decimal columns requiring decimal separator normalization.
+     *
+     * @return array<int, string> Decimal column names.
+     */
     abstract protected static function getDecimalColumns(): array;
 
     /**
-     * @throws Exception
+     * Imports a CSV file into the target table.
      *
-     *  Import générique
+     * @param UploadedFile $file Uploaded CSV file.
+     * @param Reseau $reseau Network context associated with the file.
+     *
+     * @return int Number of rows read from the CSV.
+     *
+     * @throws Exception
      */
     public function importFromFile(UploadedFile $file, Reseau $reseau): int
     {
@@ -108,8 +154,12 @@ abstract class AbstractCsvImportService implements CsvImportInterface
         return $count;
     }
 
-    /*
-     * Mappe une ligne CSV aux colonnes
+    /**
+     * Maps one CSV row to ordered table values.
+     *
+     * @param array<string, mixed> $data Raw CSV row.
+     *
+     * @return array<int, mixed> Ordered values matching table columns.
      */
     protected function mapRow(array $data): array
     {
@@ -164,9 +214,14 @@ abstract class AbstractCsvImportService implements CsvImportInterface
     }
 
     /**
-     * @throws Exception
+     * Checks whether a file was already imported for a given network.
      *
-     * Vérifie si le fichier a déjà été importé
+     * @param UploadedFile $file Uploaded file.
+     * @param Reseau $reseau Network context.
+     *
+     * @return bool True when the file should be skipped.
+     *
+     * @throws Exception
      */
     protected function shouldSkipFile(UploadedFile $file, Reseau $reseau): bool
     {
@@ -184,9 +239,13 @@ abstract class AbstractCsvImportService implements CsvImportInterface
 
 
     /**
-     * @throws Exception
+     * Inserts one batch using an `INSERT IGNORE` statement.
      *
-     * Insert un batch en SQL
+     * @param array<int, array<int, mixed>> $batch Prepared rows batch.
+     *
+     * @return int Number of rows effectively inserted.
+     *
+     * @throws Exception
      */
     protected function insertBatch(array $batch): int
     {
@@ -220,8 +279,12 @@ abstract class AbstractCsvImportService implements CsvImportInterface
         return $inserted;
     }
 
-    /*
-     * Récupère le nom du fichier pour enregistrement BDD
+    /**
+     * Builds a stable hash of a CSV file content.
+     *
+     * @param UploadedFile $file Uploaded file.
+     *
+     * @return string SHA-256 file hash.
      */
     private function getFileHash(UploadedFile $file): string
     {
@@ -229,9 +292,14 @@ abstract class AbstractCsvImportService implements CsvImportInterface
     }
 
     /**
-     * @throws Exception
+     * Records a successful file import to prevent duplicate imports.
      *
-     * Enregistre le nom du fichier en BDD pour éviter multi-import
+     * @param UploadedFile $file Uploaded file.
+     * @param Reseau $reseau Network context.
+     *
+     * @return void
+     *
+     * @throws Exception
      */
     protected function markFileAsImported(UploadedFile $file, Reseau $reseau): void
     {
@@ -243,6 +311,11 @@ abstract class AbstractCsvImportService implements CsvImportInterface
         ]);
     }
 
+    /**
+     * Returns stats from the latest import execution.
+     *
+     * @return array<string, int> Import statistics.
+     */
     public function getLastImportStats(): array
     {
         return $this->lastImportStats;

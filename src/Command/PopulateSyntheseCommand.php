@@ -13,16 +13,32 @@ use Symfony\Component\Console\Output\OutputInterface;
     name: 'app:synthese:summary',
     description: 'Met à jour de manière incrémentale la table synthese_controles.'
 )]
+/**
+ * Rebuilds incremental monthly aggregates into `synthese_controles`.
+ */
 class PopulateSyntheseCommand extends Command
 {
     private const string META_KEY = 'synthese_controles';
+    private bool $forceFullRefresh = false;
 
+    /**
+     * @param Connection $connection DBAL connection used for DDL/DML operations.
+     */
     public function __construct(
         private readonly Connection $connection
     ) {
         parent::__construct();
     }
 
+    /**
+     * Runs the incremental refresh workflow for controls summary data.
+     *
+     * @param InputInterface $input Console input.
+     * @param OutputInterface $output Console output.
+     *
+     * @return int Command exit status.
+     * @throws Exception
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('[synthese:summary] Démarrage de la mise à jour incrémentale de synthese_controles.');
@@ -52,7 +68,7 @@ class PopulateSyntheseCommand extends Command
 
             $output->writeln('[synthese:summary] Détection des périodes impactées...');
             $stepStartedAt = microtime(true);
-            $periods = $this->fetchPeriodsToRefresh($lastRunAt ?: null);
+            $periods = $this->fetchPeriodsToRefresh($this->forceFullRefresh ? null : ($lastRunAt ?: null));
             $output->writeln(sprintf(
                 '[synthese:summary] Périodes impactées détectées: %d (%.3f s).',
                 count($periods),
@@ -114,6 +130,10 @@ class PopulateSyntheseCommand extends Command
     }
 
     /**
+     * Ensures summary and metadata tables are present and compatible.
+     *
+     * @return void
+     *
      * @throws Exception
      */
     private function ensureTables(): void
@@ -134,22 +154,52 @@ class PopulateSyntheseCommand extends Command
                 mois INT NOT NULL,
                 nb_controles INT NOT NULL DEFAULT 0,
                 nb_vtp INT NOT NULL DEFAULT 0,
+                nb_vtp_particuliers INT NOT NULL DEFAULT 0,
+                nb_vtp_professionnels INT NOT NULL DEFAULT 0,
                 nb_clvtp INT NOT NULL DEFAULT 0,
+                nb_clvtp_particuliers INT NOT NULL DEFAULT 0,
+                nb_clvtp_professionnels INT NOT NULL DEFAULT 0,
                 nb_cv INT NOT NULL DEFAULT 0,
+                nb_cv_particuliers INT NOT NULL DEFAULT 0,
+                nb_cv_professionnels INT NOT NULL DEFAULT 0,
                 nb_clcv INT NOT NULL DEFAULT 0,
+                nb_clcv_particuliers INT NOT NULL DEFAULT 0,
+                nb_clcv_professionnels INT NOT NULL DEFAULT 0,
                 nb_vtc INT NOT NULL DEFAULT 0,
+                nb_vtc_particuliers INT NOT NULL DEFAULT 0,
+                nb_vtc_professionnels INT NOT NULL DEFAULT 0,
                 nb_vol INT NOT NULL DEFAULT 0,
+                nb_vol_particuliers INT NOT NULL DEFAULT 0,
+                nb_vol_professionnels INT NOT NULL DEFAULT 0,
                 nb_clvol INT NOT NULL DEFAULT 0,
+                nb_clvol_particuliers INT NOT NULL DEFAULT 0,
+                nb_clvol_professionnels INT NOT NULL DEFAULT 0,
                 nb_auto INT NOT NULL DEFAULT 0,
                 nb_moto INT NOT NULL DEFAULT 0,
                 total_presta_ht DECIMAL(12,2) NOT NULL DEFAULT 0,
+                total_presta_ht_particuliers DECIMAL(12,2) NOT NULL DEFAULT 0,
+                total_presta_ht_professionnels DECIMAL(12,2) NOT NULL DEFAULT 0,
                 total_ht_vtp DECIMAL(12,2) NOT NULL DEFAULT 0,
+                total_ht_vtp_particuliers DECIMAL(12,2) NOT NULL DEFAULT 0,
+                total_ht_vtp_professionnels DECIMAL(12,2) NOT NULL DEFAULT 0,
                 total_ht_clvtp DECIMAL(12,2) NOT NULL DEFAULT 0,
+                total_ht_clvtp_particuliers DECIMAL(12,2) NOT NULL DEFAULT 0,
+                total_ht_clvtp_professionnels DECIMAL(12,2) NOT NULL DEFAULT 0,
                 total_ht_cv DECIMAL(12,2) NOT NULL DEFAULT 0,
+                total_ht_cv_particuliers DECIMAL(12,2) NOT NULL DEFAULT 0,
+                total_ht_cv_professionnels DECIMAL(12,2) NOT NULL DEFAULT 0,
                 total_ht_clcv DECIMAL(12,2) NOT NULL DEFAULT 0,
+                total_ht_clcv_particuliers DECIMAL(12,2) NOT NULL DEFAULT 0,
+                total_ht_clcv_professionnels DECIMAL(12,2) NOT NULL DEFAULT 0,
                 total_ht_vtc DECIMAL(12,2) NOT NULL DEFAULT 0,
+                total_ht_vtc_particuliers DECIMAL(12,2) NOT NULL DEFAULT 0,
+                total_ht_vtc_professionnels DECIMAL(12,2) NOT NULL DEFAULT 0,
                 total_ht_vol DECIMAL(12,2) NOT NULL DEFAULT 0,
+                total_ht_vol_particuliers DECIMAL(12,2) NOT NULL DEFAULT 0,
+                total_ht_vol_professionnels DECIMAL(12,2) NOT NULL DEFAULT 0,
                 total_ht_clvol DECIMAL(12,2) NOT NULL DEFAULT 0,
+                total_ht_clvol_particuliers DECIMAL(12,2) NOT NULL DEFAULT 0,
+                total_ht_clvol_professionnels DECIMAL(12,2) NOT NULL DEFAULT 0,
                 temps_total INT NOT NULL DEFAULT 0,
                 temps_total_auto INT NOT NULL DEFAULT 0,
                 temps_total_moto INT NOT NULL DEFAULT 0,
@@ -168,6 +218,7 @@ class PopulateSyntheseCommand extends Command
         ");
 
         $this->ensureUniqueKeyForUnknownSalaries();
+        $this->ensureRevenueSplitColumns();
 
         $this->connection->executeStatement("
             CREATE TABLE IF NOT EXISTS synthese_meta (
@@ -178,7 +229,12 @@ class PopulateSyntheseCommand extends Command
     }
 
     /**
+     * Returns affected year/month periods to refresh.
+     *
+     * @param string|null $lastRunAt Last successful run timestamp.
+     *
      * @return array<int, array{annee:int, mois:int}>
+     *
      * @throws Exception
      */
     private function fetchPeriodsToRefresh(?string $lastRunAt): array
@@ -203,7 +259,12 @@ class PopulateSyntheseCommand extends Command
     }
 
     /**
+     * Creates and fills the temporary periods table used by incremental SQL.
+     *
      * @param array<int, array{annee:int, mois:int}> $periods
+     *
+     * @return void
+     *
      * @throws Exception
      */
     private function populateTempPeriods(array $periods): void
@@ -220,6 +281,10 @@ class PopulateSyntheseCommand extends Command
     }
 
     /**
+     * Deletes existing aggregates for impacted periods only.
+     *
+     * @return void
+     *
      * @throws Exception
      */
     private function deleteExistingPeriods(): void
@@ -233,6 +298,10 @@ class PopulateSyntheseCommand extends Command
     }
 
     /**
+     * Inserts recalculated aggregates for impacted periods.
+     *
+     * @return void
+     *
      * @throws Exception
      */
     private function insertAggregatesForPeriods(): void
@@ -242,8 +311,23 @@ class PopulateSyntheseCommand extends Command
                 societe_nom, agr_centre, centre_ville, reseau_id, reseau_nom,
                 salarie_id, salarie_agr, salarie_nom, salarie_prenom,
                 annee, mois,
-                nb_controles, nb_vtp, nb_clvtp, nb_cv, nb_clcv, nb_vtc, nb_vol, nb_clvol, nb_auto, nb_moto,
-                total_presta_ht, total_ht_vtp, total_ht_clvtp, total_ht_cv, total_ht_clcv, total_ht_vtc, total_ht_vol, total_ht_clvol,
+                nb_controles,
+                nb_vtp, nb_vtp_particuliers, nb_vtp_professionnels,
+                nb_clvtp, nb_clvtp_particuliers, nb_clvtp_professionnels,
+                nb_cv, nb_cv_particuliers, nb_cv_professionnels,
+                nb_clcv, nb_clcv_particuliers, nb_clcv_professionnels,
+                nb_vtc, nb_vtc_particuliers, nb_vtc_professionnels,
+                nb_vol, nb_vol_particuliers, nb_vol_professionnels,
+                nb_clvol, nb_clvol_particuliers, nb_clvol_professionnels,
+                nb_auto, nb_moto,
+                total_presta_ht, total_presta_ht_particuliers, total_presta_ht_professionnels,
+                total_ht_vtp, total_ht_vtp_particuliers, total_ht_vtp_professionnels,
+                total_ht_clvtp, total_ht_clvtp_particuliers, total_ht_clvtp_professionnels,
+                total_ht_cv, total_ht_cv_particuliers, total_ht_cv_professionnels,
+                total_ht_clcv, total_ht_clcv_particuliers, total_ht_clcv_professionnels,
+                total_ht_vtc, total_ht_vtc_particuliers, total_ht_vtc_professionnels,
+                total_ht_vol, total_ht_vol_particuliers, total_ht_vol_professionnels,
+                total_ht_clvol, total_ht_clvol_particuliers, total_ht_clvol_professionnels,
                 temps_total, temps_total_auto, temps_total_moto, taux_refus, refus_auto, refus_moto, nb_particuliers, nb_professionnels,
                 nb_particuliers_auto, nb_particuliers_moto, nb_professionnels_auto, nb_professionnels_moto
             )
@@ -261,22 +345,52 @@ class PopulateSyntheseCommand extends Command
                 MONTH(ctrl.date_ctrl) AS mois,
                 COUNT(DISTINCT ctrl.idcontrole) AS nb_controles,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP'), ctrl.idcontrole, NULL)) AS nb_vtp,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_vtp_particuliers,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_vtp_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVTP','CLCTP'), ctrl.idcontrole, NULL)) AS nb_clvtp,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_clvtp_particuliers,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_clvtp_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC'), ctrl.idcontrole, NULL)) AS nb_cv,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_cv_particuliers,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_cv_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLCV'), ctrl.idcontrole, NULL)) AS nb_clcv,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLCV') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_clcv_particuliers,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLCV') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_clcv_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTC','VLCTC'), ctrl.idcontrole, NULL)) AS nb_vtc,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_vtc_particuliers,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_vtc_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT'), ctrl.idcontrole, NULL)) AS nb_vol,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_vol_particuliers,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_vol_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT'), ctrl.idcontrole, NULL)) AS nb_clvol,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_clvol_particuliers,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_clvol_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP','CV','VLCV','VLCVC','VTC','VLCTC','VOL','VP','VT'), ctrl.idcontrole, NULL)) AS nb_auto,
                 COUNT(DISTINCT IF(ctrl.type_ctrl LIKE 'CL%', ctrl.idcontrole, NULL)) AS nb_moto,
                 SUM(IF(f.type_facture='F', COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_presta_ht,
+                SUM(IF(f.type_facture='F' AND COALESCE(cc.has_pro_client, 0) = 0, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_presta_ht_particuliers,
+                SUM(IF(f.type_facture='F' AND COALESCE(cc.has_pro_client, 0) = 1, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_presta_ht_professionnels,
                 SUM(IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND f.type_facture='F', COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vtp,
+                SUM(IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND f.type_facture='F' AND COALESCE(cc.has_pro_client, 0) = 0, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vtp_particuliers,
+                SUM(IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND f.type_facture='F' AND COALESCE(cc.has_pro_client, 0) = 1, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vtp_professionnels,
                 SUM(IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND f.type_facture='F', COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clvtp,
+                SUM(IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND f.type_facture='F' AND COALESCE(cc.has_pro_client, 0) = 0, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clvtp_particuliers,
+                SUM(IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND f.type_facture='F' AND COALESCE(cc.has_pro_client, 0) = 1, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clvtp_professionnels,
                 SUM(IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND f.type_facture='F', COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_cv,
+                SUM(IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND f.type_facture='F' AND COALESCE(cc.has_pro_client, 0) = 0, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_cv_particuliers,
+                SUM(IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND f.type_facture='F' AND COALESCE(cc.has_pro_client, 0) = 1, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_cv_professionnels,
                 SUM(IF(ctrl.type_ctrl IN ('CLCV') AND f.type_facture='F', COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clcv,
+                SUM(IF(ctrl.type_ctrl IN ('CLCV') AND f.type_facture='F' AND COALESCE(cc.has_pro_client, 0) = 0, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clcv_particuliers,
+                SUM(IF(ctrl.type_ctrl IN ('CLCV') AND f.type_facture='F' AND COALESCE(cc.has_pro_client, 0) = 1, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clcv_professionnels,
                 SUM(IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND f.type_facture='F', COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vtc,
+                SUM(IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND f.type_facture='F' AND COALESCE(cc.has_pro_client, 0) = 0, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vtc_particuliers,
+                SUM(IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND f.type_facture='F' AND COALESCE(cc.has_pro_client, 0) = 1, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vtc_professionnels,
                 SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND f.type_facture='F', COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vol,
+                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND f.type_facture='F' AND COALESCE(cc.has_pro_client, 0) = 0, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vol_particuliers,
+                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND f.type_facture='F' AND COALESCE(cc.has_pro_client, 0) = 1, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vol_professionnels,
                 SUM(IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND f.type_facture='F', COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clvol,
+                SUM(IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND f.type_facture='F' AND COALESCE(cc.has_pro_client, 0) = 0, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clvol_particuliers,
+                SUM(IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND f.type_facture='F' AND COALESCE(cc.has_pro_client, 0) = 1, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clvol_professionnels,
                 SUM(ctrl.temps_ctrl) AS temps_total,
                 SUM(IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP','CV','VLCV','VLCVC','VTC','VLCTC','VOL','VP','VT'), ctrl.temps_ctrl, 0)) AS temps_total_auto,
                 SUM(IF(ctrl.type_ctrl LIKE 'CL%', ctrl.temps_ctrl, 0)) AS temps_total_moto,
@@ -370,22 +484,52 @@ class PopulateSyntheseCommand extends Command
             ON DUPLICATE KEY UPDATE
                 nb_controles=VALUES(nb_controles),
                 nb_vtp=VALUES(nb_vtp),
+                nb_vtp_particuliers=VALUES(nb_vtp_particuliers),
+                nb_vtp_professionnels=VALUES(nb_vtp_professionnels),
                 nb_clvtp=VALUES(nb_clvtp),
+                nb_clvtp_particuliers=VALUES(nb_clvtp_particuliers),
+                nb_clvtp_professionnels=VALUES(nb_clvtp_professionnels),
                 nb_cv=VALUES(nb_cv),
+                nb_cv_particuliers=VALUES(nb_cv_particuliers),
+                nb_cv_professionnels=VALUES(nb_cv_professionnels),
                 nb_clcv=VALUES(nb_clcv),
+                nb_clcv_particuliers=VALUES(nb_clcv_particuliers),
+                nb_clcv_professionnels=VALUES(nb_clcv_professionnels),
                 nb_vtc=VALUES(nb_vtc),
+                nb_vtc_particuliers=VALUES(nb_vtc_particuliers),
+                nb_vtc_professionnels=VALUES(nb_vtc_professionnels),
                 nb_vol=VALUES(nb_vol),
+                nb_vol_particuliers=VALUES(nb_vol_particuliers),
+                nb_vol_professionnels=VALUES(nb_vol_professionnels),
                 nb_clvol=VALUES(nb_clvol),
+                nb_clvol_particuliers=VALUES(nb_clvol_particuliers),
+                nb_clvol_professionnels=VALUES(nb_clvol_professionnels),
                 nb_auto=VALUES(nb_auto),
                 nb_moto=VALUES(nb_moto),
                 total_presta_ht=VALUES(total_presta_ht),
+                total_presta_ht_particuliers=VALUES(total_presta_ht_particuliers),
+                total_presta_ht_professionnels=VALUES(total_presta_ht_professionnels),
                 total_ht_vtp=VALUES(total_ht_vtp),
+                total_ht_vtp_particuliers=VALUES(total_ht_vtp_particuliers),
+                total_ht_vtp_professionnels=VALUES(total_ht_vtp_professionnels),
                 total_ht_clvtp=VALUES(total_ht_clvtp),
+                total_ht_clvtp_particuliers=VALUES(total_ht_clvtp_particuliers),
+                total_ht_clvtp_professionnels=VALUES(total_ht_clvtp_professionnels),
                 total_ht_cv=VALUES(total_ht_cv),
+                total_ht_cv_particuliers=VALUES(total_ht_cv_particuliers),
+                total_ht_cv_professionnels=VALUES(total_ht_cv_professionnels),
                 total_ht_clcv=VALUES(total_ht_clcv),
+                total_ht_clcv_particuliers=VALUES(total_ht_clcv_particuliers),
+                total_ht_clcv_professionnels=VALUES(total_ht_clcv_professionnels),
                 total_ht_vtc=VALUES(total_ht_vtc),
+                total_ht_vtc_particuliers=VALUES(total_ht_vtc_particuliers),
+                total_ht_vtc_professionnels=VALUES(total_ht_vtc_professionnels),
                 total_ht_vol=VALUES(total_ht_vol),
+                total_ht_vol_particuliers=VALUES(total_ht_vol_particuliers),
+                total_ht_vol_professionnels=VALUES(total_ht_vol_professionnels),
                 total_ht_clvol=VALUES(total_ht_clvol),
+                total_ht_clvol_particuliers=VALUES(total_ht_clvol_particuliers),
+                total_ht_clvol_professionnels=VALUES(total_ht_clvol_professionnels),
                 temps_total=VALUES(temps_total),
                 temps_total_auto=VALUES(temps_total_auto),
                 temps_total_moto=VALUES(temps_total_moto),
@@ -404,6 +548,10 @@ class PopulateSyntheseCommand extends Command
     }
 
     /**
+     * Ensures the unique key includes center and controller fallback fields.
+     *
+     * @return void
+     *
      * @throws Exception
      */
     private function ensureUniqueKeyForUnknownSalaries(): void
@@ -434,6 +582,87 @@ class PopulateSyntheseCommand extends Command
     }
 
     /**
+     * Ensures all split revenue and split volume columns are available.
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    private function ensureRevenueSplitColumns(): void
+    {
+        $this->ensureColumn('nb_vtp_particuliers', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_vtp_professionnels', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_clvtp_particuliers', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_clvtp_professionnels', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_cv_particuliers', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_cv_professionnels', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_clcv_particuliers', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_clcv_professionnels', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_vtc_particuliers', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_vtc_professionnels', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_vol_particuliers', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_vol_professionnels', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_clvol_particuliers', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_clvol_professionnels', 'INT NOT NULL DEFAULT 0');
+
+        $this->ensureColumn('total_presta_ht_particuliers', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+        $this->ensureColumn('total_presta_ht_professionnels', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+        $this->ensureColumn('total_ht_vtp_particuliers', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+        $this->ensureColumn('total_ht_vtp_professionnels', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+        $this->ensureColumn('total_ht_clvtp_particuliers', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+        $this->ensureColumn('total_ht_clvtp_professionnels', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+        $this->ensureColumn('total_ht_cv_particuliers', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+        $this->ensureColumn('total_ht_cv_professionnels', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+        $this->ensureColumn('total_ht_clcv_particuliers', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+        $this->ensureColumn('total_ht_clcv_professionnels', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+        $this->ensureColumn('total_ht_vtc_particuliers', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+        $this->ensureColumn('total_ht_vtc_professionnels', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+        $this->ensureColumn('total_ht_vol_particuliers', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+        $this->ensureColumn('total_ht_vol_professionnels', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+        $this->ensureColumn('total_ht_clvol_particuliers', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+        $this->ensureColumn('total_ht_clvol_professionnels', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+    }
+
+    /**
+     * Adds a missing column to `synthese_controles` and marks full refresh as required.
+     *
+     * @param string $column Column name to ensure.
+     * @param string $definition SQL type and constraints definition.
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    private function ensureColumn(string $column, string $definition): void
+    {
+        $exists = (int)$this->connection->fetchOne(
+            "
+                SELECT COUNT(*)
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'synthese_controles'
+                  AND COLUMN_NAME = :column
+            ",
+            ['column' => $column]
+        ) > 0;
+
+        if ($exists) {
+            return;
+        }
+
+        $this->connection->executeStatement(sprintf(
+            'ALTER TABLE synthese_controles ADD COLUMN %s %s',
+            $column,
+            $definition
+        ));
+        $this->forceFullRefresh = true;
+    }
+
+    /**
+     * Updates the meta table timestamp for this command.
+     *
+     * @return void
+     *
      * @throws Exception
      */
     private function touchMeta(): void

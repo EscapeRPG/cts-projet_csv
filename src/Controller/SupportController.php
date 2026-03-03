@@ -13,6 +13,11 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class SupportController extends AbstractController
 {
+    /**
+     * @param string $mailerFromAddress Sender email address used for support messages.
+     * @param string $mailerFromName Sender display name used for support messages.
+     * @param string $supportToAddress Recipient support email address.
+     */
     public function __construct(
         private readonly string $mailerFromAddress,
         private readonly string $mailerFromName,
@@ -21,8 +26,14 @@ final class SupportController extends AbstractController
     {
     }
 
-    /*
-     * Affiche une page permettant d'envoyer un email à l'administrateur réseau en cas de demande de réinitialisation de mot de passe non sollicitée
+    /**
+     * Displays and processes the support contact form for account-related incidents.
+     *
+     * @param Request $request Current HTTP request containing context and form submission data.
+     * @param MailerInterface $mailer Mailer service used to send the support email.
+     * @param Security $security Security helper used to resolve the current user.
+     *
+     * @return Response Rendered support form page or redirect to home after successful send.
      */
     #[Route('/support', name: 'app_support')]
     public function support(

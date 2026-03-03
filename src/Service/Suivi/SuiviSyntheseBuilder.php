@@ -2,6 +2,9 @@
 
 namespace App\Service\Suivi;
 
+/**
+ * Builds synthesized activity structures and totals for reporting views.
+ */
 class SuiviSyntheseBuilder
 {
     private array $types = ['vtp', 'clvtp', 'cv', 'clcv', 'vtc', 'vol', 'clvol'];
@@ -14,6 +17,13 @@ class SuiviSyntheseBuilder
         "Vérif'Autos" => 'VA',
     ];
 
+    /**
+     * Builds the nested synthesized structure from flat SQL rows.
+     *
+     * @param array<int, array<string, mixed>> $rows Raw synthesized rows.
+     *
+     * @return array<string, mixed> Nested structure grouped by company and center.
+     */
     public function buildSynthese(array $rows): array
     {
         $data = $this->buildDataStructure($rows);
@@ -22,6 +32,13 @@ class SuiviSyntheseBuilder
         return $data;
     }
 
+    /**
+     * Computes company-level and global totals from synthesized data.
+     *
+     * @param array<string, mixed> $synthese Nested synthesized structure.
+     *
+     * @return array{societes:array<string, array<string, float|int>>,global:array<string, float|int>} Totals payload.
+     */
     public function buildActivityTotals(array $synthese): array
     {
         $societeTotals = [];
@@ -59,11 +76,25 @@ class SuiviSyntheseBuilder
         ];
     }
 
+    /**
+     * Builds professional-client structure from flat SQL rows.
+     *
+     * @param array<int, array<string, mixed>> $rows Raw professional-client rows.
+     *
+     * @return array<string, mixed> Nested professional-client structure.
+     */
     public function buildClientPro(array $rows): array
     {
         return $this->buildDataClientsProStructure($rows);
     }
 
+    /**
+     * Builds the core synthesized structure grouped by company and center.
+     *
+     * @param array<int, array<string, mixed>> $rows Raw synthesized rows.
+     *
+     * @return array<string, mixed> Nested synthesized structure.
+     */
     private function buildDataStructure(array $rows): array
     {
         $data = [];
@@ -155,6 +186,13 @@ class SuiviSyntheseBuilder
         return $data;
     }
 
+    /**
+     * Computes center-level average prices by control type.
+     *
+     * @param array<string, mixed> $data Synthesized structure passed by reference.
+     *
+     * @return void
+     */
     private function calculateCentreAverages(array &$data): void
     {
         foreach ($data as &$centres) {
@@ -171,6 +209,13 @@ class SuiviSyntheseBuilder
         unset($centre, $centres);
     }
 
+    /**
+     * Builds professional-client nested structure with N / N-1 / N-2 accumulation.
+     *
+     * @param array<int, array<string, mixed>> $rows Raw professional-client rows.
+     *
+     * @return array<string, mixed> Nested professional-client structure.
+     */
     private function buildDataClientsProStructure(array $rows): array
     {
         $data = [];
@@ -228,6 +273,11 @@ class SuiviSyntheseBuilder
         return $data;
     }
 
+    /**
+     * Initializes activity totals structure.
+     *
+     * @return array<string, float|int> Empty totals structure.
+     */
     private function initActivityTotals(): array
     {
         return array_merge(
@@ -241,6 +291,13 @@ class SuiviSyntheseBuilder
         );
     }
 
+    /**
+     * Computes average prices for each control type.
+     *
+     * @param array<string, float|int> $totals Totals array passed by reference.
+     *
+     * @return void
+     */
     private function computeActivityAverages(array &$totals): void
     {
         foreach ($this->types as $type) {
@@ -250,6 +307,13 @@ class SuiviSyntheseBuilder
         }
     }
 
+    /**
+     * Uppercases text using multibyte support when available.
+     *
+     * @param string $value Input value.
+     *
+     * @return string Uppercased string.
+     */
     private function safeUpper(string $value): string
     {
         if (function_exists('mb_strtoupper')) {
@@ -259,6 +323,13 @@ class SuiviSyntheseBuilder
         return strtoupper($value);
     }
 
+    /**
+     * Capitalizes text using multibyte support when available.
+     *
+     * @param string $value Input value.
+     *
+     * @return string Capitalized string.
+     */
     private function safeUcfirst(string $value): string
     {
         $value = trim($value);

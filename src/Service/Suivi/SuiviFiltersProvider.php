@@ -8,8 +8,15 @@ use Doctrine\DBAL\Exception;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Contracts\Cache\CacheInterface;
 
+/**
+ * Provides filter metadata and dependent filter options for activity monitoring.
+ */
 readonly class SuiviFiltersProvider
 {
+    /**
+     * @param Connection $connection DBAL connection used to query filter sources.
+     * @param CacheInterface $cache Cache used to memoize base filter datasets.
+     */
     public function __construct(
         private Connection     $connection,
         private CacheInterface $cache
@@ -18,6 +25,12 @@ readonly class SuiviFiltersProvider
     }
 
     /**
+     * Returns filter datasets, optionally constrained by selected company/center values.
+     *
+     * @param array<string, mixed> $currentFilters Current filter selections.
+     *
+     * @return array<string, mixed> Filter metadata and dependent options.
+     *
      * @throws InvalidArgumentException
      * @throws Exception
      */

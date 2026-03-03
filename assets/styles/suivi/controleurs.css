@@ -1,0 +1,125 @@
+.salaries-chart {
+    width: 95%;
+    margin: auto;
+    position: relative;
+    display: flex;
+
+    .salarie-name, .bar-container, .salarie-row {
+        white-space: nowrap;
+        font-size: 1em;
+        padding: 0 10px;
+    }
+
+    .salarie-name, .salarie-row {
+        margin: 5px 0;
+    }
+
+    .salarie-name {
+        text-align: right;
+
+        &:first-child:not(.repartition) {
+            text-align: center;
+            border-bottom: 1px solid black;
+        }
+    }
+
+    .bars {
+        position: relative;
+        flex: 1;
+
+        .avg-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: red;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .avg-line span {
+            position: sticky;
+            top: 80px;
+            left: 0;
+            display: inline-block;
+            padding: 5px;
+            background: red;
+            color: white;
+            white-space: nowrap;
+            font-size: .8em;
+            z-index: 1;
+        }
+
+        .avg-line.avg-line-left span {
+            transform: translateX(0);
+        }
+
+        .avg-line.avg-line-right span {
+            transform: translateX(-100%);
+        }
+
+        .bar-container, .bar {
+            box-sizing: border-box;
+        }
+
+        .bar-container {
+            background: rgba(0, 0, 0, 0.2);
+            margin: 15px 0;
+
+            &:nth-child(2) {
+                margin-top: 11px;
+            }
+
+            &:last-of-type {
+                margin-bottom: 5px;
+            }
+        }
+
+        .bar {
+            background: linear-gradient(90deg, var(--cts-main), var(--cts-alt));
+            color: white;
+            padding: 4px 0;
+            white-space: nowrap;
+            border-radius: 4px;
+        }
+
+        .stacked-bar {
+            display: flex;
+            height: 18px;
+            overflow: hidden;
+            background: var(--cts-alt-light);
+            margin: 5px 0;
+        }
+
+        .bar-part {
+            background-color: var(--cts-main);
+            height: 100%;
+        }
+
+        .bar-pro {
+            background-color: var(--cts-alt);
+            height: 100%;
+        }
+
+        .bar-part, .bar-pro {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: .8em;
+        }
+
+        .bar-container, .repartition-bars-container {
+            flex: 1;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0;
+        }
+    }
+
+    .nb {
+        text-align: right;
+    }
+}

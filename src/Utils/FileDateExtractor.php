@@ -4,10 +4,17 @@ namespace App\Utils;
 
 use DateTimeImmutable;
 
+/**
+ * Extracts a date from file names using known naming conventions.
+ */
 final class FileDateExtractor
 {
-    /*
-     * Récupère la date dans le nom du fichier pour enregistrement en bdd et tri par année des données
+    /**
+     * Extracts a date from a file name.
+     *
+     * @param string $filename File name to parse.
+     *
+     * @return DateTimeImmutable|null Extracted date, or null when no pattern matches.
      */
     public static function extract(string $filename): ?DateTimeImmutable
     {

@@ -18,8 +18,16 @@ use Throwable;
     name: 'app:import:sftp',
     description: 'Import CSV depuis le SFTP'
 )]
+/**
+ * Imports CSV files from SFTP incoming folders with quality controls.
+ */
 class ImportSftpCommand extends Command
 {
+    /**
+     * @param SftpClient $sftpClient SFTP client abstraction for file operations.
+     * @param ImportRouter $importRouter Resolves the importer matching each file.
+     * @param ReseauRepository $reseauRepository Repository used to validate network codes.
+     */
     public function __construct(
         private readonly SftpClient   $sftpClient,
         private readonly ImportRouter $importRouter,
@@ -29,6 +37,11 @@ class ImportSftpCommand extends Command
         parent::__construct();
     }
 
+    /**
+     * Configures quality-control command options.
+     *
+     * @return void
+     */
     protected function configure(): void
     {
         $this
@@ -54,8 +67,13 @@ class ImportSftpCommand extends Command
             );
     }
 
-    /*
-     * Exécute la commande d'importation des fichiers csv depuis le dossier d'import sftp
+    /**
+     * Executes SFTP imports for each available network and incoming file.
+     *
+     * @param InputInterface $input Console input.
+     * @param OutputInterface $output Console output.
+     *
+     * @return int Command exit status.
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -158,14 +176,13 @@ class ImportSftpCommand extends Command
                         $ignoredRate = $rowsRead > 0 ? ($rowsIgnored / $rowsRead) * 100 : 0.0;
 
                         $output->writeln(sprintf(
-                            "    Lignes lues: %d, insérées: %d, ignorées: %d, batches: %d",
+                            "    Lignes lues: %d, insérées: %d, ignorées: %d, batches: %d. Taux ignoré: %.3f%%",
                             $rowsRead,
                             $rowsInserted,
                             $rowsIgnored,
-                            $batchCount
+                            $batchCount,
+                            $ignoredRate
                         ));
-
-                        $output->writeln(sprintf("    Taux ignoré: %.3f%%", $ignoredRate));
 
                         if ($strict && $rowsIgnored > 0) {
                             throw new RuntimeException(sprintf(
@@ -203,6 +220,13 @@ class ImportSftpCommand extends Command
         return Command::SUCCESS;
     }
 
+    /**
+     * Normalizes a network name to a canonical alphanumeric form for matching.
+     *
+     * @param string $value Raw network name.
+     *
+     * @return string Normalized network key.
+     */
     private function normalizeReseauName(string $value): string
     {
         $value = trim($value);

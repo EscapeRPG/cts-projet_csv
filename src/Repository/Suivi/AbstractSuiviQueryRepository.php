@@ -7,6 +7,9 @@ use Doctrine\DBAL\Connection;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
+/**
+ * Shared query helpers for activity-tracking repositories.
+ */
 abstract readonly class AbstractSuiviQueryRepository
 {
     protected const array TYPE_FAMILIES = ['VTP', 'VTC', 'CV', 'VOL'];
@@ -19,12 +22,29 @@ abstract readonly class AbstractSuiviQueryRepository
         'VOL' => ['VOL', 'VP', 'VT', 'CLVP', 'CLVT'],
     ];
 
+    /**
+     * @param Connection $connection DBAL connection used to execute SQL queries.
+     * @param CacheInterface $cache Cache service for query result memoization.
+     */
     public function __construct(
         protected Connection $connection,
         protected CacheInterface $cache
     ) {
     }
 
+    /**
+     * Applies dimension filters targeting synthesized monthly tables.
+     *
+     * @param array<string, mixed> $filters Selected filters.
+     * @param array<int, string> $where WHERE clauses accumulator.
+     * @param array<string, mixed> $params SQL parameters accumulator.
+     * @param array<string, mixed> $types SQL parameter types accumulator.
+     * @param string|null $yearParam Parameter name to use for years, or null to skip year filtering.
+     * @param bool $uniqueMonths Whether to deduplicate month values.
+     * @param bool $includeControleur Whether to apply controller filter.
+     *
+     * @return void
+     */
     protected function applySyntheseDimensionFilters(
         array $filters,
         array &$where,
@@ -71,6 +91,21 @@ abstract readonly class AbstractSuiviQueryRepository
         }
     }
 
+    /**
+     * Applies date and dimension filters targeting raw source joins.
+     *
+     * @param array<string, mixed> $filters Selected filters.
+     * @param array<int, string> $where WHERE clauses accumulator.
+     * @param array<string, mixed> $params SQL parameters accumulator.
+     * @param array<string, mixed> $types SQL parameter types accumulator.
+     * @param string $dateColumn SQL date column/expression used for period filtering.
+     * @param string $reseauExpression SQL expression used for network filtering.
+     * @param string $societeExpression SQL expression used for company filtering.
+     * @param string $centreExpression SQL expression used for center filtering.
+     * @param string|null $controleurExpression Optional SQL expression for controller filtering.
+     *
+     * @return void
+     */
     protected function applyRawDateAndDimensionFilters(
         array $filters,
         array &$where,
@@ -115,6 +150,13 @@ abstract readonly class AbstractSuiviQueryRepository
         }
     }
 
+    /**
+     * Resolves selected years, defaulting to the rolling N-2..N window.
+     *
+     * @param array<string, mixed> $filters Selected filters.
+     *
+     * @return array<int, int> Selected years.
+     */
     protected function resolveYears(array $filters): array
     {
         if (!empty($filters['annee'])) {
@@ -124,6 +166,14 @@ abstract readonly class AbstractSuiviQueryRepository
         return [(date('Y') - 2), (date('Y') - 1), (int)date('Y')];
     }
 
+    /**
+     * Resolves selected months, optionally returning unique values only.
+     *
+     * @param array<string, mixed> $filters Selected filters.
+     * @param bool $unique Whether to deduplicate months.
+     *
+     * @return array<int, int> Selected month numbers.
+     */
     protected function resolveMonths(array $filters, bool $unique = false): array
     {
         $months = !empty($filters['mois'])
@@ -137,6 +187,13 @@ abstract readonly class AbstractSuiviQueryRepository
         return array_values(array_unique($months));
     }
 
+    /**
+     * Normalizes and validates selected type families.
+     *
+     * @param array<int, mixed> $selected Raw selected type family values.
+     *
+     * @return array<int, string> Normalized type families.
+     */
     protected function normalizeTypeFamilies(array $selected): array
     {
         $normalized = array_values(array_unique(array_filter(array_map(
@@ -153,6 +210,13 @@ abstract readonly class AbstractSuiviQueryRepository
         return empty($filtered) ? self::TYPE_FAMILIES : $filtered;
     }
 
+    /**
+     * Expands type families to raw control type codes.
+     *
+     * @param array<int, string> $selectedTypeFamilies Selected type families.
+     *
+     * @return array<int, string> Raw control type codes.
+     */
     protected function buildRawTypesFromFamilies(array $selectedTypeFamilies): array
     {
         $rawTypes = [];
@@ -163,11 +227,25 @@ abstract readonly class AbstractSuiviQueryRepository
         return array_values(array_unique($rawTypes));
     }
 
+    /**
+     * Indicates whether all available type families are selected.
+     *
+     * @param array<int, string> $selectedTypeFamilies Selected type families.
+     *
+     * @return bool True when all type families are selected.
+     */
     protected function isAllTypeFamiliesSelected(array $selectedTypeFamilies): bool
     {
         return count($selectedTypeFamilies) === count(self::TYPE_FAMILIES);
     }
 
+    /**
+     * Normalizes and validates selected vehicle categories.
+     *
+     * @param array<int, mixed> $selected Raw selected vehicle values.
+     *
+     * @return array<int, string> Normalized vehicle categories.
+     */
     protected function normalizeVehicleTypes(array $selected): array
     {
         $normalized = array_values(array_unique(array_filter(array_map(
@@ -184,11 +262,27 @@ abstract readonly class AbstractSuiviQueryRepository
         return empty($filtered) ? self::VEHICLE_TYPES : $filtered;
     }
 
+    /**
+     * Indicates whether all available vehicle categories are selected.
+     *
+     * @param array<int, string> $selectedVehicleTypes Selected vehicle categories.
+     *
+     * @return bool True when all vehicle categories are selected.
+     */
     protected function isAllVehicleTypesSelected(array $selectedVehicleTypes): bool
     {
         return count($selectedVehicleTypes) === count(self::VEHICLE_TYPES);
     }
 
+    /**
+     * Applies a vehicle-specific filter on raw control type column.
+     *
+     * @param array<int, string> $where WHERE clauses accumulator.
+     * @param string $column SQL column/expression containing raw control type.
+     * @param array<int, string> $selectedVehicleTypes Selected vehicle categories.
+     *
+     * @return void
+     */
     protected function applyVehicleFilter(array &$where, string $column, array $selectedVehicleTypes): void
     {
         if ($this->isAllVehicleTypesSelected($selectedVehicleTypes)) {
@@ -205,6 +299,15 @@ abstract readonly class AbstractSuiviQueryRepository
         }
     }
 
+    /**
+     * Returns cached rows for a payload or computes them via resolver callback.
+     *
+     * @param string $prefix Cache key prefix.
+     * @param array<string, mixed> $payload Input payload used to build stable cache key.
+     * @param callable $resolver Resolver returning query rows on cache miss.
+     *
+     * @return array<int, array<string, mixed>> Query rows.
+     */
     protected function cachedRows(string $prefix, array $payload, callable $resolver): array
     {
         $cacheKey = $prefix . '_' . sha1(json_encode($this->normalizeForCache($payload)));
@@ -219,6 +322,13 @@ abstract readonly class AbstractSuiviQueryRepository
         }
     }
 
+    /**
+     * Normalizes values recursively to build deterministic cache keys.
+     *
+     * @param mixed $value Arbitrary value.
+     *
+     * @return mixed Normalized value preserving semantic equality.
+     */
     protected function normalizeForCache(mixed $value): mixed
     {
         if (is_array($value)) {
@@ -242,6 +352,17 @@ abstract readonly class AbstractSuiviQueryRepository
         return $value;
     }
 
+    /**
+     * Applies an optimized date-period filter using one global range or month ranges.
+     *
+     * @param array<int, string> $where WHERE clauses accumulator.
+     * @param array<string, mixed> $params SQL parameters accumulator.
+     * @param string $column SQL date column/expression.
+     * @param array<int, int> $years Selected years.
+     * @param array<int, int> $months Selected months.
+     *
+     * @return void
+     */
     protected function applyDatePeriodsFilter(
         array &$where,
         array &$params,
@@ -289,4 +410,3 @@ abstract readonly class AbstractSuiviQueryRepository
         }
     }
 }
-

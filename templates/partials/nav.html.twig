@@ -1,0 +1,124 @@
+<nav data-controller="burger">
+    <div class="burger-container" data-action="click->burger#menu" data-burger-target="container">
+        <div class="burgerBtn">
+            <span id="burger" data-burger-target="burger"></span>
+        </div>
+    </div>
+
+    <div id="responsive" data-burger-target="menu">
+        {% if is_granted('IS_AUTHENTICATED') %}
+            <h3>{{ user.username }}</h3>
+            <h3>{{ ('ROLE_ADMIN' in user.roles) ? 'Administrateur' : 'Utilisateur' }}</h3>
+        {% endif %}
+
+        {% if is_granted('ROLE_ADMIN') %}
+            <h2>ESPACE ADMIN</h2>
+            <h3>Utilisateurs</h3>
+            <ul>
+                <li>
+                    <a href="{{ path('app_users_list') }}">
+                        → Liste des utilisateurs
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_users_add') }}">
+                        → Ajouter un utilisateur
+                    </a>
+                </li>
+            </ul>
+
+            <h3>Sociétés</h3>
+            <ul>
+                <li>
+                    <a href="{{ path('app_societes_list') }}">
+                        → Liste des sociétés
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_societes_add') }}">
+                        → Ajouter une société
+                    </a>
+                </li>
+            </ul>
+
+            <h3>Centres</h3>
+            <ul>
+                <li>
+                    <a href="{{ path('app_centres_list') }}">
+                        → Liste des centres
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_centres_add') }}">
+                        → Ajouter un centre
+                    </a>
+                </li>
+            </ul>
+
+            <h3>Salariés</h3>
+            <ul>
+                <li>
+                    <a href="{{ path('app_salaries_list') }}">
+                        → Liste des salariés
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_salaries_add') }}">
+                        → Ajouter un salarié
+                    </a>
+                </li>
+            </ul>
+        {% endif %}
+
+        {% if is_granted('IS_AUTHENTICATED') %}
+            <h2>Suivis</h2>
+            <ul>
+                <li>
+                    <a href="{{ path('app_suivi_activite') }}">
+                        → Synthèse
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_suivi_centres') }}">
+                        → Centres
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_suivi_focus_pro') }}">
+                        → Clients pros
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_suivi_controleurs') }}">
+                        → Contrôleurs
+                    </a>
+                </li>
+            </ul>
+
+            <h2>COMPTE</h2>
+            <ul>
+                <li>
+                    <a href="{{ path('app_profile', { id: app.user.id }) }}">
+                        → Profil
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_logout') }}">
+                        → Se déconnecter
+                    </a>
+                </li>
+            </ul>
+        {% else %}
+            <ul>
+                <li>
+                    <a href="{{ path('app_login') }}">
+                        → Se connecter
+                    </a>
+                </li>
+            </ul>
+        {% endif %}
+    </div>
+</nav>
+<a href="{{ path('app_home') }}" class="home">
+    <img src="{{ asset('img/logo.png') }}" alt="accueil" title="Retour à l'accueil">
+</a>

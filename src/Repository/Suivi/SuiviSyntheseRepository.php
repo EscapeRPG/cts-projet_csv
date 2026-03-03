@@ -5,9 +5,18 @@ namespace App\Repository\Suivi;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Exception;
 
+/**
+ * Provides synthesized controller activity rows for monitoring pages.
+ */
 final readonly class SuiviSyntheseRepository extends AbstractSuiviQueryRepository
 {
     /**
+     * Returns synthesized rows for selected filters.
+     *
+     * @param array<string, mixed> $filters Selected filters.
+     *
+     * @return array<int, array<string, mixed>> Synthesized activity rows.
+     *
      * @throws Exception
      */
     public function fetchSyntheseRows(array $filters = []): array
@@ -42,6 +51,13 @@ final readonly class SuiviSyntheseRepository extends AbstractSuiviQueryRepositor
     }
 
     /**
+     * Returns synthesized rows filtered by vehicle categories using aggregated table columns.
+     *
+     * @param array<string, mixed> $filters Selected filters.
+     * @param array<int, string> $selectedVehicleTypes Selected vehicle categories.
+     *
+     * @return array<int, array<string, mixed>> Synthesized activity rows.
+     *
      * @throws Exception
      */
     private function fetchSyntheseRowsByVehicleFromSynthese(array $filters, array $selectedVehicleTypes): array
@@ -67,6 +83,15 @@ final readonly class SuiviSyntheseRepository extends AbstractSuiviQueryRepositor
     }
 
     /**
+     * Returns synthesized rows from raw source joins when type filtering is required.
+     *
+     * @param array<string, mixed> $filters Selected filters.
+     * @param array<int, string> $selectedTypeFamilies Selected type families.
+     * @param array<int, string> $selectedVehicleTypes Selected vehicle categories.
+     * @param bool $applyTypeFilter Whether to apply explicit raw type filtering.
+     *
+     * @return array<int, array<string, mixed>> Synthesized activity rows from raw sources.
+     *
      * @throws Exception
      */
     private function fetchSyntheseRowsByTypeFromRaw(
@@ -167,6 +192,14 @@ final readonly class SuiviSyntheseRepository extends AbstractSuiviQueryRepositor
         );
     }
 
+    /**
+     * Builds the aggregation SQL over `synthese_controles` with provided metrics projection.
+     *
+     * @param string $metricsSelect SQL projection for metrics columns.
+     * @param array<int, string> $where WHERE clauses.
+     *
+     * @return string SQL query.
+     */
     private function buildSyntheseControlesAggregationSql(string $metricsSelect, array $where): string
     {
         $sql = "
@@ -195,6 +228,11 @@ final readonly class SuiviSyntheseRepository extends AbstractSuiviQueryRepositor
         return $sql;
     }
 
+    /**
+     * Returns the default SQL metrics projection for full synthesized aggregation.
+     *
+     * @return string SQL projection fragment.
+     */
     private function getSyntheseDefaultMetricsSelect(): string
     {
         return "
@@ -227,6 +265,13 @@ final readonly class SuiviSyntheseRepository extends AbstractSuiviQueryRepositor
         ";
     }
 
+    /**
+     * Returns vehicle-specific SQL metrics projection for CL-only or VL-only mode.
+     *
+     * @param bool $isClOnly Whether to generate CL-only projection (otherwise VL-only).
+     *
+     * @return string SQL projection fragment.
+     */
     private function getSyntheseVehicleMetricsSelect(bool $isClOnly): string
     {
         if ($isClOnly) {
@@ -290,6 +335,11 @@ final readonly class SuiviSyntheseRepository extends AbstractSuiviQueryRepositor
         ";
     }
 
+    /**
+     * Returns the reusable FROM/JOIN SQL block for raw synthesized aggregation.
+     *
+     * @return string SQL fragment.
+     */
     private function getRawSyntheseFromJoinsSql(): string
     {
         return "
@@ -371,4 +421,3 @@ final readonly class SuiviSyntheseRepository extends AbstractSuiviQueryRepositor
         ";
     }
 }
-

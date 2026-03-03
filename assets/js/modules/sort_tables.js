@@ -1,14 +1,20 @@
-// Trie les colonnes par ordre alphabétique, ou inverse si on re-clique
+/**
+ * Sorts table rows by a column, toggling ascending/descending order.
+ *
+ * @param {HTMLTableElement} table
+ * @param {number} colIndex
+ * @returns {void}
+ */
 export function sortTableByColumn(table, colIndex) {
     const tbody = table.querySelector('tbody');
     const rows = Array.from(tbody.querySelectorAll('tr'));
 
-    // Déterminer l'ordre
+    // Compute next sort direction.
     let asc = !tbody.dataset.sortAsc || tbody.dataset.sortCol != colIndex || tbody.dataset.sortAsc === 'false';
     tbody.dataset.sortAsc = asc;
     tbody.dataset.sortCol = colIndex;
 
-    // Ajouter la classe de tri à la colonne active
+    // Mark active column sort state.
     const th = table.querySelectorAll('th')[colIndex];
     th.classList.remove('sorted-asc', 'sorted-desc');
     th.classList.add(asc ? 'sorted-asc' : 'sorted-desc');
@@ -28,7 +34,7 @@ export function sortTableByColumn(table, colIndex) {
         const aText = getCellValue(a.children[colIndex]).trim();
         const bText = getCellValue(b.children[colIndex]).trim();
 
-        // Comparaison numérique si possible
+        // Use numeric comparison when both values are valid numbers.
         const aNum = parseFloat(aText.replace(/\s/g, '').replace(',', '.'));
         const bNum = parseFloat(bText.replace(/\s/g, '').replace(',', '.'));
 
@@ -39,14 +45,26 @@ export function sortTableByColumn(table, colIndex) {
         return asc ? aText.localeCompare(bText, 'fr') : bText.localeCompare(aText, 'fr');
     });
 
-    // Réinjecter les lignes triées
-    rows.forEach(row => tbody.appendChild(row));
+    // Re-append rows in sorted order.
+    rows.forEach((row) => tbody.appendChild(row));
 }
 
-// Ajuste la largeur des colonnes à la valeur la plus longue de chacune d'elles
+/**
+ * Adjusts editable column widths based on the widest displayed input content.
+ *
+ * @param {HTMLTableElement} table
+ * @returns {void}
+ */
 export function adjustColumnWidths(table) {
     if (!table) return;
 
+    /**
+     * Measures rendered text width for a specific font.
+     *
+     * @param {string} text
+     * @param {string} font
+     * @returns {number}
+     */
     function getTextWidth(text, font) {
         const span = document.createElement('span');
         span.style.visibility = 'hidden';
@@ -64,7 +82,7 @@ export function adjustColumnWidths(table) {
     ths.forEach((th, colIndex) => {
         let maxWidth = getTextWidth(th.textContent.trim(), getComputedStyle(th).font);
 
-        table.querySelectorAll('tbody tr').forEach(tr => {
+        table.querySelectorAll('tbody tr').forEach((tr) => {
             const td = tr.children[colIndex];
             if (!td) return;
 
@@ -72,7 +90,7 @@ export function adjustColumnWidths(table) {
             if (!input) return;
 
             if (input.tagName.toLowerCase() === 'select') {
-                for (let option of input.options) {
+                for (const option of input.options) {
                     maxWidth = Math.max(maxWidth, getTextWidth(option.text, getComputedStyle(input).font) + 22);
                 }
             } else if (input.type === 'date') {
@@ -81,27 +99,29 @@ export function adjustColumnWidths(table) {
                 maxWidth = Math.max(maxWidth, getTextWidth(input.value || input.placeholder || ' ', getComputedStyle(input).font) + 8);
             }
 
-            input.style.width = maxWidth + 'px';
+            input.style.width = `${maxWidth}px`;
         });
     });
 }
 
-
-
-// Permet de rendre le bouton de soumission du formulaire cliquable si une information a été changée.
-// Revient en disabled si les informations entrées sont les mêmes qu'au chargement
+/**
+ * Enables row submit buttons only when row inputs differ from initial values.
+ *
+ * @param {HTMLTableElement} table
+ * @returns {void}
+ */
 export function enableSubmitOnChange(table) {
     if (!table) return;
 
     const rows = table.querySelectorAll('tbody tr');
 
-    rows.forEach(row => {
+    rows.forEach((row) => {
         const inputs = row.querySelectorAll('input, select, textarea');
         const submitButton = row.querySelector('button[type="submit"]');
         if (!submitButton) return;
 
-        // Stocker les valeurs initiales
-        const initialValues = Array.from(inputs).map(input => {
+        // Keep initial form state snapshot.
+        const initialValues = Array.from(inputs).map((input) => {
             if (input.type === 'checkbox' || input.type === 'radio') {
                 return input.checked;
             }
@@ -117,7 +137,7 @@ export function enableSubmitOnChange(table) {
             });
         };
 
-        inputs.forEach(input => {
+        inputs.forEach((input) => {
             input.addEventListener('input', () => {
                 submitButton.disabled = !checkChanged();
             });

@@ -4,8 +4,23 @@ namespace App\Import;
 
 use App\Interfaces\CsvImportInterface;
 
+/**
+ * Resolves the import service to use based on an uploaded file name.
+ */
 class ImportRouter
 {
+    /**
+     * @param CsvImportInterface $centresClientsImport Import service for `centres_clients` files.
+     * @param CsvImportInterface $clientsImport Import service for `clients` files.
+     * @param CsvImportInterface $clientsControlesImport Import service for `clients_controles` files.
+     * @param CsvImportInterface $controlesImport Import service for `controles` files.
+     * @param CsvImportInterface $controlesFacturesImport Import service for `controles_factures` files.
+     * @param CsvImportInterface $controlesNonFacturesImport Import service for `controles_non_factures` files.
+     * @param CsvImportInterface $facturesImport Import service for `factures` files.
+     * @param CsvImportInterface $facturesReglementsImport Import service for `factures_reglements` files.
+     * @param CsvImportInterface $prestasNonFactureesImport Import service for `prestas_non_facturees` files.
+     * @param CsvImportInterface $reglementsImport Import service for `reglements` files.
+     */
     public function __construct(
         private CsvImportInterface $centresClientsImport,
         private CsvImportInterface $clientsImport,
@@ -20,8 +35,14 @@ class ImportRouter
     ) {
     }
 
-    /*
-     * Permet de matcher les titres des fichiers csv avec le service d'import correspondant
+    /**
+     * Returns the matching import service for a given file name.
+     *
+     * @param string $filename Uploaded file name.
+     *
+     * @return CsvImportInterface Matching CSV import service.
+     *
+     * @throws \RuntimeException When no importer matches the provided file name.
      */
     public function getImporterForFile(string $filename): CsvImportInterface
     {

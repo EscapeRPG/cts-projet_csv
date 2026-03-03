@@ -17,13 +17,23 @@ class ResetPasswordRequestRepository extends ServiceEntityRepository implements 
 {
     use ResetPasswordRequestRepositoryTrait;
 
+    /**
+     * @param ManagerRegistry $registry Doctrine manager registry.
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ResetPasswordRequest::class);
     }
 
     /**
-     * @param User $user
+     * Creates a reset-password request entity instance.
+     *
+     * @param object $user User requesting password reset.
+     * @param \DateTimeInterface $expiresAt Token expiration datetime.
+     * @param string $selector Public selector part of the reset token.
+     * @param string $hashedToken Hashed verifier part of the reset token.
+     *
+     * @return ResetPasswordRequestInterface Reset-password request model.
      */
     public function createResetPasswordRequest(object $user, \DateTimeInterface $expiresAt, string $selector, string $hashedToken): ResetPasswordRequestInterface
     {

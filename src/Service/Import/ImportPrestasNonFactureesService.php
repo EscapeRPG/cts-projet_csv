@@ -2,13 +2,22 @@
 
 namespace App\Service\Import;
 
+/**
+ * Imports CSV rows into the `prestas_non_facturees` table.
+ */
 class ImportPrestasNonFactureesService extends \App\Service\Import\AbstractCsvImportService
 {
+    /**
+     * @return string Target table name.
+     */
     protected static function getTableName(): string
     {
         return 'prestas_non_facturees';
     }
 
+    /**
+     * @return array<int, string> Target table columns.
+     */
     protected static function getColumns(): array
     {
         return [
@@ -33,11 +42,17 @@ class ImportPrestasNonFactureesService extends \App\Service\Import\AbstractCsvIm
         ];
     }
 
+    /**
+     * @return array<int, string> Unique key columns.
+     */
     protected static function getUniqueKeys(): array
     {
         return ['idcontrole'];
     }
 
+    /**
+     * @return array<string, array<int, string>> CSV-to-database mapping.
+     */
     protected static function getColumnMapping(): array
     {
         return [
@@ -61,11 +76,17 @@ class ImportPrestasNonFactureesService extends \App\Service\Import\AbstractCsvIm
         ];
     }
 
+    /**
+     * @return array<int, string> Date/time columns.
+     */
     protected static function getDateColumns(): array
     {
         return ['date_export'];
     }
 
+    /**
+     * @return array<int, string> Decimal columns.
+     */
     protected static function getDecimalColumns(): array
     {
         return [

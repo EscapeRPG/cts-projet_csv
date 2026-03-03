@@ -1,9 +1,20 @@
 import { sortTableByColumn, enableSubmitOnChange, adjustColumnWidths } from "sort_tables";
 
+/**
+ * Applies dynamic column width adjustments.
+ *
+ * @param {HTMLTableElement} table
+ * @returns {void}
+ */
 function initTable(table) {
     adjustColumnWidths(table);
 }
 
+/**
+ * Initializes sortable columns and inline submit behavior for companies table.
+ *
+ * @returns {void}
+ */
 function init() {
     const table = document.querySelector('.societes-list');
     if (!table) return;

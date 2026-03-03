@@ -5,26 +5,24 @@ namespace App\Repository\Suivi;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Exception;
 
+/**
+ * Provides professional-client aggregates for activity monitoring pages.
+ */
 final readonly class SuiviProsRepository extends AbstractSuiviQueryRepository
 {
     /**
+     * Returns professional-client aggregates for selected filters.
+     *
+     * @param array<string, mixed> $filters Selected filters.
+     *
+     * @return array<int, array<string, mixed>> Aggregated professional-client rows.
+     *
      * @throws Exception
      */
     public function fetchProClients(array $filters = []): array
     {
         $selectedTypeFamilies = $this->normalizeTypeFamilies($filters['type'] ?? []);
         $selectedVehicleTypes = $this->normalizeVehicleTypes($filters['vehicule'] ?? []);
-
-        $hasTypeFilter = !empty($filters['type']) && !$this->isAllTypeFamiliesSelected($selectedTypeFamilies);
-
-        if ($hasTypeFilter) {
-            return $this->fetchProClientsByTypeFromRaw(
-                $filters,
-                $selectedTypeFamilies,
-                $selectedVehicleTypes,
-                $hasTypeFilter
-            );
-        }
 
         $where = [];
         $params = [];
@@ -38,15 +36,17 @@ final readonly class SuiviProsRepository extends AbstractSuiviQueryRepository
             includeControleur: false
         );
 
-        $selectCa = 'ca';
-        $selectNbControles = 'nb_controles';
-        if ($selectedVehicleTypes === ['CL']) {
-            $selectCa = 'ca_moto';
-            $selectNbControles = 'nb_controles_moto';
-        } elseif ($selectedVehicleTypes === ['VL']) {
-            $selectCa = 'ca_auto';
-            $selectNbControles = 'nb_controles_auto';
+        $hasTypeFilter = !empty($filters['type']) && !$this->isAllTypeFamiliesSelected($selectedTypeFamilies);
+        if ($hasTypeFilter && !$this->hasDetailedTypeColumns()) {
+            return $this->fetchProClientsByTypeFromRaw(
+                $filters,
+                $selectedTypeFamilies,
+                $selectedVehicleTypes,
+                true
+            );
         }
+
+        [$selectNbControles, $selectCa] = $this->buildProsMetricExpressions($selectedTypeFamilies, $selectedVehicleTypes);
 
         $sql = "
             SELECT
@@ -66,10 +66,93 @@ final readonly class SuiviProsRepository extends AbstractSuiviQueryRepository
         }
         $sql .= " ORDER BY {$selectCa} DESC";
 
-        return $this->connection->executeQuery($sql, $params, $types)->fetchAllAssociative();
+        return $this->cachedRows(
+            'suivi_pros_synthese',
+            ['filters' => $filters, 'types' => $selectedTypeFamilies, 'vehicle' => $selectedVehicleTypes],
+            fn() => $this->connection->executeQuery($sql, $params, $types)->fetchAllAssociative()
+        );
     }
 
     /**
+     * Builds SQL expressions for controls count and revenue metrics.
+     *
+     * @param array<int, string> $selectedTypeFamilies Selected type families.
+     * @param array<int, string> $selectedVehicleTypes Selected vehicle categories.
+     *
+     * @return array{0:string,1:string} Count expression and revenue expression.
+     */
+    private function buildProsMetricExpressions(array $selectedTypeFamilies, array $selectedVehicleTypes): array
+    {
+        $nbByFamilyVehicle = [
+            'VTP' => ['VL' => 'nb_vtp', 'CL' => 'nb_clvtp'],
+            'CV' => ['VL' => 'nb_cv', 'CL' => 'nb_clcv'],
+            'VTC' => ['VL' => 'nb_vtc'],
+            'VOL' => ['VL' => 'nb_vol', 'CL' => 'nb_clvol'],
+        ];
+
+        $caByFamilyVehicle = [
+            'VTP' => ['VL' => 'ca_vtp', 'CL' => 'ca_clvtp'],
+            'CV' => ['VL' => 'ca_cv', 'CL' => 'ca_clcv'],
+            'VTC' => ['VL' => 'ca_vtc'],
+            'VOL' => ['VL' => 'ca_vol', 'CL' => 'ca_clvol'],
+        ];
+
+        $selectedFamilies = $selectedTypeFamilies === [] ? self::TYPE_FAMILIES : $selectedTypeFamilies;
+        $selectedVehicles = $selectedVehicleTypes === [] ? self::VEHICLE_TYPES : $selectedVehicleTypes;
+
+        $nbColumns = [];
+        $caColumns = [];
+
+        foreach ($selectedFamilies as $family) {
+            foreach ($selectedVehicles as $vehicle) {
+                if (isset($nbByFamilyVehicle[$family][$vehicle])) {
+                    $nbColumns[] = $nbByFamilyVehicle[$family][$vehicle];
+                }
+                if (isset($caByFamilyVehicle[$family][$vehicle])) {
+                    $caColumns[] = $caByFamilyVehicle[$family][$vehicle];
+                }
+            }
+        }
+
+        $nbColumns = array_values(array_unique($nbColumns));
+        $caColumns = array_values(array_unique($caColumns));
+
+        $nbExpr = $nbColumns === [] ? '0' : implode(' + ', $nbColumns);
+        $caExpr = $caColumns === [] ? '0' : implode(' + ', $caColumns);
+
+        return [$nbExpr, $caExpr];
+    }
+
+    /**
+     * Indicates whether detailed per-type columns are available in `synthese_pros`.
+     *
+     * @return bool True when all detailed type columns are present.
+     *
+     * @throws Exception
+     */
+    private function hasDetailedTypeColumns(): bool
+    {
+        return (int)$this->connection->fetchOne(
+            "
+                SELECT COUNT(*)
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'synthese_pros'
+                  AND COLUMN_NAME IN ('ca_vtp','ca_clvtp','ca_cv','ca_clcv','ca_vtc','ca_vol','ca_clvol','nb_vtp','nb_clvtp','nb_cv','nb_clcv','nb_vtc','nb_vol','nb_clvol')
+            "
+        ) === 14;
+    }
+
+    /**
+     * Returns professional-client aggregates from raw source joins.
+     *
+     * @param array<string, mixed> $filters Selected filters.
+     * @param array<int, string> $selectedTypeFamilies Selected type families.
+     * @param array<int, string> $selectedVehicleTypes Selected vehicle categories.
+     * @param bool $applyTypeFilter Whether to apply explicit raw type filtering.
+     *
+     * @return array<int, array<string, mixed>> Aggregated rows from raw sources.
+     *
      * @throws Exception
      */
     private function fetchProClientsByTypeFromRaw(
@@ -141,6 +224,11 @@ final readonly class SuiviProsRepository extends AbstractSuiviQueryRepository
         );
     }
 
+    /**
+     * Returns the reusable FROM/JOIN SQL block for raw professional-client aggregation.
+     *
+     * @return string SQL fragment.
+     */
     private function getRawProsFromJoinsSql(): string
     {
         return "
@@ -182,4 +270,3 @@ final readonly class SuiviProsRepository extends AbstractSuiviQueryRepository
         ";
     }
 }
-

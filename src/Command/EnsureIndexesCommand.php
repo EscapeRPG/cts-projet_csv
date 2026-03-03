@@ -14,6 +14,9 @@ use Symfony\Component\Console\Output\OutputInterface;
     name: 'app:db:ensure-indexes',
     description: 'Vérifie et crée les index de performance manquants.'
 )]
+/**
+ * Ensures required database performance indexes exist across core tables.
+ */
 class EnsureIndexesCommand extends Command
 {
     /**
@@ -71,16 +74,32 @@ class EnsureIndexesCommand extends Command
         ['table' => 'synthese_pros', 'name' => 'idx_sp_societe_centre', 'signature' => 'societe_nom,agr_centre', 'sql' => 'CREATE INDEX idx_sp_societe_centre ON synthese_pros (societe_nom, agr_centre)'],
     ];
 
+    /**
+     * @param Connection $connection DBAL connection used to inspect and create indexes.
+     */
     public function __construct(private readonly Connection $connection)
     {
         parent::__construct();
     }
 
+    /**
+     * Configures command options.
+     *
+     * @return void
+     */
     protected function configure(): void
     {
         $this->addOption('dry-run', null, InputOption::VALUE_NONE, 'Affiche les actions sans créer d’index.');
     }
 
+    /**
+     * Executes index verification and optional index creation.
+     *
+     * @param InputInterface $input Console input.
+     * @param OutputInterface $output Console output.
+     *
+     * @return int Command exit status.
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $dryRun = (bool)$input->getOption('dry-run');
@@ -129,6 +148,16 @@ class EnsureIndexesCommand extends Command
     }
 
     /**
+     * Ensures a given index exists on a table.
+     *
+     * @param string $table Target table name.
+     * @param string $indexName Expected index name.
+     * @param string $signature Canonical indexed columns signature.
+     * @param string $createSql SQL statement used to create the index.
+     * @param bool $dryRun Whether to simulate creation.
+     *
+     * @return string Operation status line.
+     *
      * @throws Exception
      */
     private function ensureIndex(

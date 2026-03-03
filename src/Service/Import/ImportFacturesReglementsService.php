@@ -2,13 +2,22 @@
 
 namespace App\Service\Import;
 
+/**
+ * Imports CSV rows into the `factures_reglements` table.
+ */
 class ImportFacturesReglementsService extends \App\Service\Import\AbstractCsvImportService
 {
+    /**
+     * @return string Target table name.
+     */
     protected static function getTableName(): string
     {
         return 'factures_reglements';
     }
 
+    /**
+     * @return array<int, string> Target table columns.
+     */
     protected static function getColumns(): array
     {
         return [
@@ -20,11 +29,17 @@ class ImportFacturesReglementsService extends \App\Service\Import\AbstractCsvImp
         ];
     }
 
+    /**
+     * @return array<int, string> Unique key columns.
+     */
     protected static function getUniqueKeys(): array
     {
         return ['idfacture', 'idreglement'];
     }
 
+    /**
+     * @return array<string, array<int, string>> CSV-to-database mapping.
+     */
     protected static function getColumnMapping(): array
     {
         return [
@@ -35,11 +50,17 @@ class ImportFacturesReglementsService extends \App\Service\Import\AbstractCsvImp
         ];
     }
 
+    /**
+     * @return array<int, string> Date/time columns.
+     */
     protected static function getDateColumns(): array
     {
         return [];
     }
 
+    /**
+     * @return array<int, string> Decimal columns.
+     */
     protected static function getDecimalColumns(): array
     {
         return [];

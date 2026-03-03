@@ -2,8 +2,18 @@
 
 namespace App\Service\Suivi;
 
+/**
+ * Aggregates professional-client entries across company and center groups.
+ */
 class SuiviProService
 {
+    /**
+     * Builds merged professional-client rows with year-over-year percentages.
+     *
+     * @param array<string, mixed> $synthese Professional-client synthesized tree.
+     *
+     * @return array<int, array<string, mixed>> Aggregated client rows sorted by revenue.
+     */
     public function getFocusPro(array $synthese): array
     {
         $clients = [];
@@ -66,6 +76,13 @@ class SuiviProService
         return $clients;
     }
 
+    /**
+     * Uppercases text using multibyte support when available.
+     *
+     * @param string $value Input value.
+     *
+     * @return string Uppercased string.
+     */
     private function safeUpper(string $value): string
     {
         if (function_exists('mb_strtoupper')) {

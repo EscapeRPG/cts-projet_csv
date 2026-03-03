@@ -2,17 +2,29 @@
 
 namespace App\Service\Import;
 
+/**
+ * Filesystem-backed client used to handle SFTP-like import folders.
+ */
 class SftpClient
 {
     private string $mode;
     private string $basePath;
 
+    /**
+     * @param string $mode SFTP operating mode.
+     * @param string $basePath Base directory containing network folders.
+     */
     public function __construct(string $mode, string $basePath)
     {
         $this->mode = $mode;
         $this->basePath = $basePath;
     }
 
+    /**
+     * Lists available network directories.
+     *
+     * @return array<int, string> Network directory names.
+     */
     public function listReseaux(): array
     {
         return array_filter(
@@ -21,6 +33,13 @@ class SftpClient
         );
     }
 
+    /**
+     * Lists incoming CSV files for a network.
+     *
+     * @param string $reseau Network code.
+     *
+     * @return array<int, string> Sorted CSV file names.
+     */
     public function listIncomingFiles(string $reseau): array
     {
         $path = $this->getIncomingPath($reseau);
@@ -38,13 +57,25 @@ class SftpClient
         return $files;
     }
 
+    /**
+     * Returns incoming directory path for a network.
+     *
+     * @param string $reseau Network code.
+     *
+     * @return string Incoming directory path.
+     */
     public function getIncomingPath(string $reseau): string
     {
         return "{$this->basePath}/{$reseau}/incoming";
     }
 
-    /*
-     * Transfère le fichier vers le dossier "processed" en cas de réussite
+    /**
+     * Moves a successfully imported file to the `processed` folder.
+     *
+     * @param string $reseau Network code.
+     * @param string $filename File name.
+     *
+     * @return bool True on successful move.
      */
     public function moveToProcessed(string $reseau, string $filename): bool
     {
@@ -54,8 +85,13 @@ class SftpClient
         return rename($src, $dest);
     }
 
-    /*
-     * Transfère le fichier vers le dossier "error" en cas d'erreur
+    /**
+     * Moves a failed file to the `error` folder from incoming or processed folders.
+     *
+     * @param string $reseau Network code.
+     * @param string $filename File name.
+     *
+     * @return bool True on successful move.
      */
     public function moveToErrorSafe(string $reseau, string $filename): bool
     {
@@ -75,6 +111,15 @@ class SftpClient
         return false;
     }
 
+    /**
+     * Checks whether an incoming file is stable enough to be imported.
+     *
+     * @param string $reseau Network code.
+     * @param string $filename File name.
+     * @param int $minAgeSeconds Minimum file age before import.
+     *
+     * @return bool True when file size and mtime are stable.
+     */
     public function isIncomingFileStable(string $reseau, string $filename, int $minAgeSeconds = 120): bool
     {
         $path = "{$this->basePath}/{$reseau}/incoming/{$filename}";

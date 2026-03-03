@@ -14,6 +14,13 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 final class SecurityController extends AbstractController
 {
+    /**
+     * Displays the login form and authentication errors when available.
+     *
+     * @param AuthenticationUtils $authenticationUtils Security helper for last username and auth errors.
+     *
+     * @return Response Rendered login page or redirect to home if already authenticated.
+     */
     #[Route(path: '/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
@@ -33,14 +40,27 @@ final class SecurityController extends AbstractController
         ]);
     }
 
+    /**
+     * Logout endpoint intercepted by Symfony security firewall.
+     *
+     * @return void
+     */
     #[Route(path: '/logout', name: 'app_logout')]
     public function logout(): void
     {
         throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
 
-    /*
-     * Vérifie la conformité du token csrf pour activation du compte du nouvel utilisateur
+    /**
+     * Activates a newly created account and lets the user define their password.
+     *
+     * @param string $token Activation token from email link.
+     * @param Request $request Current HTTP request containing form submission data.
+     * @param UserRepository $repo Repository used to resolve the user by activation token.
+     * @param UserPasswordHasherInterface $hasher Password hasher for initial password setup.
+     * @param EntityManagerInterface $em Doctrine entity manager.
+     *
+     * @return Response Rendered activation form or redirect to login after successful activation.
      */
     #[Route('/activate/{token}', name: 'app_activate_account')]
     public function activate(
