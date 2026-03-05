@@ -66,7 +66,9 @@ final class SuiviActiviteController extends AbstractController
     #[Route('/suivi/activite', name: 'app_suivi_activite')]
     public function index(Request $request): Response
     {
-        $filters = $this->filtersResolver->resolveFromRequest($request);
+        $filters = $this->applyDefaultCurrentYearForYearFilteredPages(
+            $this->filtersResolver->resolveFromRequest($request)
+        );
 
         $rows = $this->repo->fetchSyntheseRows($filters);
         $synthese = $this->syntheseBuilder->buildSynthese($rows);
@@ -95,7 +97,9 @@ final class SuiviActiviteController extends AbstractController
     #[Route('/suivi/controleurs', name: 'app_suivi_controleurs')]
     public function suiviControleurs(Request $request): Response
     {
-        $filters = $this->filtersResolver->resolveFromRequest($request);
+        $filters = $this->applyDefaultCurrentYearForYearFilteredPages(
+            $this->filtersResolver->resolveFromRequest($request)
+        );
 
         $rows = $this->repo->fetchSyntheseRows($filters);
         $synthese = $this->syntheseBuilder->buildSynthese($rows);
@@ -224,5 +228,21 @@ final class SuiviActiviteController extends AbstractController
         return is_int($filters['annee']) && $filters['annee'] > 0
             ? $filters['annee']
             : (int) date('Y');
+    }
+
+    /**
+     * Ensures pages with explicit year tabs default to the current year.
+     *
+     * @param array<string, mixed> $filters Normalized filters array.
+     *
+     * @return array<string, mixed> Filters with current year fallback.
+     */
+    private function applyDefaultCurrentYearForYearFilteredPages(array $filters): array
+    {
+        if (!is_int($filters['annee']) || $filters['annee'] <= 0) {
+            $filters['annee'] = (int) date('Y');
+        }
+
+        return $filters;
     }
 }

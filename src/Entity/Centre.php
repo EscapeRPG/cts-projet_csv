@@ -22,6 +22,9 @@ class Centre
     #[ORM\Column(length: 50, unique: true, nullable: true)]
     private ?string $agrCentre = null;
 
+    #[ORM\Column(length: 50, unique: true, nullable: true)]
+    private ?string $agrClCentre = null;
+
     #[ORM\ManyToOne(inversedBy: 'centres')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Reseau $reseau = null;
@@ -75,6 +78,17 @@ class Centre
     public function setAgrCentre(?string $agrCentre): static
     {
         $this->agrCentre = $agrCentre;
+        return $this;
+    }
+
+    public function getAgrClCentre(): ?string
+    {
+        return $this->agrClCentre;
+    }
+
+    public function setAgrClCentre(?string $agrClCentre): static
+    {
+        $this->agrClCentre = $agrClCentre;
         return $this;
     }
 

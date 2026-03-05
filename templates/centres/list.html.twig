@@ -11,6 +11,7 @@
                     <th>Société</th>
                     <th>Réseau</th>
                     <th>Agrément</th>
+                    <th>Agrément CL</th>
                     <th>Coordonnées</th>
                     <th>CP</th>
                     <th>Ville</th>
@@ -29,6 +30,7 @@
                         <td>{{ form_widget(forms[centre.id].societe, {'attr': {'form': formId}}) }}</td>
                         <td>{{ form_widget(forms[centre.id].reseau, {'attr': {'form': formId}}) }}</td>
                         <td>{{ form_widget(forms[centre.id].agrCentre, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[centre.id].agrClCentre, {'attr': {'form': formId}}) }}</td>
                         <td>{{ form_widget(forms[centre.id].coordonnees, {'attr': {'form': formId}}) }}</td>
                         <td>{{ form_widget(forms[centre.id].cp, {'attr': {'form': formId}}) }}</td>
                         <td>{{ form_widget(forms[centre.id].ville, {'attr': {'form': formId}}) }}</td>

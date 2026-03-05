@@ -8,14 +8,23 @@
 export function sortTableByColumn(table, colIndex) {
     const tbody = table.querySelector('tbody');
     const rows = Array.from(tbody.querySelectorAll('tr'));
+    const th = table.querySelectorAll('th')[colIndex];
+    const headerLabel = (th?.textContent || '').trim().toLowerCase();
+    const isSocieteColumn = headerLabel === 'société' || headerLabel === 'societe';
+    const isFirstSortAction = !tbody.dataset.sortCol;
 
     // Compute next sort direction.
     let asc = !tbody.dataset.sortAsc || tbody.dataset.sortCol != colIndex || tbody.dataset.sortAsc === 'false';
+
+    // Special case: first click on pre-sorted "Société" column should toggle to DESC.
+    if (isFirstSortAction && isSocieteColumn && th?.classList.contains('sorted-asc')) {
+        asc = false;
+    }
+
     tbody.dataset.sortAsc = asc;
     tbody.dataset.sortCol = colIndex;
 
     // Mark active column sort state.
-    const th = table.querySelectorAll('th')[colIndex];
     th.classList.remove('sorted-asc', 'sorted-desc');
     th.classList.add(asc ? 'sorted-asc' : 'sorted-desc');
 

@@ -14,7 +14,7 @@
                     <thead>
                     <tr>
                         <th>Société</th>
-                        <th>Réseau</th>
+                        <th class="sticky-centre">Centre</th>
                         <th>Contrôleur</th>
                         <th>Agrément</th>
                         <th>VTP</th>
@@ -60,7 +60,7 @@
                                         {% endif %}
                                     </td>
 
-                                    <td>
+                                    <td class="sticky-centre">
                                         {% if agrCentre != lastCentre %}
                                             {{ centreData.centre.reseau }}
                                             {{ centreData.centre.ville }}
@@ -98,7 +98,7 @@
                             {% endfor %}
 
                             <tr class="total-row">
-                                <td colspan="3">{{ centreData.centre.reseau_code }} {{ centreData.centre.ville }} {{ agrCentre }}
+                                <td colspan="3" class="sticky-centre total">{{ centreData.centre.reseau_code }} {{ centreData.centre.ville }} {{ agrCentre }}
                                     - {{ centreData.centre.reseau }}</td>
                                 <td>TOTAL</td>
                                 <td>{{ centreData.totaux.nb_vtp }}</td>

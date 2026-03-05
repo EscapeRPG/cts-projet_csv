@@ -12,8 +12,11 @@
 table {
     width: 100%;
     border-collapse: collapse;
-    font-size: .9em;
     white-space: nowrap;
+
+    * {
+        font-size: .9em;
+    }
 
     thead {
         position: sticky;
@@ -29,6 +32,15 @@ table {
             th {
                 padding: 5px;
             }
+        }
+    }
+
+    td, th {
+        width: fit-content;
+        max-width: 120px;
+
+        input {
+            max-width: 100% !important;
         }
     }
 
@@ -96,5 +108,22 @@ table {
         &:hover {
             color: var(--blocks);
         }
+    }
+}
+
+.sticky-centre {
+    position: sticky;
+    left: 0;
+}
+
+th.sticky-centre {
+    background: var(--cts-main);
+}
+
+td.sticky-centre {
+    background: var(--blocks);
+
+    &.total {
+        background: var(--cts-main-light);
     }
 }

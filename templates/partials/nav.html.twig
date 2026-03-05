@@ -119,6 +119,21 @@
         {% endif %}
     </div>
 </nav>
+
+<div class="meta-info">
+    Dernière mise à jour BDD :
+    {% if database_last_update_at is not null %}
+        {{ database_last_update_at|format_datetime(
+        pattern: "'le' d MMMM y 'à' HH:mm",
+        locale: 'fr'
+    ) }}
+    {% else %}
+        inconnue
+    {% endif %}
+    <br>
+    Réseaux manquants : Autosur - Autovision
+</div>
+
 <a href="{{ path('app_home') }}" class="home">
     <img src="{{ asset('img/logo.png') }}" alt="accueil" title="Retour à l'accueil">
 </a>

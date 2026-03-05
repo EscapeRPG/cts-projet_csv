@@ -37,6 +37,10 @@ class CreateCentreType extends AbstractType
                 'label' => '*Agrément : ',
                 'required' => true,
             ])
+            ->add('agrClCentre', TextType::class, [
+                'label' => 'Agrément Cl : ',
+                'required' => false,
+            ])
             ->add('coordonnees', TextType::class, [
                 'label' => 'Adresse : ',
                 'required' => false,

@@ -6,10 +6,4 @@
         {{ annee }}
     </a>
     {% endfor %}
-
-    <a href="{{ path(app.request.attributes.get('_route')) }}"
-       data-year-value=""
-       class="{{ anneeCourante is null ? 'active' }}">
-        3 dernières
-    </a>
 </div>

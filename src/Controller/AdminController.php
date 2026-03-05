@@ -211,6 +211,7 @@ final class AdminController extends AbstractController
     /**
      * Displays employees with one inline edit form per row.
      *
+     * @param Request $request Current HTTP request containing pagination query parameters.
      * @param SalarieRepository $salarieRepository Repository used to retrieve employees.
      * @param FormFactoryInterface $formFactory Form factory used to build per-employee forms.
      *
@@ -218,11 +219,18 @@ final class AdminController extends AbstractController
      */
     #[Route("/admin/salaries/list", name: 'app_salaries_list')]
     public function listSalaries(
+        Request             $request,
         SalarieRepository    $salarieRepository,
         FormFactoryInterface $formFactory
     ): Response
     {
-        $salaries = $salarieRepository->findBy([], ['nom' => 'ASC']);
+        $perPage = 50;
+        $totalItems = $salarieRepository->count([]);
+        $totalPages = max(1, (int)ceil($totalItems / $perPage));
+        $page = max(1, min($request->query->getInt('page', 1), $totalPages));
+        $offset = ($page - 1) * $perPage;
+
+        $salaries = $salarieRepository->findBy([], ['nom' => 'ASC'], $perPage, $offset);
         $forms = [];
 
         foreach ($salaries as $salarie) {
@@ -239,10 +247,7 @@ final class AdminController extends AbstractController
                 ->createView();
         }
 
-        return $this->render('salaries/list.html.twig', [
-            'salaries' => $salaries,
-            'forms' => $forms,
-        ]);
+        return $this->getResponse($salaries, $forms, $page, $perPage, $totalItems, $totalPages);
     }
 
     /**
@@ -314,10 +319,17 @@ final class AdminController extends AbstractController
 
             $this->addFlash('success', "Salarié {$salarie->getNom()} mis à jour.");
 
-            return $this->redirectToRoute('app_salaries_list');
+            return $this->redirectToRoute('app_salaries_list', [
+                'page' => max(1, $request->query->getInt('page', 1)),
+            ]);
         }
 
-        $salaries = $em->getRepository(Salarie::class)->findAll();
+        $perPage = 25;
+        $totalItems = $em->getRepository(Salarie::class)->count([]);
+        $totalPages = max(1, (int)ceil($totalItems / $perPage));
+        $page = max(1, min($request->query->getInt('page', 1), $totalPages));
+        $offset = ($page - 1) * $perPage;
+        $salaries = $em->getRepository(Salarie::class)->findBy([], ['nom' => 'ASC'], $perPage, $offset);
         $forms = [];
 
         foreach ($salaries as $s) {
@@ -332,10 +344,7 @@ final class AdminController extends AbstractController
 
         $this->addFlash('error', 'Erreur dans le formulaire, vérifiez les champs.');
 
-        return $this->render('salaries/list.html.twig', [
-            'salaries' => $salaries,
-            'forms' => $forms,
-        ]);
+        return $this->getResponse($salaries, $forms, $page, $perPage, $totalItems, $totalPages);
     }
 
     /**
@@ -484,6 +493,26 @@ final class AdminController extends AbstractController
     ): Response
     {
         $centres = $centreRepository->findBy([], ['societe' => 'ASC']);
+        usort($centres, static function (Centre $a, Centre $b): int {
+            $societeA = mb_strtoupper(trim((string)($a->getSociete()?->getNom() ?? '')));
+            $societeB = mb_strtoupper(trim((string)($b->getSociete()?->getNom() ?? '')));
+            $bySociete = $societeA <=> $societeB;
+            if ($bySociete !== 0) {
+                return $bySociete;
+            }
+
+            $villeA = mb_strtoupper(trim((string)($a->getVille() ?? '')));
+            $villeB = mb_strtoupper(trim((string)($b->getVille() ?? '')));
+            $byVille = $villeA <=> $villeB;
+            if ($byVille !== 0) {
+                return $byVille;
+            }
+
+            $agrA = mb_strtoupper(trim((string)($a->getAgrCentre() ?? '')));
+            $agrB = mb_strtoupper(trim((string)($b->getAgrCentre() ?? '')));
+
+            return $agrA <=> $agrB;
+        });
         $forms = [];
 
         foreach ($centres as $centre) {
@@ -603,6 +632,33 @@ final class AdminController extends AbstractController
         return $this->render('centres/list.html.twig', [
             'centres' => $centres,
             'forms' => $forms,
+        ]);
+    }
+
+    /**
+     * @param array $salaries
+     * @param array $forms
+     * @param mixed $page
+     * @param int $perPage
+     * @param int $totalItems
+     * @param mixed $totalPages
+     * @return Response
+     */
+    public function getResponse(array $salaries, array $forms, mixed $page, int $perPage, int $totalItems, mixed $totalPages): Response
+    {
+        return $this->render('salaries/list.html.twig', [
+            'salaries' => $salaries,
+            'forms' => $forms,
+            'pagination' => [
+                'page' => $page,
+                'per_page' => $perPage,
+                'total_items' => $totalItems,
+                'total_pages' => $totalPages,
+                'has_previous' => $page > 1,
+                'has_next' => $page < $totalPages,
+                'previous_page' => $page > 1 ? $page - 1 : 1,
+                'next_page' => $page < $totalPages ? $page + 1 : $totalPages,
+            ],
         ]);
     }
 }

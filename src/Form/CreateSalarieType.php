@@ -55,7 +55,7 @@ class CreateSalarieType extends AbstractType
             ->add('email', EmailType::class, [
                 'label' => 'Email : ',
                 'required' => false,
-                'empty_data' => null,
+                'empty_data' => '',
             ])
             ->add('telephone', TextType::class, [
                 'label' => 'Téléphone : ',

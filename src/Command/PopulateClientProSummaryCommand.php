@@ -129,6 +129,10 @@ class PopulateClientProSummaryCommand extends Command
                 microtime(true) - $stepStartedAt
             ));
 
+            $centreJoinCondition = $this->hasSecondaryCentreAgreementColumn()
+                ? '(ce.agr_centre = cc.agr_centre OR ce.agr_cl_centre = cc.agr_centre)'
+                : 'ce.agr_centre = cc.agr_centre';
+
             $sql = "
                 INSERT INTO synthese_pros (
                     code_client, annee, mois, ca, ca_auto, ca_moto, nb_controles, nb_controles_auto, nb_controles_moto,
@@ -250,7 +254,7 @@ class PopulateClientProSummaryCommand extends Command
                 ) cli_ref
                     ON cli_ref.idclient = cc.idclient
                 LEFT JOIN centre ce
-                    ON ce.agr_centre = cc.agr_centre
+                    ON {$centreJoinCondition}
                 LEFT JOIN societe so
                     ON so.id = ce.societe_id
                 JOIN (
@@ -263,8 +267,7 @@ class PopulateClientProSummaryCommand extends Command
                     ) cf2
                     GROUP BY idfacture
                 ) t ON t.idfacture = fa.idfacture
-                WHERE fa.type_facture = 'F'
-                    AND fa.total_ht > 0
+                WHERE fa.type_facture IN ('F','A','D')
                     AND c.date_ctrl >= :date_from
                     AND c.date_ctrl < :date_to
                     AND c.res_ctrl IN ('A','AP')
@@ -306,6 +309,22 @@ class PopulateClientProSummaryCommand extends Command
             $output->writeln('<error>[synthese:pros] Échec: ' . $e->getMessage() . '</error>');
             return Command::FAILURE;
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function hasSecondaryCentreAgreementColumn(): bool
+    {
+        return (int) $this->connection->fetchOne(
+            "
+                SELECT COUNT(*)
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'centre'
+                  AND COLUMN_NAME = 'agr_cl_centre'
+            "
+        ) > 0;
     }
 
     /**

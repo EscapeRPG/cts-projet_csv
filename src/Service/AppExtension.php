@@ -13,8 +13,13 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
 {
     /**
      * @param Security $security Security helper used to resolve current user.
+     * @param SyntheseMetaProvider $syntheseMetaProvider Provider exposing synthesis metadata.
      */
-    public function __construct(private Security $security) {}
+    public function __construct(
+        private Security $security,
+        private SyntheseMetaProvider $syntheseMetaProvider
+    ) {
+    }
 
     /**
      * Returns Twig global variables.
@@ -25,6 +30,7 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
     {
         return [
             'user' => $this->security->getUser(),
+            'database_last_update_at' => $this->syntheseMetaProvider->getLastDatabaseUpdateAt(),
         ];
     }
 }
