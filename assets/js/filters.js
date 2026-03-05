@@ -40,14 +40,16 @@ let refreshDebounceTimer = null;
 let activeResultsRequestToken = 0;
 let pendingSocieteChange = false;
 let pendingCentreChange = false;
+let mobileFiltersState = null;
 const PANEL_FOCUS_SYMBOL = '\u{1F5D6}';
 const PANEL_RESTORE_SYMBOL = '\u{1F5D7}';
+const MOBILE_FILTERS_QUERY = '(max-width: 1000px)';
 
 /**
  * Returns focusable result panels within a container.
  *
  * @param {HTMLElement} container
- * @returns {HTMLElement[]}
+ * @returns {T[]}
  */
 function getFocusPanels(container) {
     if (!(container instanceof HTMLElement)) return [];
@@ -59,7 +61,7 @@ function getFocusPanels(container) {
  * Returns top-level child panels for a container.
  *
  * @param {HTMLElement} container
- * @returns {HTMLElement[]}
+ * @returns {Element[]}
  */
 function getTopLevelPanels(container) {
     if (!(container instanceof HTMLElement)) return [];
@@ -530,6 +532,254 @@ function setYearValue(form, yearValue) {
 }
 
 /**
+ * Opens the mobile filters drawer.
+ *
+ * @returns {void}
+ */
+function openMobileFiltersDrawer() {
+    if (!mobileFiltersState) return;
+
+    mobileFiltersState.drawer.removeAttribute('inert');
+    mobileFiltersState.drawer.classList.add('is-open');
+    mobileFiltersState.backdrop.classList.add('is-open');
+    mobileFiltersState.toggle.setAttribute('aria-expanded', 'true');
+    mobileFiltersState.drawer.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('mobile-filters-open');
+}
+
+/**
+ * Closes the mobile filters drawer.
+ *
+ * @returns {void}
+ */
+function closeMobileFiltersDrawer() {
+    if (!mobileFiltersState) return;
+
+    if (mobileFiltersState.drawer.contains(document.activeElement)) {
+        if (mobileFiltersState.toggle.isConnected) {
+            mobileFiltersState.toggle.focus();
+        }
+    }
+
+    mobileFiltersState.drawer.classList.remove('is-open');
+    mobileFiltersState.backdrop.classList.remove('is-open');
+    mobileFiltersState.toggle.setAttribute('aria-expanded', 'false');
+    mobileFiltersState.drawer.setAttribute('aria-hidden', 'true');
+    mobileFiltersState.drawer.setAttribute('inert', '');
+    document.body.classList.remove('mobile-filters-open');
+}
+
+/**
+ * Destroys mobile drawer state and restores the original filter DOM.
+ *
+ * @returns {void}
+ */
+function destroyMobileFiltersDrawer() {
+    if (!mobileFiltersState) {
+        document.body.classList.remove('mobile-filters-open');
+        return;
+    }
+
+    closeMobileFiltersDrawer();
+    restoreFiltersFromMobileDrawer();
+
+    mobileFiltersState.mediaQuery.removeEventListener('change', applyMobileFiltersLayout);
+    if (mobileFiltersState.keydownHandler) {
+        document.removeEventListener('keydown', mobileFiltersState.keydownHandler);
+    }
+
+    if (mobileFiltersState.host.isConnected) {
+        mobileFiltersState.host.remove();
+    }
+
+    mobileFiltersState = null;
+}
+
+/**
+ * Moves year and side filters into the mobile drawer.
+ *
+ * @returns {void}
+ */
+function mountFiltersInMobileDrawer() {
+    if (!mobileFiltersState || mobileFiltersState.isMounted) return;
+
+    const {yearsFilter, sideNav, drawerContent} = mobileFiltersState;
+
+    if (yearsFilter) {
+        drawerContent.appendChild(yearsFilter);
+    }
+    drawerContent.appendChild(sideNav);
+
+    mobileFiltersState.isMounted = true;
+}
+
+/**
+ * Restores year and side filters to their original DOM locations.
+ *
+ * @returns {void}
+ */
+function restoreFiltersFromMobileDrawer() {
+    if (!mobileFiltersState || !mobileFiltersState.isMounted) return;
+
+    const {yearsFilter, sideNav, yearsPlaceholder, sideNavPlaceholder} = mobileFiltersState;
+
+    if (yearsFilter) {
+        yearsPlaceholder.parentNode?.insertBefore(yearsFilter, yearsPlaceholder);
+    }
+    sideNavPlaceholder.parentNode?.insertBefore(sideNav, sideNavPlaceholder);
+
+    mobileFiltersState.isMounted = false;
+}
+
+/**
+ * Applies mobile/desktop drawer mode based on viewport width.
+ *
+ * @returns {void}
+ */
+function applyMobileFiltersLayout() {
+    if (!mobileFiltersState) return;
+
+    if (mobileFiltersState.mediaQuery.matches) {
+        mobileFiltersState.host.hidden = false;
+        mobileFiltersState.host.classList.add('is-mobile');
+        mountFiltersInMobileDrawer();
+        return;
+    }
+
+    closeMobileFiltersDrawer();
+    restoreFiltersFromMobileDrawer();
+    mobileFiltersState.host.hidden = true;
+    mobileFiltersState.host.classList.remove('is-mobile');
+}
+
+/**
+ * Initializes mobile drawer behavior for filters on suivi pages.
+ *
+ * @returns {void}
+ */
+function initMobileFiltersDrawer() {
+    if (mobileFiltersState && !mobileFiltersState.sideNav.isConnected) {
+        destroyMobileFiltersDrawer();
+    }
+
+    if (mobileFiltersState) {
+        applyMobileFiltersLayout();
+        return;
+    }
+
+    const sideNav = document.querySelector('.sidenav');
+    if (!(sideNav instanceof HTMLElement)) {
+        destroyMobileFiltersDrawer();
+        return;
+    }
+
+    const yearsFilter = document.querySelector('.annees-filter');
+    const yearsElement = yearsFilter instanceof HTMLElement ? yearsFilter : null;
+
+    const sideNavPlaceholder = document.createComment('mobile-filters-sidenav-placeholder');
+    sideNav.parentNode?.insertBefore(sideNavPlaceholder, sideNav);
+
+    let yearsPlaceholder = null;
+    if (yearsElement) {
+        yearsPlaceholder = document.createComment('mobile-filters-years-placeholder');
+        yearsElement.parentNode?.insertBefore(yearsPlaceholder, yearsElement);
+    }
+
+    const suiviContainer = sideNav.closest('.suivi-container');
+    const host = document.createElement('div');
+    host.className = 'mobile-filters-host';
+    host.setAttribute('data-mobile-filters-host', '1');
+    host.hidden = true;
+
+    if (suiviContainer && suiviContainer.parentNode) {
+        suiviContainer.parentNode.insertBefore(host, suiviContainer);
+    } else if (sideNav.parentNode) {
+        sideNav.parentNode.insertBefore(host, sideNav);
+    } else {
+        return;
+    }
+
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'mobile-filters-toggle';
+    toggle.setAttribute('data-mobile-filters-toggle', '1');
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-controls', 'mobile-filters-drawer');
+    toggle.textContent = 'Filtres';
+
+    const drawer = document.createElement('div');
+    drawer.id = 'mobile-filters-drawer';
+    drawer.className = 'mobile-filters-drawer';
+    drawer.setAttribute('aria-hidden', 'true');
+    drawer.setAttribute('inert', '');
+
+    const drawerContent = document.createElement('div');
+    drawerContent.className = 'mobile-filters-drawer-content';
+
+    drawer.appendChild(drawerContent);
+
+    const drawerFooter = document.createElement('div');
+    drawerFooter.className = 'mobile-filters-drawer-footer';
+
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'mobile-filters-close';
+    closeButton.setAttribute('aria-label', 'Fermer les filtres');
+    closeButton.textContent = 'Fermer';
+
+    drawerFooter.appendChild(closeButton);
+    drawer.appendChild(drawerFooter);
+
+    const backdrop = document.createElement('button');
+    backdrop.type = 'button';
+    backdrop.className = 'mobile-filters-backdrop';
+    backdrop.setAttribute('aria-label', 'Fermer le panneau des filtres');
+
+    host.appendChild(toggle);
+    host.appendChild(drawer);
+    host.appendChild(backdrop);
+
+    const mediaQuery = window.matchMedia(MOBILE_FILTERS_QUERY);
+
+    mobileFiltersState = {
+        sideNav,
+        yearsFilter: yearsElement,
+        sideNavPlaceholder,
+        yearsPlaceholder,
+        host,
+        toggle,
+        drawer,
+        drawerContent,
+        backdrop,
+        mediaQuery,
+        isMounted: false,
+    };
+
+    toggle.addEventListener('click', () => {
+        if (drawer.classList.contains('is-open')) {
+            closeMobileFiltersDrawer();
+            return;
+        }
+
+        openMobileFiltersDrawer();
+    });
+    closeButton.addEventListener('click', closeMobileFiltersDrawer);
+    backdrop.addEventListener('click', closeMobileFiltersDrawer);
+
+    const keydownHandler = (event) => {
+        if (event.key === 'Escape') {
+            closeMobileFiltersDrawer();
+        }
+    };
+    document.addEventListener('keydown', keydownHandler);
+
+    mobileFiltersState.keydownHandler = keydownHandler;
+
+    mediaQuery.addEventListener('change', applyMobileFiltersLayout);
+    applyMobileFiltersLayout();
+}
+
+/**
  * Binds year shortcut links to form updates and result refresh.
  *
  * @param {HTMLFormElement} form
@@ -621,10 +871,12 @@ function init() {
  * @returns {void}
  */
 function bootstrapFiltersUi() {
+    initMobileFiltersDrawer();
     init();
     initPanelTools();
 }
 
 document.addEventListener('DOMContentLoaded', bootstrapFiltersUi);
 document.addEventListener('turbo:load', bootstrapFiltersUi);
+document.addEventListener('turbo:before-cache', destroyMobileFiltersDrawer);
 document.addEventListener('suivi:results-updated', initPanelTools);

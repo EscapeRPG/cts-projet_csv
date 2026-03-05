@@ -27,6 +27,7 @@ final class SuiviFiltersResolver
             'controleur' => $this->normalizeStringArray($request->query->all('controleur')),
             'type' => $this->normalizeStringArray($request->query->all('type')),
             'vehicule' => $this->normalizeStringArray($request->query->all('vehicule')),
+            'vehicule_filter_present' => $request->query->has('vehicule_filter_present'),
         ];
     }
 

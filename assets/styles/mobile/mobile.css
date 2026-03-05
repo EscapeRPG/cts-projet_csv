@@ -1,0 +1,317 @@
+@media screen and (max-width: 1000px) {
+    header {
+        nav .burger-container {
+            transform: rotate(45deg) scale(.7);
+        }
+
+        nav #responsive {
+            padding: 20px;
+            overflow: auto;
+
+            * {
+                font-size: .9em;
+            }
+
+            h2, h3 {
+                margin: 5px;
+            }
+
+            h2 {
+                margin-top: 30px;
+            }
+        }
+
+        .meta-info {
+            width: 100%;
+            margin: 0;
+            padding: 10px;
+            bottom: 0;
+            font-size: .7em;
+            background: linear-gradient(transparent, var(--blocks) 20% 100%);
+        }
+
+        a.home {
+            top: 20px;
+
+            img {
+                width: 50px;
+            }
+        }
+    }
+
+    main {
+        display: flex;
+        align-items: center;
+        margin: 50px auto;
+        width: 100%;
+        min-height: calc(100vh - 100px);
+    }
+
+    .loading-content {
+        height: auto;
+        width: 90%;
+    }
+
+    .app-container {
+        margin-bottom: 50px;
+    }
+
+    .app {
+        align-items: flex-start;
+
+        img {
+            width: 60%;
+            margin: 0 auto;
+        }
+
+        .inner-div, &:hover .inner-div {
+            bottom: 0;
+            height: 35%;
+            transform: none;
+        }
+    }
+
+    .container {
+        overflow: auto;
+        height: 70vh;
+        margin: auto;
+    }
+
+    .annees-filter {
+        margin: 10px 0;
+        width: 100%;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+
+        a, a.active, a:hover {
+            border-radius: 10px;
+            border: 2px solid var(--cts-main);
+            padding: 5px 10px;
+            font-size: .8em !important;
+        }
+    }
+
+    .mobile-filters-host {
+        display: none;
+    }
+
+    .mobile-filters-host.is-mobile {
+        display: block;
+        position: sticky;
+        top: 70px;
+        z-index: 100;
+        width: 100%;
+    }
+
+    .mobile-filters-toggle {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 1px solid var(--cts-main);
+        border-radius: 10px;
+        background: var(--blocks);
+        color: var(--cts-main);
+        font-weight: bold;
+        padding: 10px 15px;
+        cursor: pointer;
+
+        &:hover {
+            transform: translateX(-50%) !important;
+            color: var(--blocks);
+        }
+    }
+
+    .mobile-filters-drawer {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: -110vh;
+        max-height: 90vh;
+        overflow: auto;
+        background: var(--blocks);
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+        box-shadow: var(--box-shadow);
+        z-index: 110;
+        transition: top .4s ease;
+        padding: 20px 10px;
+
+        &.is-open {
+            top: 0;
+        }
+
+        .annees-filter {
+            margin: 0 0 12px;
+        }
+
+        .sidenav {
+            margin: 0;
+            align-items: stretch;
+
+            .dropdown-toggle {
+                background: var(--cts-main);
+                color: var(--blocks);
+            }
+
+            .dropdown-menu {
+                border: 1px solid var(--cts-main-light);
+            }
+
+            .onglets {
+                display: none;
+            }
+
+            .filter-form {
+                margin: 0 auto;
+            }
+        }
+    }
+
+    .mobile-filters-close {
+        border: 1px solid var(--cts-main);
+        border-radius: 10px;
+        background: transparent;
+        color: var(--cts-main);
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+
+    .mobile-filters-drawer-footer {
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--cts-main-light);
+    }
+
+    .mobile-filters-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        border: 0;
+        background: rgba(0, 0, 0, .35);
+        z-index: 109;
+        cursor: pointer;
+        border-radius: 0;
+
+        &.is-open {
+            display: block;
+        }
+    }
+
+    body.mobile-filters-open {
+        overflow: hidden;
+    }
+
+    .suivi-container {
+        height: auto;
+    }
+
+    .pro-stats-container {
+        max-height: unset;
+    }
+
+    .pro-stats-panel {
+        flex-direction: column;
+    }
+
+    .chart-canvas-wrap {
+        height: 240px;
+    }
+
+    .stats-container {
+        display: flex;
+        flex-wrap: wrap;
+        max-height: none;
+    }
+
+    .stats-wrapper {
+        height: 250px;
+    }
+
+    .pro-part-panel {
+        width: calc(100% - 20px);
+    }
+
+    .graphique {
+        height: 100%;
+    }
+
+    .previous .row {
+        white-space: nowrap;
+    }
+
+    [data-ajax-results].panel-focus-mode {
+        position: relative;
+        inset: auto;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        min-height: 72vh;
+        max-height: none;
+        margin: 0;
+        padding: 8px;
+        box-sizing: border-box;
+        border-radius: inherit;
+        overflow: hidden;
+    }
+
+    [data-ajax-results].panel-focus-mode > .panel-isolated {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        max-height: 100%;
+        min-height: 0;
+        width: 100%;
+    }
+
+    [data-ajax-results].panel-focus-mode > .panel-isolated .stats-panel,
+    [data-ajax-results].panel-focus-mode > .panel-isolated .pro-stats-panel {
+        height: calc(100% - 34px);
+        max-height: calc(100% - 34px);
+        min-height: 0;
+    }
+
+    [data-ajax-results].panel-focus-mode .stats-wrapper,
+    [data-ajax-results].panel-focus-mode .stats-wrapper.graphique {
+        height: auto !important;
+        min-height: 0;
+    }
+
+    [data-ajax-results].panel-focus-mode .chart-canvas-wrap {
+        height: auto;
+        min-height: 0;
+        flex: 1 1 auto;
+    }
+
+    .pro-stats-container.panel-focus-mode {
+        min-height: 72vh;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    .container {
+        height: 85vh;
+    }
+
+    .stats-wrapper {
+        .names {
+            max-width: 150px;
+            box-sizing: border-box;
+
+            .salarie-name {
+                min-width: 0;
+                overflow: hidden;
+                text-align: left;
+                text-overflow: ellipsis;
+            }
+        }
+    }
+
+    .col-part, .col-pro {
+        min-width: 80px !important;
+    }
+}

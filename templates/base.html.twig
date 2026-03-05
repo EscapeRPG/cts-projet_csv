@@ -6,13 +6,13 @@
     <title>Ker-Milo - {% block title %}Welcome!{% endblock %}</title>
     <link rel="icon" href="{{ asset('favicon.png') }}">
 
+    {% block javascripts %}
+        {% block importmap %}{{ importmap('app') }}{% endblock %}
+    {% endblock %}
+
     {{ include('partials/stylesheets.html.twig') }}
 
     {% block stylesheets %}
-    {% endblock %}
-
-    {% block javascripts %}
-        {% block importmap %}{{ importmap('app') }}{% endblock %}
     {% endblock %}
 </head>
 

@@ -224,7 +224,7 @@ final class AdminController extends AbstractController
         FormFactoryInterface $formFactory
     ): Response
     {
-        $perPage = 50;
+        $perPage = 30;
         $totalItems = $salarieRepository->count([]);
         $totalPages = max(1, (int)ceil($totalItems / $perPage));
         $page = max(1, min($request->query->getInt('page', 1), $totalPages));

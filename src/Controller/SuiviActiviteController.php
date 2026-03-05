@@ -67,7 +67,9 @@ final class SuiviActiviteController extends AbstractController
     public function index(Request $request): Response
     {
         $filters = $this->applyDefaultCurrentYearForYearFilteredPages(
-            $this->filtersResolver->resolveFromRequest($request)
+            $this->applyDefaultVehicleFilter(
+                $this->filtersResolver->resolveFromRequest($request)
+            )
         );
 
         $rows = $this->repo->fetchSyntheseRows($filters);
@@ -98,7 +100,9 @@ final class SuiviActiviteController extends AbstractController
     public function suiviControleurs(Request $request): Response
     {
         $filters = $this->applyDefaultCurrentYearForYearFilteredPages(
-            $this->filtersResolver->resolveFromRequest($request)
+            $this->applyDefaultVehicleFilter(
+                $this->filtersResolver->resolveFromRequest($request)
+            )
         );
 
         $rows = $this->repo->fetchSyntheseRows($filters);
@@ -128,7 +132,9 @@ final class SuiviActiviteController extends AbstractController
     #[Route('/suivi/focus-pro', name: 'app_suivi_focus_pro')]
     public function suiviFocusPro(Request $request): Response
     {
-        $filters = $this->filtersResolver->resolveFromRequest($request);
+        $filters = $this->applyDefaultVehicleFilter(
+            $this->filtersResolver->resolveFromRequest($request)
+        );
         $referenceYear = $this->resolveReferenceYear($filters);
 
         $rows = $this->repo->fetchProClients($filters);
@@ -168,7 +174,9 @@ final class SuiviActiviteController extends AbstractController
     #[Route('/suivi/centres', name: 'app_suivi_centres')]
     public function suiviCentres(Request $request): Response
     {
-        $filters = $this->filtersResolver->resolveFromRequest($request);
+        $filters = $this->applyDefaultVehicleFilter(
+            $this->filtersResolver->resolveFromRequest($request)
+        );
         $referenceYear = $this->resolveReferenceYear($filters);
 
         $rows = $this->repo->fetchCentres($filters);
@@ -241,6 +249,27 @@ final class SuiviActiviteController extends AbstractController
     {
         if (!is_int($filters['annee']) || $filters['annee'] <= 0) {
             $filters['annee'] = (int) date('Y');
+        }
+
+        return $filters;
+    }
+
+    /**
+     * Ensures vehicle filters default to VL when none are explicitly selected.
+     *
+     * @param array<string, mixed> $filters Normalized filters array.
+     *
+     * @return array<string, mixed> Filters with default vehicle selection.
+     */
+    private function applyDefaultVehicleFilter(array $filters): array
+    {
+        $vehicleFilterWasExplicitlySubmitted = (bool)($filters['vehicule_filter_present'] ?? false);
+
+        if (
+            !$vehicleFilterWasExplicitlySubmitted
+            && (!isset($filters['vehicule']) || !is_array($filters['vehicule']) || $filters['vehicule'] === [])
+        ) {
+            $filters['vehicule'] = ['VL'];
         }
 
         return $filters;
