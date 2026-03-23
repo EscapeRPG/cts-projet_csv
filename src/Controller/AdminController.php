@@ -230,7 +230,9 @@ final class AdminController extends AbstractController
         $page = max(1, min($request->query->getInt('page', 1), $totalPages));
         $offset = ($page - 1) * $perPage;
 
-        $salaries = $salarieRepository->findBy([], ['nom' => 'ASC'], $perPage, $offset);
+        // Temporaire: tri simple par nom pour les modifications manuelles.
+        // $salaries = $salarieRepository->findBy([], ['nom' => 'ASC'], $perPage, $offset);
+        $salaries = $salarieRepository->findPaginatedOrderedBySociete($perPage, $offset);
         $forms = [];
 
         foreach ($salaries as $salarie) {
@@ -330,6 +332,9 @@ final class AdminController extends AbstractController
         $page = max(1, min($request->query->getInt('page', 1), $totalPages));
         $offset = ($page - 1) * $perPage;
         $salaries = $em->getRepository(Salarie::class)->findBy([], ['nom' => 'ASC'], $perPage, $offset);
+        // /** @var SalarieRepository $salarieRepository */
+        // $salarieRepository = $em->getRepository(Salarie::class);
+        // $salaries = $salarieRepository->findPaginatedOrderedBySociete($perPage, $offset);
         $forms = [];
 
         foreach ($salaries as $s) {
@@ -555,7 +560,7 @@ final class AdminController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $centre = $form->getData();
             if ($centre->getReseau() !== null) {
-                $centre->setReseauNom((string)$centre->getReseau()->getNom());
+                $centre->setReseauNom($form->get('reseauNom')->getData());
             }
 
             $em->persist($centre);
@@ -603,7 +608,7 @@ final class AdminController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             if ($centre->getReseau() !== null) {
-                $centre->setReseauNom((string)$centre->getReseau()->getNom());
+                $centre->setReseauNom($form->get('reseauNom')->getData());
             }
 
             $em->persist($centre);

@@ -34,3 +34,12 @@
         color: white !important;
     }
 }
+
+.pagination-nav a {
+    color: var(--cts-main);
+    text-decoration: none;
+
+    &:hover {
+        color: var(--cts-alt);
+    }
+}

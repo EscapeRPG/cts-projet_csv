@@ -101,13 +101,13 @@
                     {% if pagination.total_pages > 1 %}
                         <div class="pagination">
                             {% if pagination.has_previous %}
-                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': 1})) }}">&lt;&lt;</a>
-                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.previous_page})) }}">&lt;</a>
+                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': 1})) }}">❮❮</a>
+                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.previous_page})) }}">❮</a>
                             {% endif %}
                             <span>Page {{ pagination.page }} / {{ pagination.total_pages }} ({{ pagination.total_items }} clients)</span>
                             {% if pagination.has_next %}
-                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.next_page})) }}">&gt;</a>
-                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.total_pages})) }}">&gt;&gt;</a>
+                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.next_page})) }}">❯</a>
+                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.total_pages})) }}">❯❯</a>
                             {% endif %}
                         </div>
                     {% endif %}

@@ -20,13 +20,13 @@ final class SuiviFiltersResolver
     {
         return [
             'annee' => $request->query->getInt('annee') ?: null,
-            'mois' => $this->normalizeStringArray($request->query->all('mois')),
-            'reseau' => $this->normalizeStringArray($request->query->all('reseau')),
-            'societe' => $this->normalizeStringArray($request->query->all('societe')),
-            'centre' => $this->normalizeStringArray($request->query->all('centre')),
-            'controleur' => $this->normalizeStringArray($request->query->all('controleur')),
-            'type' => $this->normalizeStringArray($request->query->all('type')),
-            'vehicule' => $this->normalizeStringArray($request->query->all('vehicule')),
+            'mois' => $this->collectFromVariants($request, 'mois'),
+            'reseau' => $this->collectFromVariants($request, 'reseau'),
+            'societe' => $this->collectFromVariants($request, 'societe'),
+            'centre' => $this->collectFromVariants($request, 'centre'),
+            'controleur' => $this->collectFromVariants($request, 'controleur'),
+            'type' => $this->collectFromVariants($request, 'type'),
+            'vehicule' => $this->collectFromVariants($request, 'vehicule'),
             'vehicule_filter_present' => $request->query->has('vehicule_filter_present'),
         ];
     }

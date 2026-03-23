@@ -33,6 +33,10 @@ class CreateCentreType extends AbstractType
                 'choice_label' => 'nom',
                 'required' => true,
             ])
+            ->add('reseauNom', TextType::class, [
+                'label' => '*Enseigne : ',
+                'required' => true,
+            ])
             ->add('agrCentre', TextType::class, [
                 'label' => '*Agrément : ',
                 'required' => true,

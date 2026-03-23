@@ -19,12 +19,29 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class RunDailyCommand extends Command
 {
     /**
-     * @var array<int, string> Ordered list of console commands to run.
+     * Ordered list of console commands to run.
+     *
+     * @var array<int, array{command:string,args:array<string, mixed>}>
      */
     private const array COMMAND_CHAIN = [
-        'app:import:sftp',
-        'app:synthese:summary',
-        'app:synthese:pros',
+        [
+            'command' => 'app:import:sftp',
+            'args' => [],
+        ],
+        [
+            'command' => 'app:data:purge-centres',
+            'args' => [
+                '--execute' => true,
+            ],
+        ],
+        [
+            'command' => 'app:synthese:summary',
+            'args' => [],
+        ],
+        [
+            'command' => 'app:synthese:pros',
+            'args' => [],
+        ],
     ];
 
     /**
@@ -46,11 +63,22 @@ final class RunDailyCommand extends Command
 
         $output->writeln('<info>[pipeline] Starting command chain...</info>');
 
-        foreach (self::COMMAND_CHAIN as $commandName) {
-            $output->writeln(sprintf('<comment>[pipeline] Running %s...</comment>', $commandName));
+        foreach (self::COMMAND_CHAIN as $step) {
+            $commandName = $step['command'];
+            $commandArgs = $step['args'];
+
+            $display = $commandName;
+            if ($commandArgs !== []) {
+                $display .= ' ' . implode(' ', array_keys($commandArgs));
+            }
+
+            $output->writeln(sprintf('<comment>[pipeline] Running %s...</comment>', $display));
 
             $command = $application->find($commandName);
-            $commandInput = new ArrayInput(['command' => $commandName]);
+            $commandInput = new ArrayInput([
+                'command' => $commandName,
+                ...$commandArgs,
+            ]);
             $commandInput->setInteractive(false);
 
             $exitCode = $command->run($commandInput, $output);

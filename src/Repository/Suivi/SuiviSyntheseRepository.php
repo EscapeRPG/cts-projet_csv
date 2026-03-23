@@ -138,16 +138,16 @@ final readonly class SuiviSyntheseRepository extends AbstractSuiviQueryRepositor
                         THEN CONCAT('Centre inconnu (', COALESCE(cc.agr_centre, '?'), ')')
                     ELSE ce.agr_centre
                 END AS agr_centre,
-                COALESCE(ce.ville, '') AS centre_ville,
-                COALESCE(ce.reseau_nom, '') AS reseau_nom,
+                MIN(COALESCE(ce.ville, '')) AS centre_ville,
+                MIN(COALESCE(ce.reseau_nom, '')) AS reseau_nom,
                 COALESCE(sa.id, 0) AS salarie_id,
                 COALESCE(sa.agr_controleur, cc.agr_controleur, 'Agrément inconnu') AS salarie_agr,
-                CASE
+                MIN(CASE
                     WHEN sa.id IS NULL
                         THEN CONCAT('Salarié inconnu (', COALESCE(cc.agr_controleur, '?'), ')')
                     ELSE COALESCE(sa.nom, 'Salarié inconnu')
-                END AS salarie_nom,
-                COALESCE(sa.prenom, '') AS salarie_prenom,
+                END) AS salarie_nom,
+                MIN(COALESCE(sa.prenom, '')) AS salarie_prenom,
                 COUNT(DISTINCT ctrl.idcontrole) AS nb_controles,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP'), ctrl.idcontrole, NULL)) AS nb_vtp,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVTP','CLCTP'), ctrl.idcontrole, NULL)) AS nb_clvtp,
@@ -158,14 +158,14 @@ final readonly class SuiviSyntheseRepository extends AbstractSuiviQueryRepositor
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT'), ctrl.idcontrole, NULL)) AS nb_clvol,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP','CV','VLCV','VLCVC','VTC','VLCTC','VOL','VP','VT'), ctrl.idcontrole, NULL)) AS nb_auto,
                 COUNT(DISTINCT IF(ctrl.type_ctrl LIKE 'CL%', ctrl.idcontrole, NULL)) AS nb_moto,
-                SUM(IF(f.type_facture='F', COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_presta_ht,
-                SUM(IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND f.type_facture='F', COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vtp,
-                SUM(IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND f.type_facture='F', COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clvtp,
-                SUM(IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND f.type_facture='F', COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_cv,
-                SUM(IF(ctrl.type_ctrl IN ('CLCV') AND f.type_facture='F', COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clcv,
-                SUM(IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND f.type_facture='F', COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vtc,
-                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND f.type_facture='F', COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vol,
-                SUM(IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND f.type_facture='F', COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clvol,
+                SUM(IF(f.type_facture IN ('F','A','D'), COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_presta_ht,
+                SUM(IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND f.type_facture IN ('F','A','D'), COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vtp,
+                SUM(IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND f.type_facture IN ('F','A','D'), COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clvtp,
+                SUM(IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND f.type_facture IN ('F','A','D'), COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_cv,
+                SUM(IF(ctrl.type_ctrl IN ('CLCV') AND f.type_facture IN ('F','A','D'), COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clcv,
+                SUM(IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND f.type_facture IN ('F','A','D'), COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vtc,
+                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND f.type_facture IN ('F','A','D'), COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vol,
+                SUM(IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND f.type_facture IN ('F','A','D'), COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clvol,
                 SUM(ctrl.temps_ctrl) AS temps_total,
                 SUM(IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP','CV','VLCV','VLCVC','VTC','VLCTC','VOL','VP','VT'), ctrl.temps_ctrl, 0)) AS temps_total_auto,
                 SUM(IF(ctrl.type_ctrl LIKE 'CL%', ctrl.temps_ctrl, 0)) AS temps_total_moto,
@@ -181,7 +181,15 @@ final readonly class SuiviSyntheseRepository extends AbstractSuiviQueryRepositor
         }
 
         $sql .= "
-            GROUP BY salarie_id, salarie_agr, agr_centre, societe_nom
+            GROUP BY
+                COALESCE(so.nom, 'Société inconnue'),
+                CASE
+                    WHEN ce.agr_centre IS NULL
+                        THEN CONCAT('Centre inconnu (', COALESCE(cc.agr_centre, '?'), ')')
+                    ELSE ce.agr_centre
+                END,
+                COALESCE(sa.id, 0),
+                COALESCE(sa.agr_controleur, cc.agr_controleur, 'Agrément inconnu')
             ORDER BY societe_nom, centre_ville, salarie_nom, salarie_prenom
         ";
 
@@ -415,7 +423,7 @@ final readonly class SuiviSyntheseRepository extends AbstractSuiviQueryRepositor
                     FROM controles_factures
                 ) cf
                 INNER JOIN factures f2 ON f2.idfacture = cf.idfacture
-                WHERE f2.type_facture='F'
+                WHERE f2.type_facture IN ('F','A','D')
                 GROUP BY cf.idfacture
             ) t ON t.idfacture = f.idfacture
         ";

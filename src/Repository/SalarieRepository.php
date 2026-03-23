@@ -19,6 +19,28 @@ class SalarieRepository extends ServiceEntityRepository
         parent::__construct($registry, Salarie::class);
     }
 
+    /**
+     * Returns a paginated list of employees ordered by company then identity.
+     *
+     * @param int $limit Maximum number of rows to return.
+     * @param int $offset Row offset for pagination.
+     *
+     * @return array<int, Salarie> Ordered employees page.
+     */
+    public function findPaginatedOrderedBySociete(int $limit, int $offset): array
+    {
+        return $this->createQueryBuilder('s')
+            ->leftJoin('s.societe', 'so')
+            ->addSelect('so')
+            ->orderBy('so.nom', 'DESC')
+            ->addOrderBy('s.nom', 'ASC')
+            ->addOrderBy('s.prenom', 'ASC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Salarie[] Returns an array of Salarie objects
     //     */

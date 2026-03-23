@@ -85,7 +85,7 @@
 
         .stacked-bar {
             display: flex;
-            height: 18px;
+            height: 18.13px;
             overflow: hidden;
             background: var(--cts-alt-light);
             margin: 5px 0;

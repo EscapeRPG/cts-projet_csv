@@ -2,6 +2,10 @@
 
 namespace App\Service\Import;
 
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use FilesystemIterator;
+
 /**
  * Filesystem-backed client used to handle SFTP-like import folders.
  */
@@ -47,10 +51,23 @@ class SftpClient
             return [];
         }
 
-        $files = array_values(array_filter(
-            scandir($path),
-            fn($f) => str_ends_with(strtolower($f), '.csv') && is_file($path . '/' . $f)
-        ));
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS)
+        );
+
+        $files = [];
+        foreach ($iterator as $fileInfo) {
+            if (!$fileInfo->isFile()) {
+                continue;
+            }
+
+            $relativePath = str_replace('\\', '/', $iterator->getSubPathname());
+            if (!str_ends_with(strtolower($relativePath), '.csv')) {
+                continue;
+            }
+
+            $files[] = $relativePath;
+        }
 
         sort($files, SORT_NATURAL | SORT_FLAG_CASE);
 
@@ -82,6 +99,8 @@ class SftpClient
         $src = "{$this->basePath}/{$reseau}/incoming/{$filename}";
         $dest = "{$this->basePath}/{$reseau}/processed/{$filename}";
 
+        $this->ensureParentDirectoryExists($dest);
+
         return rename($src, $dest);
     }
 
@@ -97,15 +116,20 @@ class SftpClient
     {
         $incoming = "{$this->basePath}/{$reseau}/incoming/{$filename}";
         $processed = "{$this->basePath}/{$reseau}/processed/{$filename}";
+        $errorDestination = "{$this->basePath}/{$reseau}/error/{$filename}";
 
         // si le fichier est encore dans incoming
         if (file_exists($incoming)) {
-            return rename($incoming, "{$this->basePath}/{$reseau}/error/{$filename}");
+            $this->ensureParentDirectoryExists($errorDestination);
+
+            return rename($incoming, $errorDestination);
         }
 
         // sinon, s'il est déjà dans processed
         if (file_exists($processed)) {
-            return rename($processed, "{$this->basePath}/{$reseau}/error/{$filename}");
+            $this->ensureParentDirectoryExists($errorDestination);
+
+            return rename($processed, $errorDestination);
         }
 
         return false;
@@ -148,5 +172,15 @@ class SftpClient
         }
 
         return (int)$firstSize === (int)$secondSize && (int)$firstMTime === (int)$secondMTime;
+    }
+
+    private function ensureParentDirectoryExists(string $path): void
+    {
+        $directory = dirname($path);
+        if (is_dir($directory)) {
+            return;
+        }
+
+        mkdir($directory, 0777, true);
     }
 }

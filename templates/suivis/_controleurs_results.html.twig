@@ -1,0 +1,171 @@
+<div class="stats-container" data-ajax-results>
+    {% set stats = {
+        'nb_controles': 'Nombre de contrôles',
+        'prix_moyen': 'Prix moyen',
+        'temps_moyen': 'Temps moyen',
+        'taux_refus': 'Taux de refus',
+    } %}
+    {% set selectedVehicules = selected.vehicule|default([]) %}
+    {% set onlyCL = ('CL' in selectedVehicules) and ('VL' not in selectedVehicules) %}
+    {% set onlyVL = ('VL' in selectedVehicules) and ('CL' not in selectedVehicules) %}
+    {% set showAutos = not onlyCL %}
+    {% set showMotos = not onlyVL %}
+
+    {% for key, label in stats %}
+        <div class="stats-wrapper">
+            <div class="stats-panel">
+                <h2>{{ label }}</h2>
+
+                {% set keyAuto = key ~ '_auto' %}
+                {% set keyMoto = key ~ '_moto' %}
+                {% set sorted = controleursStats | sort((a, b) => (((showAutos ? b[keyAuto] : 0) + (showMotos ? b[keyMoto] : 0)) <=> ((showAutos ? a[keyAuto] : 0) + (showMotos ? a[keyMoto] : 0)))) %}
+
+                {% set valuesAuto = [] %}
+                {% set valuesMoto = [] %}
+                {% for c in sorted %}
+                    {% set valuesAuto = valuesAuto | merge([c[keyAuto]]) %}
+                    {% set valuesMoto = valuesMoto | merge([c[keyMoto]]) %}
+                {% endfor %}
+
+                {% set maxAuto = valuesAuto ? max(valuesAuto) : 0 %}
+                {% set maxMoto = valuesMoto ? max(valuesMoto) : 0 %}
+                {% set moyenneAuto = valuesAuto ? moyennesGlobales[keyAuto] : 0 %}
+                {% set moyenneMoto = valuesMoto ? moyennesGlobales[keyMoto] : 0 %}
+                {% set moyennePercentAuto = maxAuto > 0 ? (moyenneAuto / maxAuto) * 100 : 0 %}
+                {% set moyennePercentMoto = maxMoto > 0 ? (moyenneMoto / maxMoto) * 100 : 0 %}
+
+                <div class="salaries-chart">
+                    <div class="chart-cols names">
+                        <div class="salarie-name">Salarié</div>
+                        {% for salarie in sorted %}
+                            <div class="salarie-name">{{ salarie.nom }}</div>
+                        {% endfor %}
+                    </div>
+
+                    {% if showAutos %}
+                        <div class="chart-cols bars">
+                            <div class="salarie-name">Autos</div>
+                            {% for salarie in sorted %}
+                                {% set percent = maxAuto > 0 ? (salarie[keyAuto] / maxAuto) * 100 : 0 %}
+
+                                <div class="bar-container">
+                                    <div class="bar" style="width: {{ percent }}%"></div>
+                                </div>
+                            {% endfor %}
+
+                            <div class="avg-line {{ moyennePercentAuto < 50 ? 'avg-line-left' : 'avg-line-right' }}" style="left: {{ moyennePercentAuto }}%">
+                                <span>
+                                    {% if key == 'nb_controles' %}
+                                        {{ moyenneAuto|number_format(0, ',', ' ') }}
+                                    {% elseif key == 'prix_moyen' %}
+                                        {{ moyenneAuto|number_format(2, ',', ' ') }} €
+                                    {% elseif key == 'temps_moyen' %}
+                                        {{ moyenneAuto|number_format(2, '\'', '') }}
+                                    {% else %}
+                                        {{ moyenneAuto|number_format(2, ',', ' ') }}%
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="chart-cols nb">
+                            <div class="salarie-name"><br></div>
+                            {% for salarie in sorted %}
+                                <div class="salarie-row">
+                                    <div class="salarie-value">
+                                        {% if key == 'nb_controles' %}
+                                            {{ salarie[keyAuto] }}
+                                        {% elseif key == 'prix_moyen' %}
+                                            {{ salarie[keyAuto]|number_format(2, ',', ' ') }} €
+                                        {% elseif key == 'temps_moyen' %}
+                                            {{ salarie[keyAuto]|number_format(2, '\'', '') }}
+                                        {% else %}
+                                            {{ salarie[keyAuto]|number_format(2, ',', ' ') }}%
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% if showMotos %}
+                        <div class="chart-cols bars">
+                            <div class="salarie-name">Motos</div>
+                            {% for salarie in sorted %}
+                                {% set percent = maxMoto > 0 ? (salarie[keyMoto] / maxMoto) * 100 : 0 %}
+
+                                <div class="bar-container">
+                                    <div class="bar" style="width: {{ percent }}%"></div>
+                                </div>
+                            {% endfor %}
+
+                            <div class="avg-line {{ moyennePercentMoto < 50 ? 'avg-line-left' : 'avg-line-right' }}" style="left: {{ moyennePercentMoto }}%">
+                                <span>
+                                    {% if key == 'nb_controles' %}
+                                        {{ moyenneMoto|number_format(0, ',', ' ') }}
+                                    {% elseif key == 'prix_moyen' %}
+                                        {{ moyenneMoto|number_format(2, ',', ' ') }} €
+                                    {% elseif key == 'temps_moyen' %}
+                                        {{ moyenneMoto|number_format(2, '\'', '') }}
+                                    {% else %}
+                                        {{ moyenneMoto|number_format(2, ',', ' ') }}%
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="chart-cols nb">
+                            <div class="salarie-name"><br></div>
+                            {% for salarie in sorted %}
+                                <div class="salarie-row">
+                                    <div class="salarie-value">
+                                        {% if key == 'nb_controles' %}
+                                            {{ salarie[keyMoto] }}
+                                        {% elseif key == 'prix_moyen' %}
+                                            {{ salarie[keyMoto]|number_format(2, ',', ' ') }} €
+                                        {% elseif key == 'temps_moyen' %}
+                                            {{ salarie[keyMoto]|number_format(2, '\'', '') }}
+                                        {% else %}
+                                            {{ salarie[keyMoto]|number_format(2, ',', ' ') }}%
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    <div class="stats-wrapper">
+        <div class="stats-panel">
+            <h2>Répartition particuliers / professionnels</h2>
+
+            <div class="salaries-chart">
+                <div class="chart-cols names">
+                    {% for salarie in controleursStats | sort((a,b) => a.nom <=> b.nom) %}
+                        <div class="salarie-name repartition">{{ salarie.nom }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="repartition-bars bars">
+                    {% for salarie in controleursStats | sort((a,b) => a.nom <=> b.nom) %}
+                        {% set total = salarie.nb_particuliers + salarie.nb_professionnels %}
+                        {% set pct_part = total > 0 ? (salarie.nb_particuliers / total) * 100 : 0 %}
+                        {% set pct_pro = total > 0 ? (salarie.nb_professionnels / total) * 100 : 0 %}
+
+                        <div class="repartition-bars-container stacked-bar">
+                            <div class="bar-part" style="width: {{ pct_part }}%">
+                                {{ pct_part > 0 ? pct_part|number_format(2, ',', '.') ~ '%' : '' }}
+                            </div>
+                            <div class="bar-pro" style="width: {{ pct_pro }}%">
+                                {{ pct_pro > 0 ? pct_pro|number_format(2, ',', '.') ~ '%' : '' }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

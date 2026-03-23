@@ -110,6 +110,16 @@ final class SuiviActiviteController extends AbstractController
 
         [$controleursStats, $moyennesGlobales] = $this->controleursService->getControleursStats($synthese);
 
+        if ($request->isXmlHttpRequest()) {
+            return $this->render('suivis/_controleurs_results.html.twig', array_merge(
+                $this->commonViewDataBuilder->build($filters),
+                [
+                    'controleursStats' => $controleursStats,
+                    'moyennesGlobales' => $moyennesGlobales,
+                ]
+            ));
+        }
+
         return $this->render('suivis/controleurs.html.twig', array_merge(
             $this->commonViewDataBuilder->build($filters),
             [

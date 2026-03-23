@@ -38,6 +38,8 @@ table {
     td, th {
         width: fit-content;
         max-width: 120px;
+        overflow: clip;
+        text-overflow: ellipsis;
 
         input {
             max-width: 100% !important;
@@ -96,17 +98,18 @@ table {
     position: sticky;
     bottom: 0;
     text-align: center;
-    background: var(--cts-alt);
+    background: var(--blocks);
+    color: black;
     padding: 5px 0;
 
     a {
-        color: black;
+        color: var(--cts-main);
         text-decoration: none;
         font-weight: bold;
         margin: 0 5px;
 
         &:hover {
-            color: var(--blocks);
+            color: var(--cts-alt);
         }
     }
 }
