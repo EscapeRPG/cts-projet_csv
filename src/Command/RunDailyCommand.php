@@ -37,6 +37,10 @@ final class RunDailyCommand extends Command
             'args' => [],
         ],
         [
+            'command' => 'app:notifications:purge-expired',
+            'args' => [],
+        ],
+        [
             'command' => 'app:data:purge-centres',
             'args' => [
                 '--execute' => true,

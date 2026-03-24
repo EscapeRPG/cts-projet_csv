@@ -9,6 +9,19 @@
         {% if is_granted('IS_AUTHENTICATED') %}
             <h3>{{ user.username }}</h3>
             <h3>{{ ('ROLE_ADMIN' in user.roles) ? 'Administrateur' : 'Utilisateur' }}</h3>
+
+            <ul class="profil">
+                <li>
+                    <a href="{{ path('app_profile', { id: app.user.id }) }}">
+                        Profil
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_logout') }}">
+                        Se déconnecter
+                    </a>
+                </li>
+            </ul>
         {% endif %}
 
         {% if is_granted('ROLE_ADMIN') %}
@@ -68,6 +81,7 @@
                     </a>
                 </li>
             </ul>
+
         {% endif %}
 
         {% if is_granted('IS_AUTHENTICATED') %}
@@ -91,20 +105,6 @@
                 <li>
                     <a href="{{ path('app_suivi_controleurs') }}">
                         → Contrôleurs
-                    </a>
-                </li>
-            </ul>
-
-            <h2>COMPTE</h2>
-            <ul>
-                <li>
-                    <a href="{{ path('app_profile', { id: app.user.id }) }}">
-                        → Profil
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('app_logout') }}">
-                        → Se déconnecter
                     </a>
                 </li>
             </ul>

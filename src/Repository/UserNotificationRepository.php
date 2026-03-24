@@ -4,9 +4,10 @@ namespace App\Repository;
 
 use App\Entity\User;
 use App\Entity\UserNotification;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Bundle\SecurityBundle\Security;
 
 /**
  * @extends ServiceEntityRepository<UserNotification>
@@ -25,13 +26,16 @@ class UserNotificationRepository extends ServiceEntityRepository
      */
     public function findRecentForUser(User $user, int $limit = 10, bool $onlyUnread = false): array
     {
+        $now = new \DateTimeImmutable();
         $qb = $this->createQueryBuilder('un')
             ->innerJoin('un.notification', 'n')
             ->addSelect('n')
             ->leftJoin('n.salarie', 's')
             ->addSelect('s')
             ->andWhere('un.user = :user')
+            ->andWhere('n.expiresAt >= :now')
             ->setParameter('user', $user)
+            ->setParameter('now', $now)
             ->orderBy('n.targetDate', 'ASC')
             ->addOrderBy('un.createdAt', 'DESC')
             ->setMaxResults($limit);
@@ -47,11 +51,32 @@ class UserNotificationRepository extends ServiceEntityRepository
     {
         return (int) $this->createQueryBuilder('un')
             ->select('COUNT(un.id)')
+            ->innerJoin('un.notification', 'n')
             ->andWhere('un.user = :user')
             ->andWhere('un.readAt IS NULL')
+            ->andWhere('n.expiresAt >= :now')
             ->setParameter('user', $user)
+            ->setParameter('now', new \DateTimeImmutable())
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function deleteByNotificationIds(array $notificationIds): int
+    {
+        if ($notificationIds === []) {
+            return 0;
+        }
+
+        return $this->getEntityManager()
+            ->getConnection()
+            ->executeStatement(
+                'DELETE FROM user_notification WHERE notification_id IN (?)',
+                [$notificationIds],
+                [ArrayParameterType::INTEGER]
+            );
     }
 
     //    /**

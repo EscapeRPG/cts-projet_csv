@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Notification;
 use App\Entity\Salarie;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -37,6 +38,36 @@ class NotificationRepository extends ServiceEntityRepository
         }
 
         return $qb->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    public function findExpiredIds(\DateTimeImmutable $before): array
+    {
+        $rows = $this->createQueryBuilder('n')
+            ->select('n.id')
+            ->andWhere('n.expiresAt < :before')
+            ->setParameter('before', $before)
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_map(static fn (array $row): int => (int) $row['id'], $rows);
+    }
+
+    public function deleteByIds(array $ids): int
+    {
+        if ($ids === []) {
+            return 0;
+        }
+
+        return $this->getEntityManager()
+            ->getConnection()
+            ->executeStatement(
+                'DELETE FROM notification WHERE id IN (?)',
+                [$ids],
+                [ArrayParameterType::INTEGER]
+            );
     }
 
     //    /**

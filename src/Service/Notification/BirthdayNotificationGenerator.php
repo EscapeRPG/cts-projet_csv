@@ -42,9 +42,9 @@ final class BirthdayNotificationGenerator
         bool $dryRun = false,
     ): array {
         $today = ($referenceDate ?? new \DateTimeImmutable('today'))->setTime(0, 0);
-        $admins = $this->userRepository->findActiveAdmins();
+        $users = $this->userRepository->findActiveUsers();
 
-        if ($admins === []) {
+        if ($users === []) {
             return [
                 'scanned' => 0,
                 'matched' => 0,
@@ -86,8 +86,8 @@ final class BirthdayNotificationGenerator
                 }
             }
 
-            foreach ($admins as $admin) {
-                if ($this->hasRecipient($notification, $admin)) {
+            foreach ($users as $user) {
+                if ($this->hasRecipient($notification, $user)) {
                     continue;
                 }
 
@@ -99,11 +99,11 @@ final class BirthdayNotificationGenerator
 
                 $userNotification = new UserNotification()
                     ->setNotification($notification)
-                    ->setUser($admin)
+                    ->setUser($user)
                     ->setCreatedAt(new \DateTimeImmutable());
 
                 $notification->addUserNotification($userNotification);
-                $admin->addUserNotification($userNotification);
+                $user->addUserNotification($userNotification);
                 $this->entityManager->persist($userNotification);
             }
         }

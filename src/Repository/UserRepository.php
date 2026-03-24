@@ -60,17 +60,12 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Returns active administrators eligible to receive internal notifications.
+     * Returns active users eligible to receive internal notifications.
      *
      * @return array<int, User>
      */
-    public function findActiveAdmins(): array
+    public function findActiveUsers(): array
     {
-        $users = $this->findBy(['isActive' => true], ['username' => 'ASC']);
-
-        return array_values(array_filter(
-            $users,
-            static fn (User $user): bool => in_array('ROLE_ADMIN', $user->getRoles(), true)
-        ));
+        return $this->findBy(['isActive' => true], ['username' => 'ASC']);
     }
 }

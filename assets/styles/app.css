@@ -159,13 +159,19 @@ header {
                 li {
                     margin: 5px auto;
                 }
+
+                &.profil {
+                    margin-top: 20px;
+
+                    li {
+                        text-align: center;
+                    }
+                }
             }
 
             a {
                 color: var(--nav-a-color);
                 text-decoration: none;
-                display: flex;
-                align-items: center;
                 gap: 7px;
 
                 svg {
