@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Notification;
+use App\Form\ChangePasswordFormType;
 use App\Form\CreateNotificationType;
 use App\Repository\UserRepository;
 use App\Service\Notification\NotificationPublisher;
@@ -10,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -33,6 +35,7 @@ final class UserController extends AbstractController
         UserRepository $userRepository,
         EntityManagerInterface $entityManager,
         NotificationPublisher $notificationPublisher,
+        UserPasswordHasherInterface $passwordHasher,
         int            $id,
     ): Response
     {
@@ -41,6 +44,23 @@ final class UserController extends AbstractController
 
         if ($userConnected !== $user) {
             return $this->redirectToRoute('app_home');
+        }
+
+        $passwordForm = $this->createForm(ChangePasswordFormType::class, null, [
+            'attr' => ['data-turbo' => 'false'],
+        ]);
+        $passwordForm->handleRequest($request);
+
+        if ($passwordForm->isSubmitted() && $passwordForm->isValid()) {
+            /** @var string $plainPassword */
+            $plainPassword = $passwordForm->get('plainPassword')->getData();
+
+            $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Mot de passe mis à jour.');
+
+            return $this->redirectToRoute('app_profile', ['id' => $id]);
         }
 
         $notificationForm = null;
@@ -74,6 +94,7 @@ final class UserController extends AbstractController
         return $this->render('users/profile.html.twig', [
             'user' => $user,
             'id' => $id,
+            'password_form' => $passwordForm->createView(),
             'notification_form' => $notificationForm,
         ]);
     }

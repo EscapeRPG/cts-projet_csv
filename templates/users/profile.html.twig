@@ -3,7 +3,14 @@
 {% block title %}Profil{% endblock %}
 
 {% block body %}
-    <h1>Profil de {{ user.username }}</h1>
+    {% if user.username|first|lower in 'aeiouy' %}
+        {% set determinant = 'd\'' %}
+    {% else %}
+        {% set determinant = 'de ' %}
+    {% endif %}
+
+    <h1>Profil {{ determinant ~ user.username }}</h1>
+
     <h2>
         {% if ('ROLE_ADMIN' in user.roles) %}
             Administrateur
@@ -12,10 +19,32 @@
         {% endif %}
     </h2>
 
-    {% if 'ROLE_ADMIN' in user.roles %}
-        <h3>Créer une notification</h3>
+    <div class="form-wrapper">
+        <h3>Changer le mot de passe</h3>
 
+        {{ form_start(password_form) }}
+            <div>
+                {{ form_label(password_form.plainPassword.first) }}
+                {{ form_widget(password_form.plainPassword.first) }}
+            </div>
+
+            <div>
+                <small>{{ form_help(password_form.plainPassword.first) }}</small>
+            </div>
+
+            <div>
+                {{ form_label(password_form.plainPassword.second) }}
+                {{ form_widget(password_form.plainPassword.second) }}
+            </div>
+
+            <button type="submit">Changer le mot de passe</button>
+        {{ form_end(password_form) }}
+    </div>
+
+    {% if 'ROLE_ADMIN' in user.roles %}
         <div class="form-wrapper">
+            <h3>Créer une notification</h3>
+
             {{ form_start(notification_form) }}
             {{ form_end(notification_form) }}
         </div>
