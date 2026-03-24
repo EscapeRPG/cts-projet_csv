@@ -79,7 +79,7 @@ final class BirthdayNotificationGenerator
 
             if ($notification === null) {
                 ++$notificationsCreated;
-                $notification = $this->buildNotification($employee, $targetDate, $today);
+                $notification = $this->buildNotification($employee, $targetDate);
 
                 if (!$dryRun) {
                     $this->entityManager->persist($notification);
@@ -123,20 +123,16 @@ final class BirthdayNotificationGenerator
     private function buildNotification(
         Salarie $employee,
         \DateTimeImmutable $targetDate,
-        \DateTimeImmutable $today,
     ): Notification {
         $fullName = trim(sprintf('%s %s', $employee->getPrenom(), $employee->getNom()));
-        $daysUntilBirthday = (int) $today->diff($targetDate)->format('%a');
-        $dayLabel = $daysUntilBirthday === 0 ? 'aujourd\'hui' : sprintf('dans %d jour%s', $daysUntilBirthday, $daysUntilBirthday > 1 ? 's' : '');
 
         return new Notification()
             ->setType(self::TYPE)
             ->setSalarie($employee)
             ->setMessage(sprintf(
-                'L\'anniversaire de %s est prévu le %s (%s).',
+                'Anniversaire de %s le %s.',
                 $fullName,
                 $targetDate->format('d/m/Y'),
-                $dayLabel
             ))
             ->setTargetDate($targetDate)
             ->setCreatedAt(new \DateTimeImmutable())
