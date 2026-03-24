@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Service\Notification\NotificationViewProvider;
 use Symfony\Bundle\SecurityBundle\Security;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
@@ -17,7 +18,8 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
      */
     public function __construct(
         private Security $security,
-        private SyntheseMetaProvider $syntheseMetaProvider
+        private SyntheseMetaProvider $syntheseMetaProvider,
+        private NotificationViewProvider $notificationViewProvider,
     ) {
     }
 
@@ -28,9 +30,13 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
      */
     public function getGlobals(): array
     {
+        $notificationData = $this->notificationViewProvider->getNavigationData();
+
         return [
             'user' => $this->security->getUser(),
             'database_last_update_at' => $this->syntheseMetaProvider->getLastDatabaseUpdateAt(),
+            'notifications' => $notificationData['notifications'],
+            'unread_notifications_count' => $notificationData['unread_count'],
         ];
     }
 }

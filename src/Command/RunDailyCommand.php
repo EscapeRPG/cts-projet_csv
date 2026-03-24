@@ -29,17 +29,21 @@ final class RunDailyCommand extends Command
             'args' => [],
         ],
         [
+            'command' => 'app:synthese:summary',
+            'args' => [],
+        ],
+        [
+            'command' => 'app:synthese:pros',
+            'args' => [],
+        ],
+        [
             'command' => 'app:data:purge-centres',
             'args' => [
                 '--execute' => true,
             ],
         ],
         [
-            'command' => 'app:synthese:summary',
-            'args' => [],
-        ],
-        [
-            'command' => 'app:synthese:pros',
+            'command' => 'app:notifications:birthdays',
             'args' => [],
         ],
     ];

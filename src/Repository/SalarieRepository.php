@@ -41,6 +41,25 @@ class SalarieRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Returns active employees with a defined birth date.
+     *
+     * @return array<int, Salarie>
+     */
+    public function findActiveWithBirthday(): array
+    {
+        return $this->createQueryBuilder('s')
+            ->leftJoin('s.societe', 'so')
+            ->addSelect('so')
+            ->andWhere('s.isActive = :isActive')
+            ->andWhere('s.dateNaissance IS NOT NULL')
+            ->setParameter('isActive', true)
+            ->orderBy('s.nom', 'ASC')
+            ->addOrderBy('s.prenom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Salarie[] Returns an array of Salarie objects
     //     */

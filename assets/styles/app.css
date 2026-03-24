@@ -31,6 +31,7 @@ header {
     justify-content: space-between;
     padding: 15px 20px;
     position: fixed;
+    width: calc(100% - 40px);
     top: 0;
     left: 0;
     z-index: 98;
@@ -187,15 +188,80 @@ header {
         text-align: center;
     }
 
-    a.home {
-        display: inline-block;
-        position: fixed;
-        top: 15px;
-        right: 15px;
+    .notif-return {
+        display: flex;
+        align-items: center;
+        gap: 20px;
 
-        img {
-            display: block;
-            width: 100px;
+        .notifications {
+            position: relative;
+
+            img {
+                width: 40px;
+
+                &:hover {
+                    cursor: pointer;
+                }
+            }
+
+            .notif-nbr {
+                display: none;
+                align-items: center;
+                justify-content: center;
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                width: 20px;
+                height: 20px;
+                border-radius: 100%;
+                background: red;
+                color: white;
+
+                &.active {
+                    display: flex;
+                }
+            }
+        }
+
+        .notif-responsive {
+            position: absolute;
+            top: 0;
+            right: 30px;
+            background: var(--blocks);
+            padding: 10px 30px;
+            min-width: 200px;
+            border-radius: 10px;
+            box-shadow: var(--box-shadow);
+            transform: translateY(-150%);
+            transition: transform .4s ease;
+
+            &.open {
+                transform: translateY(75px);
+            }
+
+            .notif-item {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+
+                .notif-dismiss {
+                    background: lightgrey;
+                    border-radius: 100%;
+                    color: grey;
+                    font-size: 1em;
+                    padding: 5px 10px;
+                }
+            }
+        }
+
+        a.home {
+            display: inline-block;
+
+            img {
+                display: block;
+                width: 100px;
+            }
         }
     }
 }

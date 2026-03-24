@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -39,6 +41,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column]
     private ?bool $isActive = null;
+
+    /**
+     * @var Collection<int, UserNotification>
+     */
+    #[ORM\OneToMany(targetEntity: UserNotification::class, mappedBy: 'user')]
+    private Collection $userNotifications;
+
+    public function __construct()
+    {
+        $this->userNotifications = new ArrayCollection();
+    }
 
 
     public function getId(): ?int
@@ -154,6 +167,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UserNotification>
+     */
+    public function getUserNotifications(): Collection
+    {
+        return $this->userNotifications;
+    }
+
+    public function addUserNotification(UserNotification $userNotification): static
+    {
+        if (!$this->userNotifications->contains($userNotification)) {
+            $this->userNotifications->add($userNotification);
+            $userNotification->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserNotification(UserNotification $userNotification): static
+    {
+        $this->userNotifications->removeElement($userNotification);
 
         return $this;
     }

@@ -124,9 +124,9 @@
     Dernière mise à jour BDD :
     {% if database_last_update_at is not null %}
         {{ database_last_update_at|format_datetime(
-        pattern: "'le' d MMMM y 'à' HH:mm",
-        locale: 'fr'
-    ) }}
+            pattern: "'le' d MMMM y 'à' HH:mm",
+            locale: 'fr'
+        ) }}
     {% else %}
         inconnue
     {% endif %}
@@ -134,6 +134,42 @@
     Réseau manquant : Autosur
 </p>
 
-<a href="{{ path('app_home') }}" class="home">
-    <img src="{{ asset('img/logo.png') }}" alt="accueil" title="Retour à l'accueil">
-</a>
+<div class="notif-return" data-controller="notif">
+    <div class="notifications">
+        <img src="{{ asset('img/cloche.png') }}" alt="notifications" data-action="click->notif#notifications"
+             data-notif-target="btn">
+
+        <div class="notif-nbr {{ unread_notifications_count > 0 ? 'active' : '' }}" data-notif-target="count">
+            {% if unread_notifications_count > 0 %}
+                {{ unread_notifications_count }}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="notif-responsive" data-notif-target="panel">
+        {% if notifications is empty %}
+            <p data-notif-target="emptyState">Aucune notification.</p>
+        {% else %}
+            {% for userNotification in notifications %}
+                {% set notification = userNotification.notification %}
+                <article class="notif-item {{ userNotification.readAt is null ? 'unread' : 'read' }}" data-notif-target="item">
+                    <p>{{ notification.message }}</p>
+
+                    <button
+                        type="button"
+                        class="notif-dismiss"
+                        aria-label="Marquer comme lue"
+                        data-action="click->notif#markAsRead"
+                        data-url="{{ path('app_notifications_read', { id: userNotification.id }) }}"
+                        data-token="{{ csrf_token('read-notification-' ~ userNotification.id) }}"
+                    >x</button>
+                </article>
+            {% endfor %}
+            <p data-notif-target="emptyState" hidden>Aucune notification.</p>
+        {% endif %}
+    </div>
+
+    <a href="{{ path('app_home') }}" class="home">
+        <img src="{{ asset('img/logo.png') }}" alt="accueil" title="Retour à l'accueil">
+    </a>
+</div>
