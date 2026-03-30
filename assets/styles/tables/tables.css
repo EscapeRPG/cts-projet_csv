@@ -14,10 +14,6 @@ table {
     border-collapse: collapse;
     white-space: nowrap;
 
-    * {
-        font-size: .9em;
-    }
-
     thead {
         position: sticky;
         top: 0;

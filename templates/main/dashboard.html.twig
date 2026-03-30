@@ -10,42 +10,44 @@
     <div class="app-container">
         <div class="app-category">
             {% if is_granted('ROLE_ADMIN') %}
+                <h2>Listes</h2>
                 <a href="{{ path('app_societes_list') }}" class="app">
                     <img src="{{ asset('img/liste-societes.png') }}" alt="liste des sociétés">
-                    <div class="inner-div">Liste des sociétés</div>
+                    <div class="inner-div">Sociétés</div>
                 </a>
 
                 <a href="{{ path('app_centres_list') }}" class="app">
                     <img src="{{ asset('img/liste-centres.png') }}" alt="liste des centres">
-                    <div class="inner-div">Liste des centres</div>
+                    <div class="inner-div">Centres</div>
                 </a>
 
                 <a href="{{ path('app_salaries_list_uneditable') }}" class="app">
                     <img src="{{ asset('img/liste-controleurs.png') }}" alt="liste des salariés">
-                    <div class="inner-div">Liste des salariés</div>
+                    <div class="inner-div">Salariés</div>
                 </a>
             {% endif %}
         </div>
 
         <div class="app-category">
+            <h2>Suivis</h2>
             <a href="{{ path('app_suivi_activite') }}" class="app">
                 <img src="{{ asset('img/stats-activite.png') }}" alt="suivi activité">
-                <div class="inner-div">Suivi activité</div>
+                <div class="inner-div">Activité</div>
             </a>
 
             <a href="{{ path('app_suivi_centres') }}" class="app">
                 <img src="{{ asset('img/stats-centres.png') }}" alt="suivi centres">
-                <div class="inner-div">Suivi centres</div>
+                <div class="inner-div">Centres</div>
             </a>
 
             <a href="{{ path('app_suivi_focus_pro') }}" class="app">
                 <img src="{{ asset('img/stats-pros.png') }}" alt="suivi clients professionnels">
-                <div class="inner-div">Suivi clients professionnels</div>
+                <div class="inner-div">Professionnels</div>
             </a>
 
             <a href="{{ path('app_suivi_controleurs') }}" class="app">
                 <img src="{{ asset('img/stats-controleurs.png') }}" alt="suivi contrôleurs">
-                <div class="inner-div">Suivi contrôleurs</div>
+                <div class="inner-div">Contrôleurs</div>
             </a>
         </div>
     </div>

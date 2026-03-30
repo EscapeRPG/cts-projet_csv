@@ -254,6 +254,11 @@ header {
                 &:hover {
                     cursor: pointer;
                 }
+
+                &.unread-alert {
+                    transform-origin: top center;
+                    animation: wizz 10s infinite;
+                }
             }
 
             .notif-nbr {
@@ -303,6 +308,14 @@ header {
                     color: grey;
                     font-size: 1em;
                     padding: 5px 10px;
+                    margin: 0;
+                    transition: all .2s ease;
+
+                    &:hover {
+                        background: red;
+                        color: white;
+                        transform: none;
+                    }
                 }
             }
         }
@@ -316,6 +329,17 @@ header {
             }
         }
     }
+}
+
+@keyframes wizz {
+    0% { transform: rotate(10deg); }
+    1% { transform: rotate(-10deg); }
+    2% { transform: rotate(10deg); }
+    3% { transform: rotate(-10deg); }
+    4% { transform: rotate(10deg); }
+    5% { transform: rotate(-10deg); }
+    6% { transform: none; }
+    100% { transform: none; }
 }
 
 .container {

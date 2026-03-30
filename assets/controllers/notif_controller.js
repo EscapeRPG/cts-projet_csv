@@ -8,7 +8,7 @@ export default class extends Controller {
     }
 
     notifications() {
-        if (this.btnTarget.className === '') {
+        if (!this.btnTarget.classList.contains('open')) {
             this.show();
         } else {
             this.hide();

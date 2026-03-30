@@ -174,7 +174,10 @@
 
 <div class="notif-return" data-controller="notif">
     <div class="notifications">
-        <img src="{{ asset('img/cloche.png') }}" alt="notifications" data-action="click->notif#notifications"
+        <img src="{{ asset('img/cloche.png') }}"
+             class="{{ unread_notifications_count > 0 ? 'unread-alert' : '' }}"
+             alt="notifications"
+             data-action="click->notif#notifications"
              data-notif-target="btn">
 
         <div class="notif-nbr {{ unread_notifications_count > 0 ? 'active' : '' }}" data-notif-target="count">
