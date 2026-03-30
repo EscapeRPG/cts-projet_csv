@@ -9,40 +9,32 @@
         {% set determinant = 'de ' %}
     {% endif %}
 
-    <h1>Profil {{ determinant ~ user.username }}</h1>
+    <h1>Profil {{ determinant ~ user.username ~ ' - ' ~ (('ROLE_ADMIN' in user.roles) ? 'Administrateur' : 'Utilisateur') }}</h1>
 
-    <h2>
-        {% if ('ROLE_ADMIN' in user.roles) %}
-            Administrateur
-        {% else %}
-            Utilisateur
-        {% endif %}
-    </h2>
-
-    <div class="form-wrapper">
+    <div class="form-wrapper profile-form">
         <h3>Changer le mot de passe</h3>
 
         {{ form_start(password_form) }}
-            <div>
-                {{ form_label(password_form.plainPassword.first) }}
-                {{ form_widget(password_form.plainPassword.first) }}
-            </div>
+        <div>
+            {{ form_label(password_form.plainPassword.first) }}
+            {{ form_widget(password_form.plainPassword.first) }}
+        </div>
 
-            <div>
-                <small>{{ form_help(password_form.plainPassword.first) }}</small>
-            </div>
+        <div>
+            <small>{{ form_help(password_form.plainPassword.first) }}</small>
+        </div>
 
-            <div>
-                {{ form_label(password_form.plainPassword.second) }}
-                {{ form_widget(password_form.plainPassword.second) }}
-            </div>
+        <div>
+            {{ form_label(password_form.plainPassword.second) }}
+            {{ form_widget(password_form.plainPassword.second) }}
+        </div>
 
-            <button type="submit">Changer le mot de passe</button>
+        <button type="submit">Changer le mot de passe</button>
         {{ form_end(password_form) }}
     </div>
 
     {% if 'ROLE_ADMIN' in user.roles %}
-        <div class="form-wrapper">
+        <div class="form-wrapper profile-form">
             <h3>Créer une notification</h3>
 
             {{ form_start(notification_form) }}

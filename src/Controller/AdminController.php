@@ -253,6 +253,25 @@ final class AdminController extends AbstractController
     }
 
     /**
+     * Displays employees.
+     *
+     * @param SalarieRepository $salarieRepository Repository used to retrieve employees.
+     *
+     * @return Response Rendered HTML response containing employees and their forms.
+     */
+    #[Route("/admin/salaries/list-salaries", name: 'app_salaries_list_uneditable')]
+    public function listSalariesNonEditable(
+        SalarieRepository    $salarieRepository,
+    ): Response
+    {
+        $salaries = $salarieRepository->findBy([], ['nom' => 'ASC']);
+
+        return $this->render('salaries/list_uneditable.html.twig', [
+            'salaries' => $salaries,
+        ]);
+    }
+
+    /**
      * Creates a new employee entry.
      *
      * @param Request $request Current HTTP request containing form submission data.

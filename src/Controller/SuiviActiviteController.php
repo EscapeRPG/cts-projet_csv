@@ -28,6 +28,70 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class SuiviActiviteController extends AbstractController
 {
     /**
+     * Activity table column definitions keyed by synthesized metric suffix.
+     *
+     * @var array<string, array{label:string,count:string,ca:string,price:string,type_family:string,vehicle:string}>
+     */
+    private const array ACTIVITY_COLUMN_DEFINITIONS = [
+        'vtp' => [
+            'label' => 'VTP',
+            'count' => 'nb_vtp',
+            'ca' => 'total_ht_vtp',
+            'price' => 'prix_moyen_vtp',
+            'type_family' => 'VTP',
+            'vehicle' => 'VL',
+        ],
+        'clvtp' => [
+            'label' => 'CLVTP',
+            'count' => 'nb_clvtp',
+            'ca' => 'total_ht_clvtp',
+            'price' => 'prix_moyen_clvtp',
+            'type_family' => 'VTP',
+            'vehicle' => 'CL',
+        ],
+        'cv' => [
+            'label' => 'CV',
+            'count' => 'nb_cv',
+            'ca' => 'total_ht_cv',
+            'price' => 'prix_moyen_cv',
+            'type_family' => 'CV',
+            'vehicle' => 'VL',
+        ],
+        'clcv' => [
+            'label' => 'CLCV',
+            'count' => 'nb_clcv',
+            'ca' => 'total_ht_clcv',
+            'price' => 'prix_moyen_clcv',
+            'type_family' => 'CV',
+            'vehicle' => 'CL',
+        ],
+        'vtc' => [
+            'label' => 'VTC',
+            'count' => 'nb_vtc',
+            'ca' => 'total_ht_vtc',
+            'price' => 'prix_moyen_vtc',
+            'type_family' => 'VTC',
+            'vehicle' => 'VL',
+        ],
+        'vol' => [
+            'label' => 'VOL',
+            'count' => 'nb_vol',
+            'ca' => 'total_ht_vol',
+            'price' => 'prix_moyen_vol',
+            'type_family' => 'VOL',
+            'vehicle' => 'VL',
+        ],
+        'clvol' => [
+            'label' => 'CLVOL',
+            'count' => 'nb_clvol',
+            'ca' => 'total_ht_clvol',
+            'price' => 'prix_moyen_clvol',
+            'type_family' => 'VOL',
+            'vehicle' => 'CL',
+        ],
+    ];
+
+    /**
      * @param SuiviActiviteRepository $repo Data access facade for activity-related queries.
      * @param SuiviSyntheseBuilder $syntheseBuilder Builds synthesized activity structures.
      * @param SuiviControleursService $controleursService Computes controller-level statistics.
@@ -67,12 +131,13 @@ final class SuiviActiviteController extends AbstractController
     public function index(Request $request): Response
     {
         $filters = $this->applyDefaultCurrentYearForYearFilteredPages(
-            $this->applyDefaultVehicleFilter(
-                $this->filtersResolver->resolveFromRequest($request)
-            )
+            $this->filtersResolver->resolveFromRequest($request)
         );
+        $queryFilters = $filters;
+        $queryFilters['type'] = [];
+        $queryFilters['vehicule'] = [];
 
-        $rows = $this->repo->fetchSyntheseRows($filters);
+        $rows = $this->repo->fetchSyntheseRows($queryFilters);
         $synthese = $this->syntheseBuilder->buildSynthese($rows);
         $activityTotals = $this->syntheseBuilder->buildActivityTotals($synthese);
 
@@ -142,8 +207,10 @@ final class SuiviActiviteController extends AbstractController
     #[Route('/suivi/focus-pro', name: 'app_suivi_focus_pro')]
     public function suiviFocusPro(Request $request): Response
     {
-        $filters = $this->applyDefaultVehicleFilter(
-            $this->filtersResolver->resolveFromRequest($request)
+        $filters = $this->applyDefaultMonthsToCurrentMonth(
+            $this->applyDefaultVehicleFilter(
+                $this->filtersResolver->resolveFromRequest($request)
+            )
         );
         $referenceYear = $this->resolveReferenceYear($filters);
 
@@ -184,8 +251,10 @@ final class SuiviActiviteController extends AbstractController
     #[Route('/suivi/centres', name: 'app_suivi_centres')]
     public function suiviCentres(Request $request): Response
     {
-        $filters = $this->applyDefaultVehicleFilter(
-            $this->filtersResolver->resolveFromRequest($request)
+        $filters = $this->applyDefaultMonthsToCurrentMonth(
+            $this->applyDefaultVehicleFilter(
+                $this->filtersResolver->resolveFromRequest($request)
+            )
         );
         $referenceYear = $this->resolveReferenceYear($filters);
 
@@ -280,6 +349,25 @@ final class SuiviActiviteController extends AbstractController
             && (!isset($filters['vehicule']) || !is_array($filters['vehicule']) || $filters['vehicule'] === [])
         ) {
             $filters['vehicule'] = ['VL'];
+        }
+
+        return $filters;
+    }
+
+    /**
+     * Ensures month filters default from January to the current month when omitted.
+     *
+     * @param array<string, mixed> $filters Normalized filters array.
+     *
+     * @return array<string, mixed> Filters with default month selection.
+     */
+    private function applyDefaultMonthsToCurrentMonth(array $filters): array
+    {
+        if (!isset($filters['mois']) || !is_array($filters['mois']) || $filters['mois'] === []) {
+            $filters['mois'] = array_map(
+                static fn (int $month): string => (string) $month,
+                range(1, (int) date('n'))
+            );
         }
 
         return $filters;

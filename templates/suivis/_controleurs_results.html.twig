@@ -43,6 +43,25 @@
                     </div>
 
                     {% if showAutos %}
+                        <div class="chart-cols nb">
+                            <div class="salarie-name"><br></div>
+                            {% for salarie in sorted %}
+                                <div class="salarie-row">
+                                    <div class="salarie-value">
+                                        {% if key == 'nb_controles' %}
+                                            {{ salarie[keyAuto] }}
+                                        {% elseif key == 'prix_moyen' %}
+                                            {{ salarie[keyAuto]|number_format(2, ',', ' ') }} €
+                                        {% elseif key == 'temps_moyen' %}
+                                            {{ salarie[keyAuto]|number_format(2, '\'', '') }}
+                                        {% else %}
+                                            {{ salarie[keyAuto]|number_format(2, ',', ' ') }}%
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
                         <div class="chart-cols bars">
                             <div class="salarie-name">Autos</div>
                             {% for salarie in sorted %}
@@ -67,28 +86,28 @@
                                 </span>
                             </div>
                         </div>
+                    {% endif %}
 
+                    {% if showMotos %}
                         <div class="chart-cols nb">
                             <div class="salarie-name"><br></div>
                             {% for salarie in sorted %}
                                 <div class="salarie-row">
                                     <div class="salarie-value">
                                         {% if key == 'nb_controles' %}
-                                            {{ salarie[keyAuto] }}
+                                            {{ salarie[keyMoto] }}
                                         {% elseif key == 'prix_moyen' %}
-                                            {{ salarie[keyAuto]|number_format(2, ',', ' ') }} €
+                                            {{ salarie[keyMoto]|number_format(2, ',', ' ') }} €
                                         {% elseif key == 'temps_moyen' %}
-                                            {{ salarie[keyAuto]|number_format(2, '\'', '') }}
+                                            {{ salarie[keyMoto]|number_format(2, '\'', '') }}
                                         {% else %}
-                                            {{ salarie[keyAuto]|number_format(2, ',', ' ') }}%
+                                            {{ salarie[keyMoto]|number_format(2, ',', ' ') }}%
                                         {% endif %}
                                     </div>
                                 </div>
                             {% endfor %}
                         </div>
-                    {% endif %}
 
-                    {% if showMotos %}
                         <div class="chart-cols bars">
                             <div class="salarie-name">Motos</div>
                             {% for salarie in sorted %}
@@ -112,25 +131,6 @@
                                     {% endif %}
                                 </span>
                             </div>
-                        </div>
-
-                        <div class="chart-cols nb">
-                            <div class="salarie-name"><br></div>
-                            {% for salarie in sorted %}
-                                <div class="salarie-row">
-                                    <div class="salarie-value">
-                                        {% if key == 'nb_controles' %}
-                                            {{ salarie[keyMoto] }}
-                                        {% elseif key == 'prix_moyen' %}
-                                            {{ salarie[keyMoto]|number_format(2, ',', ' ') }} €
-                                        {% elseif key == 'temps_moyen' %}
-                                            {{ salarie[keyMoto]|number_format(2, '\'', '') }}
-                                        {% else %}
-                                            {{ salarie[keyMoto]|number_format(2, ',', ' ') }}%
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            {% endfor %}
                         </div>
                     {% endif %}
                 </div>

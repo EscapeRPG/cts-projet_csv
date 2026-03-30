@@ -119,49 +119,86 @@ header {
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
-            height: calc(100vh - var(--margin-top));
+            height: calc(100vh - 100px);
             transform: translateX(-100%);
             transition: transform .4s ease;
             background: linear-gradient(var(--cts-main), var(--cts-alt));
             margin: 0;
             white-space: nowrap;
-            padding: var(--margin-top) 30px;
+            padding: 50px 0;
 
             &.open {
                 transform: translateX(0);
             }
 
-            h2, h3 {
+            h2 {
                 color: var(--nav-a-color);
                 text-align: center;
-            }
-
-            h2 {
                 font-size: 1.5em;
                 text-transform: uppercase;
                 margin-bottom: 0;
-                padding-top: 10px;
+                padding: 10px 70px 0 70px;
                 border-top: 1px solid var(--cts-main-light);
             }
 
             h3 {
+                color: var(--nav-a-color);
                 font-size: 1em;
-                margin-top: 30px;
-                margin-bottom: 5px;
+                margin: 5px auto;
+                padding: 0 20px;
 
                 &:first-child, &:nth-child(2), &:nth-child(4) {
                     margin-top: 5px;
+                    text-align: center;
+                }
+
+                &.toggle {
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    justify-content: space-between;
+                    cursor: pointer;
+
+                    .toggle-title {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                    }
+
+                    svg {
+                        height: 40px;
+                    }
+
+                    &:hover,
+                    &.open {
+                        color: var(--nav-a-color-hover);
+
+                        svg g {
+                            fill: var(--nav-a-color-hover);
+                        }
+                    }
+
+                    .open-btn {
+                        display: block;
+                        transform-origin: center;
+
+                        &.open {
+                            transform: rotate(90deg);
+                        }
+                    }
                 }
             }
 
             ul {
                 margin: 0 auto;
-                padding: 0;
+                padding: 0 40px;
                 list-style-type: none;
                 border-bottom: 1px solid var(--bg-main-color);
 
                 li {
-                    margin: 5px auto;
+                    margin: 0 auto;
+                    padding: 5px 10px;
+                    border-left: 2px solid var(--nav-a-color-hover);
                 }
 
                 &.profil {
@@ -169,7 +206,15 @@ header {
 
                     li {
                         text-align: center;
+                        border: none;
                     }
+                }
+
+                &.menu {
+                    max-height: 0;
+                    overflow: hidden;
+                    transition: max-height .2s linear;
+                    margin-bottom: 10px;
                 }
             }
 

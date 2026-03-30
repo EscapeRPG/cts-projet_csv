@@ -8,7 +8,7 @@
         <a href="{{ path('app_suivi_controleurs') }}" class="{{ route == 'app_suivi_controleurs' ? 'active' : '' }}">Contrôleurs</a>
     </div>
 
-    <form method="get" class="filter-form" data-dependent-url="{{ path('app_suivi_filters_dependent') }}">
+    <form method="get" class="filter-form" data-dependent-url="{{ path('app_suivi_filters_dependent') }}" data-current-route="{{ route }}">
         <div class="filters-container">
             <div class="filter-dropdown">
                 <button type="button" class="dropdown-toggle">
@@ -105,43 +105,41 @@
                 </div>
             {% endif %}
 
-            {% if route != 'app_suivi_activite' %}
-                <div class="filter-dropdown">
-                    <button type="button" class="dropdown-toggle">
-                        Types
-                    </button>
+            <div class="filter-dropdown">
+                <button type="button" class="dropdown-toggle">
+                    Types
+                </button>
 
-                    <div class="dropdown-menu">
-                        {% for type in types_controles %}
-                            <label>
-                                <input type="checkbox"
-                                       name="type[]"
-                                       value="{{ type }}"
-                                       {% if type in selected.type %}checked{% endif %}>
-                                {{ type }}
-                            </label>
-                        {% endfor %}
-                    </div>
+                <div class="dropdown-menu">
+                    {% for type in types_controles %}
+                        <label>
+                            <input type="checkbox"
+                                   name="type[]"
+                                   value="{{ type }}"
+                                   {% if type in selected.type %}checked{% endif %}>
+                            {{ type }}
+                        </label>
+                    {% endfor %}
                 </div>
-            {% endif %}
+            </div>
 
-            {% if route != 'app_suivi_activite' %}
-                <label>
-                    <input type="checkbox"
-                           name="vehicule[]"
-                           value="VL"
-                           {% if 'VL' in selected.vehicule %}checked{% endif %}>
-                    VL
-                </label>
+            <div class="filter-dropdown">
+                <button type="button" class="dropdown-toggle">
+                    Véhicules
+                </button>
 
-                <label>
-                    <input type="checkbox"
-                           name="vehicule[]"
-                           value="CL"
-                           {% if 'CL' in selected.vehicule %}checked{% endif %}>
-                    CL
-                </label>
-            {% endif %}
+                <div class="dropdown-menu">
+                    {% for vehicule in vehicules %}
+                        <label>
+                            <input type="checkbox"
+                                   name="vehicule[]"
+                                   value="{{ vehicule }}"
+                                   {% if vehicule in selected.vehicule %}checked{% endif %}>
+                            {{ vehicule }}
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
 
             {% if anneeCourante is not null %}
                 <input type="hidden" name="annee" value="{{ anneeCourante }}">

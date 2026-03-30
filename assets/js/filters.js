@@ -35,9 +35,31 @@ function getCheckedValues(form, inputName) {
     return new Set(Array.from(form.querySelectorAll(`input[name="${inputName}"]:checked`)).map((input) => input.value));
 }
 
+/**
+ * Returns checked values for activity type filters.
+ *
+ * @param {HTMLFormElement} form
+ * @returns {Set<string>}
+ */
+function getSelectedActivityTypes(form) {
+    return getCheckedValues(form, 'type[]');
+}
+
+/**
+ * Returns checked values for activity vehicle filters.
+ *
+ * @param {HTMLFormElement} form
+ * @returns {Set<string>}
+ */
+function getSelectedActivityVehicles(form) {
+    return getCheckedValues(form, 'vehicule[]');
+}
+
 let resultsRequestController = null;
+let dependentFiltersRequestController = null;
 let refreshDebounceTimer = null;
 let activeResultsRequestToken = 0;
+let activeDependentFiltersRequestToken = 0;
 let pendingSocieteChange = false;
 let pendingCentreChange = false;
 let mobileFiltersState = null;
@@ -291,6 +313,46 @@ function buildFormQueryString(form) {
 }
 
 /**
+ * Updates browser URL from current form state without fetching server results.
+ *
+ * @param {HTMLFormElement} form
+ * @returns {void}
+ */
+function syncUrlWithForm(form) {
+    const queryString = buildFormQueryString(form);
+    const path = window.location.pathname;
+    const url = queryString ? `${path}?${queryString}` : path;
+    window.history.replaceState({}, '', url);
+}
+
+/**
+ * Applies client-side visibility rules to activity table columns.
+ *
+ * @param {HTMLFormElement} form
+ * @returns {void}
+ */
+function applyActivityColumnVisibility(form) {
+    const table = document.querySelector('[data-activity-table]');
+    if (!(table instanceof HTMLTableElement)) return;
+
+    const selectedTypes = getSelectedActivityTypes(form);
+    const selectedVehicles = getSelectedActivityVehicles(form);
+    const hasTypeSelection = selectedTypes.size > 0;
+    const hasVehicleSelection = selectedVehicles.size > 0;
+
+    table.querySelectorAll('[data-activity-column]').forEach((cell) => {
+        if (!(cell instanceof HTMLElement)) return;
+
+        const typeFamily = cell.dataset.typeFamily || '';
+        const vehicleFamily = cell.dataset.vehicleFamily || '';
+        const matchesType = !hasTypeSelection || selectedTypes.has(typeFamily);
+        const matchesVehicle = !hasVehicleSelection || selectedVehicles.has(vehicleFamily);
+
+        cell.hidden = !(matchesType && matchesVehicle);
+    });
+}
+
+/**
  * Refreshes results container via AJAX and updates browser URL.
  *
  * @param {HTMLFormElement} form
@@ -445,6 +507,7 @@ function renderCheckboxList(container, inputName, values, checkedValues, labelBu
 async function refreshDependentFilters(form, updateCentres = true, includeCentresFilter = true) {
     const endpoint = form.dataset.dependentUrl;
     if (!endpoint) return;
+    const requestToken = ++activeDependentFiltersRequestToken;
 
     const selectedSocietes = Array.from(form.querySelectorAll('input[name="societe[]"]:checked')).map((input) => input.value);
     const selectedCentresList = Array.from(form.querySelectorAll('input[name="centre[]"]:checked')).map((input) => input.value);
@@ -457,17 +520,25 @@ async function refreshDependentFilters(form, updateCentres = true, includeCentre
         selectedCentresList.forEach((centre) => params.append('centre[]', centre));
     }
 
+    if (dependentFiltersRequestController) {
+        dependentFiltersRequestController.abort();
+    }
+
+    dependentFiltersRequestController = new AbortController();
+
     try {
         const response = await fetch(`${endpoint}?${params.toString()}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json',
             },
+            signal: dependentFiltersRequestController.signal,
         });
 
         if (!response.ok) return;
 
         const data = await response.json();
+        if (requestToken !== activeDependentFiltersRequestToken) return;
 
         if (updateCentres) {
             const centresMenu = form.querySelector('[data-filter-list="centre"]');
@@ -497,7 +568,15 @@ async function refreshDependentFilters(form, updateCentres = true, includeCentre
             );
         }
     } catch (e) {
+        if (e.name === 'AbortError') {
+            return;
+        }
+
         // Ignore network errors to keep the UI responsive.
+    } finally {
+        if (requestToken === activeDependentFiltersRequestToken) {
+            dependentFiltersRequestController = null;
+        }
     }
 }
 
@@ -822,12 +901,25 @@ function init() {
 
     const form = filters.querySelector('.filter-form');
     if (!form) return;
+    const currentRoute = form.dataset.currentRoute || '';
 
     bindYearFilter(form);
+    applyActivityColumnVisibility(form);
 
     form.addEventListener('change', async (event) => {
         const target = event.target;
         if (!(target instanceof HTMLInputElement)) return;
+
+        const isActivityLocalColumnFilter = currentRoute === 'app_suivi_activite'
+            && (target.name === 'type[]' || target.name === 'vehicule[]');
+
+        if (isActivityLocalColumnFilter) {
+            applyActivityColumnVisibility(form);
+            syncUrlWithForm(form);
+            return;
+        }
+
+        syncUrlWithForm(form);
 
         if (target.name === 'societe[]') {
             pendingSocieteChange = true;
@@ -880,3 +972,9 @@ document.addEventListener('DOMContentLoaded', bootstrapFiltersUi);
 document.addEventListener('turbo:load', bootstrapFiltersUi);
 document.addEventListener('turbo:before-cache', destroyMobileFiltersDrawer);
 document.addEventListener('suivi:results-updated', initPanelTools);
+document.addEventListener('suivi:results-updated', () => {
+    const form = document.querySelector('.filter-form');
+    if (!(form instanceof HTMLFormElement)) return;
+
+    applyActivityColumnVisibility(form);
+});

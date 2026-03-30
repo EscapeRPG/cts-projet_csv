@@ -1,10 +1,22 @@
 .suivi-container {
+    position: relative;
     display: flex;
     flex-direction: row;
     align-items: stretch;
     width: 95%;
     height: 80vh;
     margin: 0 auto;
+}
+
+.activite-infos {
+    position: absolute;
+    right: 20px;
+    top: 0;
+    transform: translateY(-100%);
+
+    p {
+        margin: 10px;
+    }
 }
 
 .pro-stats-container, .stats-container {
@@ -196,10 +208,6 @@
                 white-space: wrap;
                 text-align: left;
             }
-        }
-
-        .right {
-            text-align: right;
         }
 
         .malus {

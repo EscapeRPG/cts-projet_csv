@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des salariés{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="table-wrapper">
+            <table class="salaries-list">
+                <thead>
+                <tr>
+                    <th>Société</th>
+                    <th>Agr</th>
+                    <th>Agr CL</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Date de naissance</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Échelons</th>
+                    <th>Salaire</th>
+                    <th>Heures</th>
+                    <th>Veste</th>
+                    <th>Polaire</th>
+                    <th>Pantalon</th>
+                    <th>Tee-shirt</th>
+                    <th>Polo</th>
+                    <th>Chaussures</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for salarie in salaries %}
+                    <tr>
+                        <td>{{ salarie.societe.nom }}</td>
+                        <td>{{ salarie.agrControleur }}</td>
+                        <td>{{ salarie.agrClControleur }}</td>
+                        <td>{{ salarie.nom }}</td>
+                        <td>{{ salarie.prenom }}</td>
+                        <td class="right">{{ salarie.dateNaissance ? salarie.dateNaissance|date('d/m/Y') : '' }}</td>
+                        <td>{{ salarie.email }}</td>
+                        <td>{{ salarie.telephone }}</td>
+                        <td class="centered">{{ salarie.echelons }}</td>
+                        <td class="right">{{ salarie.salaireBrut }} €</td>
+                        <td class="right">{{ salarie.nbHeures }}</td>
+                        <td class="centered">{{ salarie.vesteMancheAmovible }}</td>
+                        <td class="centered">{{ salarie.polaire }}</td>
+                        <td class="centered">{{ salarie.pantalon }}</td>
+                        <td class="centered">{{ salarie.teeShirts }}</td>
+                        <td class="centered">{{ salarie.polo }}</td>
+                        <td class="centered">{{ salarie.chaussures }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if pagination is defined and pagination.total_pages > 1 %}
+        <div class="pagination-nav" aria-label="Pagination des salariés">
+            {% if pagination.has_previous %}
+                <a href="{{ path('app_salaries_list', app.request.query.all|merge({'page': 1})) }}">❮❮</a>
+                <a href="{{ path('app_salaries_list', app.request.query.all|merge({'page': pagination.previous_page})) }}">❮</a>
+            {% endif %}
+            <span>Page {{ pagination.page }} / {{ pagination.total_pages }} ({{ pagination.total_items }} salariés)</span>
+            {% if pagination.has_next %}
+                <a href="{{ path('app_salaries_list', app.request.query.all|merge({'page': pagination.next_page})) }}">❯</a>
+                <a href="{{ path('app_salaries_list', app.request.query.all|merge({'page': pagination.total_pages})) }}">❯❯</a>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

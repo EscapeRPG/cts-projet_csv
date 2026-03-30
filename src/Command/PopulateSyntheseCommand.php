@@ -143,39 +143,51 @@ class PopulateSyntheseCommand extends Command
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 societe_nom VARCHAR(255) NOT NULL,
                 agr_centre VARCHAR(50) NOT NULL,
+                agr_centre_cl VARCHAR(50) NOT NULL DEFAULT '',
                 centre_ville VARCHAR(255) DEFAULT '',
                 reseau_id INT NOT NULL,
                 reseau_nom VARCHAR(50) DEFAULT '',
                 salarie_id INT NOT NULL,
                 salarie_agr VARCHAR(20) NOT NULL,
+                salarie_agr_cl VARCHAR(20) NOT NULL DEFAULT '',
                 salarie_nom VARCHAR(255) NOT NULL,
                 salarie_prenom VARCHAR(255) NOT NULL,
                 annee INT NOT NULL,
                 mois INT NOT NULL,
                 nb_controles INT NOT NULL DEFAULT 0,
+                nb_controles_factures INT NOT NULL DEFAULT 0,
                 nb_vtp INT NOT NULL DEFAULT 0,
+                nb_vtp_factures INT NOT NULL DEFAULT 0,
                 nb_vtp_particuliers INT NOT NULL DEFAULT 0,
                 nb_vtp_professionnels INT NOT NULL DEFAULT 0,
                 nb_clvtp INT NOT NULL DEFAULT 0,
+                nb_clvtp_factures INT NOT NULL DEFAULT 0,
                 nb_clvtp_particuliers INT NOT NULL DEFAULT 0,
                 nb_clvtp_professionnels INT NOT NULL DEFAULT 0,
                 nb_cv INT NOT NULL DEFAULT 0,
+                nb_cv_factures INT NOT NULL DEFAULT 0,
                 nb_cv_particuliers INT NOT NULL DEFAULT 0,
                 nb_cv_professionnels INT NOT NULL DEFAULT 0,
                 nb_clcv INT NOT NULL DEFAULT 0,
+                nb_clcv_factures INT NOT NULL DEFAULT 0,
                 nb_clcv_particuliers INT NOT NULL DEFAULT 0,
                 nb_clcv_professionnels INT NOT NULL DEFAULT 0,
                 nb_vtc INT NOT NULL DEFAULT 0,
+                nb_vtc_factures INT NOT NULL DEFAULT 0,
                 nb_vtc_particuliers INT NOT NULL DEFAULT 0,
                 nb_vtc_professionnels INT NOT NULL DEFAULT 0,
                 nb_vol INT NOT NULL DEFAULT 0,
+                nb_vol_factures INT NOT NULL DEFAULT 0,
                 nb_vol_particuliers INT NOT NULL DEFAULT 0,
                 nb_vol_professionnels INT NOT NULL DEFAULT 0,
                 nb_clvol INT NOT NULL DEFAULT 0,
+                nb_clvol_factures INT NOT NULL DEFAULT 0,
                 nb_clvol_particuliers INT NOT NULL DEFAULT 0,
                 nb_clvol_professionnels INT NOT NULL DEFAULT 0,
                 nb_auto INT NOT NULL DEFAULT 0,
+                nb_auto_factures INT NOT NULL DEFAULT 0,
                 nb_moto INT NOT NULL DEFAULT 0,
+                nb_moto_factures INT NOT NULL DEFAULT 0,
                 total_presta_ht DECIMAL(12,2) NOT NULL DEFAULT 0,
                 total_presta_ht_particuliers DECIMAL(12,2) NOT NULL DEFAULT 0,
                 total_presta_ht_professionnels DECIMAL(12,2) NOT NULL DEFAULT 0,
@@ -203,9 +215,23 @@ class PopulateSyntheseCommand extends Command
                 temps_total INT NOT NULL DEFAULT 0,
                 temps_total_auto INT NOT NULL DEFAULT 0,
                 temps_total_moto INT NOT NULL DEFAULT 0,
+                temps_total_vtp INT NOT NULL DEFAULT 0,
+                temps_total_clvtp INT NOT NULL DEFAULT 0,
+                temps_total_cv INT NOT NULL DEFAULT 0,
+                temps_total_clcv INT NOT NULL DEFAULT 0,
+                temps_total_vtc INT NOT NULL DEFAULT 0,
+                temps_total_vol INT NOT NULL DEFAULT 0,
+                temps_total_clvol INT NOT NULL DEFAULT 0,
                 taux_refus DECIMAL(5,2) NOT NULL DEFAULT 0,
                 refus_auto INT NOT NULL DEFAULT 0,
                 refus_moto INT NOT NULL DEFAULT 0,
+                refus_vtp INT NOT NULL DEFAULT 0,
+                refus_clvtp INT NOT NULL DEFAULT 0,
+                refus_cv INT NOT NULL DEFAULT 0,
+                refus_clcv INT NOT NULL DEFAULT 0,
+                refus_vtc INT NOT NULL DEFAULT 0,
+                refus_vol INT NOT NULL DEFAULT 0,
+                refus_clvol INT NOT NULL DEFAULT 0,
                 nb_particuliers INT NOT NULL DEFAULT 0,
                 nb_professionnels INT NOT NULL DEFAULT 0,
                 nb_particuliers_auto INT NOT NULL DEFAULT 0,
@@ -218,7 +244,11 @@ class PopulateSyntheseCommand extends Command
         ");
 
         $this->ensureUniqueKeyForUnknownSalaries();
+        $this->ensureColumn('agr_centre_cl', "VARCHAR(50) NOT NULL DEFAULT ''");
+        $this->ensureColumn('salarie_agr_cl', "VARCHAR(20) NOT NULL DEFAULT ''");
         $this->ensureRevenueSplitColumns();
+        $this->ensureDetailedControllerMetricsColumns();
+        $this->ensureBilledControlCountColumns();
 
         $this->connection->executeStatement("
             CREATE TABLE IF NOT EXISTS synthese_meta (
@@ -309,21 +339,62 @@ class PopulateSyntheseCommand extends Command
         $centreJoinCondition = $this->hasSecondaryCentreAgreementColumn()
             ? '(ce.agr_centre = cc.agr_centre OR ce.agr_cl_centre = cc.agr_centre)'
             : 'ce.agr_centre = cc.agr_centre';
+        $distinctControleFactureSql = "
+            SELECT DISTINCT idcontrole, idfacture
+            FROM controles_factures
+        ";
+        $factureControlCountSql = "
+            SELECT cf_count.idfacture, COUNT(DISTINCT cf_count.idcontrole) AS nb_ctrl_facture
+            FROM ({$distinctControleFactureSql}) cf_count
+            GROUP BY cf_count.idfacture
+        ";
+        $controlRevenueReferenceSql = "
+            SELECT
+                cf_ref.idcontrole,
+                SUM(COALESCE(f_ref.montant_presta_ht, f_ref.total_ht) / NULLIF(t_ref.nb_ctrl_facture, 0)) AS ref_ca
+            FROM ({$distinctControleFactureSql}) cf_ref
+            INNER JOIN factures f_ref ON f_ref.idfacture = cf_ref.idfacture
+            INNER JOIN ({$factureControlCountSql}) t_ref ON t_ref.idfacture = f_ref.idfacture
+            WHERE f_ref.type_facture IN ('F', 'D')
+              AND COALESCE(f_ref.montant_presta_ht, f_ref.total_ht) > 0
+            GROUP BY cf_ref.idcontrole
+        ";
+        $avoirReferenceTotalSql = "
+            SELECT
+                cf_credit.idfacture,
+                SUM(COALESCE(ctrl_ref.ref_ca, 0)) AS total_ref_ca
+            FROM ({$distinctControleFactureSql}) cf_credit
+            LEFT JOIN ({$controlRevenueReferenceSql}) ctrl_ref ON ctrl_ref.idcontrole = cf_credit.idcontrole
+            GROUP BY cf_credit.idfacture
+        ";
+        $allocatedAmountExpr = "
+            CASE
+                WHEN f.type_facture = 'A' THEN
+                    COALESCE(f.montant_presta_ht, f.total_ht) * (
+                        CASE
+                            WHEN COALESCE(art.total_ref_ca, 0) > 0 THEN COALESCE(cpr.ref_ca, 0) / art.total_ref_ca
+                            ELSE 1 / NULLIF(t.nb_ctrl_facture, 0)
+                        END
+                    )
+                ELSE
+                    COALESCE(f.montant_presta_ht, f.total_ht) / NULLIF(t.nb_ctrl_facture, 0)
+            END
+        ";
 
         $sql = "
             INSERT INTO synthese_controles (
-                societe_nom, agr_centre, centre_ville, reseau_id, reseau_nom,
-                salarie_id, salarie_agr, salarie_nom, salarie_prenom,
+                societe_nom, agr_centre, agr_centre_cl, centre_ville, reseau_id, reseau_nom,
+                salarie_id, salarie_agr, salarie_agr_cl, salarie_nom, salarie_prenom,
                 annee, mois,
-                nb_controles,
-                nb_vtp, nb_vtp_particuliers, nb_vtp_professionnels,
-                nb_clvtp, nb_clvtp_particuliers, nb_clvtp_professionnels,
-                nb_cv, nb_cv_particuliers, nb_cv_professionnels,
-                nb_clcv, nb_clcv_particuliers, nb_clcv_professionnels,
-                nb_vtc, nb_vtc_particuliers, nb_vtc_professionnels,
-                nb_vol, nb_vol_particuliers, nb_vol_professionnels,
-                nb_clvol, nb_clvol_particuliers, nb_clvol_professionnels,
-                nb_auto, nb_moto,
+                nb_controles, nb_controles_factures,
+                nb_vtp, nb_vtp_factures, nb_vtp_particuliers, nb_vtp_professionnels,
+                nb_clvtp, nb_clvtp_factures, nb_clvtp_particuliers, nb_clvtp_professionnels,
+                nb_cv, nb_cv_factures, nb_cv_particuliers, nb_cv_professionnels,
+                nb_clcv, nb_clcv_factures, nb_clcv_particuliers, nb_clcv_professionnels,
+                nb_vtc, nb_vtc_factures, nb_vtc_particuliers, nb_vtc_professionnels,
+                nb_vol, nb_vol_factures, nb_vol_particuliers, nb_vol_professionnels,
+                nb_clvol, nb_clvol_factures, nb_clvol_particuliers, nb_clvol_professionnels,
+                nb_auto, nb_auto_factures, nb_moto, nb_moto_factures,
                 total_presta_ht, total_presta_ht_particuliers, total_presta_ht_professionnels,
                 total_ht_vtp, total_ht_vtp_particuliers, total_ht_vtp_professionnels,
                 total_ht_clvtp, total_ht_clvtp_particuliers, total_ht_clvtp_professionnels,
@@ -332,75 +403,105 @@ class PopulateSyntheseCommand extends Command
                 total_ht_vtc, total_ht_vtc_particuliers, total_ht_vtc_professionnels,
                 total_ht_vol, total_ht_vol_particuliers, total_ht_vol_professionnels,
                 total_ht_clvol, total_ht_clvol_particuliers, total_ht_clvol_professionnels,
-                temps_total, temps_total_auto, temps_total_moto, taux_refus, refus_auto, refus_moto, nb_particuliers, nb_professionnels,
+                temps_total, temps_total_auto, temps_total_moto,
+                temps_total_vtp, temps_total_clvtp, temps_total_cv, temps_total_clcv, temps_total_vtc, temps_total_vol, temps_total_clvol,
+                taux_refus, refus_auto, refus_moto,
+                refus_vtp, refus_clvtp, refus_cv, refus_clcv, refus_vtc, refus_vol, refus_clvol,
+                nb_particuliers, nb_professionnels,
                 nb_particuliers_auto, nb_particuliers_moto, nb_professionnels_auto, nb_professionnels_moto
             )
             SELECT
                 MAX(COALESCE(so.nom, 'Société inconnue')) AS societe_nom,
                 IF(ce.agr_centre IS NULL, CONCAT('Centre inconnu (', COALESCE(cc.agr_centre, '?'), ')'), ce.agr_centre) AS agr_centre,
+                MAX(COALESCE(ce.agr_cl_centre, '')) AS agr_centre_cl,
                 MAX(COALESCE(ce.ville, '')) AS centre_ville,
                 MAX(ctrl.reseau_id) AS reseau_id,
                 MAX(COALESCE(ce.reseau_nom, '')) AS reseau_nom,
                 COALESCE(sa.id, 0) AS salarie_id,
                 COALESCE(sa.agr_controleur, cc.agr_controleur, 'Agrément inconnu') AS salarie_agr,
+                MAX(COALESCE(sa.agr_cl_controleur, '')) AS salarie_agr_cl,
                 MAX(IF(sa.id IS NULL, CONCAT('Salarié inconnu (', COALESCE(cc.agr_controleur, '?'), ')'), COALESCE(sa.nom, 'Salarié inconnu'))) AS salarie_nom,
                 MAX(COALESCE(sa.prenom, '')) AS salarie_prenom,
                 YEAR(ctrl.date_ctrl) AS annee,
                 MONTH(ctrl.date_ctrl) AS mois,
                 COUNT(DISTINCT ctrl.idcontrole) AS nb_controles,
+                COUNT(DISTINCT IF(f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_controles_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP'), ctrl.idcontrole, NULL)) AS nb_vtp,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_vtp_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_vtp_particuliers,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_vtp_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVTP','CLCTP'), ctrl.idcontrole, NULL)) AS nb_clvtp,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_clvtp_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_clvtp_particuliers,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_clvtp_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC'), ctrl.idcontrole, NULL)) AS nb_cv,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_cv_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_cv_particuliers,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_cv_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLCV'), ctrl.idcontrole, NULL)) AS nb_clcv,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLCV') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_clcv_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLCV') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_clcv_particuliers,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLCV') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_clcv_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTC','VLCTC'), ctrl.idcontrole, NULL)) AS nb_vtc,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_vtc_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_vtc_particuliers,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_vtc_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT'), ctrl.idcontrole, NULL)) AS nb_vol,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_vol_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_vol_particuliers,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_vol_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT'), ctrl.idcontrole, NULL)) AS nb_clvol,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_clvol_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_clvol_particuliers,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_clvol_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP','CV','VLCV','VLCVC','VTC','VLCTC','VOL','VP','VT'), ctrl.idcontrole, NULL)) AS nb_auto,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP','CV','VLCV','VLCVC','VTC','VLCTC','VOL','VP','VT') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_auto_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl LIKE 'CL%', ctrl.idcontrole, NULL)) AS nb_moto,
-                SUM(IF(f.type_facture IN ('F','A','D'), COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_presta_ht,
-                SUM(IF(f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 0, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_presta_ht_particuliers,
-                SUM(IF(f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 1, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_presta_ht_professionnels,
-                SUM(IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND f.type_facture IN ('F','A','D'), COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vtp,
-                SUM(IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 0, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vtp_particuliers,
-                SUM(IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 1, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vtp_professionnels,
-                SUM(IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND f.type_facture IN ('F','A','D'), COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clvtp,
-                SUM(IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 0, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clvtp_particuliers,
-                SUM(IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 1, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clvtp_professionnels,
-                SUM(IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND f.type_facture IN ('F','A','D'), COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_cv,
-                SUM(IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 0, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_cv_particuliers,
-                SUM(IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 1, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_cv_professionnels,
-                SUM(IF(ctrl.type_ctrl IN ('CLCV') AND f.type_facture IN ('F','A','D'), COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clcv,
-                SUM(IF(ctrl.type_ctrl IN ('CLCV') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 0, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clcv_particuliers,
-                SUM(IF(ctrl.type_ctrl IN ('CLCV') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 1, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clcv_professionnels,
-                SUM(IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND f.type_facture IN ('F','A','D'), COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vtc,
-                SUM(IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 0, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vtc_particuliers,
-                SUM(IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 1, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vtc_professionnels,
-                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND f.type_facture IN ('F','A','D'), COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vol,
-                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 0, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vol_particuliers,
-                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 1, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_vol_professionnels,
-                SUM(IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND f.type_facture IN ('F','A','D'), COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clvol,
-                SUM(IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 0, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clvol_particuliers,
-                SUM(IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 1, COALESCE(f.montant_presta_ht, f.total_ht) / t.nb_ctrl_facture, 0)) AS total_ht_clvol_professionnels,
+                COUNT(DISTINCT IF(ctrl.type_ctrl LIKE 'CL%' AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_moto_factures,
+                SUM(IF(f.type_facture IN ('F','A','D'), {$allocatedAmountExpr}, 0)) AS total_presta_ht,
+                SUM(IF(f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 0, {$allocatedAmountExpr}, 0)) AS total_presta_ht_particuliers,
+                SUM(IF(f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 1, {$allocatedAmountExpr}, 0)) AS total_presta_ht_professionnels,
+                SUM(IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND f.type_facture IN ('F','A','D'), {$allocatedAmountExpr}, 0)) AS total_ht_vtp,
+                SUM(IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 0, {$allocatedAmountExpr}, 0)) AS total_ht_vtp_particuliers,
+                SUM(IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 1, {$allocatedAmountExpr}, 0)) AS total_ht_vtp_professionnels,
+                SUM(IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND f.type_facture IN ('F','A','D'), {$allocatedAmountExpr}, 0)) AS total_ht_clvtp,
+                SUM(IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 0, {$allocatedAmountExpr}, 0)) AS total_ht_clvtp_particuliers,
+                SUM(IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 1, {$allocatedAmountExpr}, 0)) AS total_ht_clvtp_professionnels,
+                SUM(IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND f.type_facture IN ('F','A','D'), {$allocatedAmountExpr}, 0)) AS total_ht_cv,
+                SUM(IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 0, {$allocatedAmountExpr}, 0)) AS total_ht_cv_particuliers,
+                SUM(IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 1, {$allocatedAmountExpr}, 0)) AS total_ht_cv_professionnels,
+                SUM(IF(ctrl.type_ctrl IN ('CLCV') AND f.type_facture IN ('F','A','D'), {$allocatedAmountExpr}, 0)) AS total_ht_clcv,
+                SUM(IF(ctrl.type_ctrl IN ('CLCV') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 0, {$allocatedAmountExpr}, 0)) AS total_ht_clcv_particuliers,
+                SUM(IF(ctrl.type_ctrl IN ('CLCV') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 1, {$allocatedAmountExpr}, 0)) AS total_ht_clcv_professionnels,
+                SUM(IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND f.type_facture IN ('F','A','D'), {$allocatedAmountExpr}, 0)) AS total_ht_vtc,
+                SUM(IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 0, {$allocatedAmountExpr}, 0)) AS total_ht_vtc_particuliers,
+                SUM(IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 1, {$allocatedAmountExpr}, 0)) AS total_ht_vtc_professionnels,
+                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND f.type_facture IN ('F','A','D'), {$allocatedAmountExpr}, 0)) AS total_ht_vol,
+                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 0, {$allocatedAmountExpr}, 0)) AS total_ht_vol_particuliers,
+                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 1, {$allocatedAmountExpr}, 0)) AS total_ht_vol_professionnels,
+                SUM(IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND f.type_facture IN ('F','A','D'), {$allocatedAmountExpr}, 0)) AS total_ht_clvol,
+                SUM(IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 0, {$allocatedAmountExpr}, 0)) AS total_ht_clvol_particuliers,
+                SUM(IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND f.type_facture IN ('F','A','D') AND COALESCE(cc.has_pro_client, 0) = 1, {$allocatedAmountExpr}, 0)) AS total_ht_clvol_professionnels,
                 SUM(ctrl.temps_ctrl) AS temps_total,
                 SUM(IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP','CV','VLCV','VLCVC','VTC','VLCTC','VOL','VP','VT'), ctrl.temps_ctrl, 0)) AS temps_total_auto,
                 SUM(IF(ctrl.type_ctrl LIKE 'CL%', ctrl.temps_ctrl, 0)) AS temps_total_moto,
+                SUM(IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP'), ctrl.temps_ctrl, 0)) AS temps_total_vtp,
+                SUM(IF(ctrl.type_ctrl IN ('CLVTP','CLCTP'), ctrl.temps_ctrl, 0)) AS temps_total_clvtp,
+                SUM(IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC'), ctrl.temps_ctrl, 0)) AS temps_total_cv,
+                SUM(IF(ctrl.type_ctrl IN ('CLCV'), ctrl.temps_ctrl, 0)) AS temps_total_clcv,
+                SUM(IF(ctrl.type_ctrl IN ('VTC','VLCTC'), ctrl.temps_ctrl, 0)) AS temps_total_vtc,
+                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT'), ctrl.temps_ctrl, 0)) AS temps_total_vol,
+                SUM(IF(ctrl.type_ctrl IN ('CLVP','CLVT'), ctrl.temps_ctrl, 0)) AS temps_total_clvol,
                 COUNT(DISTINCT IF(ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS taux_refus,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP','CV','VLCV','VLCVC','VTC','VLCTC','VOL', 'VP', 'VT') AND ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS refus_auto,
                 COUNT(DISTINCT IF(ctrl.type_ctrl LIKE 'CL%' AND ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS refus_moto,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS refus_vtp,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS refus_clvtp,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS refus_cv,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLCV') AND ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS refus_clcv,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS refus_vtc,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS refus_vol,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS refus_clvol,
                 COUNT(DISTINCT IF(COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_particuliers,
                 COUNT(DISTINCT IF(COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl NOT LIKE 'CL%' AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_particuliers_auto,
@@ -434,13 +535,14 @@ class PopulateSyntheseCommand extends Command
                 GROUP BY cc.idcontrole
             ) cc ON cc.idcontrole = ctrl.idcontrole
             LEFT JOIN (
-                SELECT id, nom, prenom, agr_controleur, agr_key
+                SELECT id, nom, prenom, agr_controleur, agr_cl_controleur, agr_key
                 FROM (
                     SELECT
                         s.id,
                         s.nom,
                         s.prenom,
                         s.agr_controleur,
+                        s.agr_cl_controleur,
                         s.agr_key,
                         ROW_NUMBER() OVER (PARTITION BY s.agr_key ORDER BY s.is_primary DESC, s.id ASC) AS rn
                     FROM (
@@ -449,6 +551,7 @@ class PopulateSyntheseCommand extends Command
                             nom,
                             prenom,
                             agr_controleur,
+                            agr_cl_controleur,
                             agr_controleur AS agr_key,
                             1 AS is_primary
                         FROM salarie
@@ -459,6 +562,7 @@ class PopulateSyntheseCommand extends Command
                             nom,
                             prenom,
                             agr_controleur,
+                            agr_cl_controleur,
                             agr_cl_controleur AS agr_key,
                             0 AS is_primary
                         FROM salarie
@@ -470,20 +574,18 @@ class PopulateSyntheseCommand extends Command
             LEFT JOIN centre ce ON {$centreJoinCondition}
             LEFT JOIN societe so ON so.id = ce.societe_id
             LEFT JOIN (
-                SELECT DISTINCT idcontrole, idfacture
-                FROM controles_factures
+                {$distinctControleFactureSql}
             ) cf ON cf.idcontrole = ctrl.idcontrole
             LEFT JOIN factures f ON f.idfacture = cf.idfacture
             LEFT JOIN (
-                SELECT cf.idfacture, COUNT(DISTINCT cf.idcontrole) AS nb_ctrl_facture
-                FROM (
-                    SELECT DISTINCT idcontrole, idfacture
-                    FROM controles_factures
-                ) cf
-                INNER JOIN factures f2 ON f2.idfacture = cf.idfacture
-                WHERE f2.type_facture IN ('F','A','D')
-                GROUP BY cf.idfacture
+                {$factureControlCountSql}
             ) t ON t.idfacture = f.idfacture
+            LEFT JOIN (
+                {$controlRevenueReferenceSql}
+            ) cpr ON cpr.idcontrole = ctrl.idcontrole
+            LEFT JOIN (
+                {$avoirReferenceTotalSql}
+            ) art ON art.idfacture = f.idfacture
             GROUP BY
                 COALESCE(sa.id, 0),
                 COALESCE(sa.agr_controleur, cc.agr_controleur, 'Agrément inconnu'),
@@ -492,29 +594,39 @@ class PopulateSyntheseCommand extends Command
                 MONTH(ctrl.date_ctrl)
             ON DUPLICATE KEY UPDATE
                 nb_controles=VALUES(nb_controles),
+                nb_controles_factures=VALUES(nb_controles_factures),
                 nb_vtp=VALUES(nb_vtp),
+                nb_vtp_factures=VALUES(nb_vtp_factures),
                 nb_vtp_particuliers=VALUES(nb_vtp_particuliers),
                 nb_vtp_professionnels=VALUES(nb_vtp_professionnels),
                 nb_clvtp=VALUES(nb_clvtp),
+                nb_clvtp_factures=VALUES(nb_clvtp_factures),
                 nb_clvtp_particuliers=VALUES(nb_clvtp_particuliers),
                 nb_clvtp_professionnels=VALUES(nb_clvtp_professionnels),
                 nb_cv=VALUES(nb_cv),
+                nb_cv_factures=VALUES(nb_cv_factures),
                 nb_cv_particuliers=VALUES(nb_cv_particuliers),
                 nb_cv_professionnels=VALUES(nb_cv_professionnels),
                 nb_clcv=VALUES(nb_clcv),
+                nb_clcv_factures=VALUES(nb_clcv_factures),
                 nb_clcv_particuliers=VALUES(nb_clcv_particuliers),
                 nb_clcv_professionnels=VALUES(nb_clcv_professionnels),
                 nb_vtc=VALUES(nb_vtc),
+                nb_vtc_factures=VALUES(nb_vtc_factures),
                 nb_vtc_particuliers=VALUES(nb_vtc_particuliers),
                 nb_vtc_professionnels=VALUES(nb_vtc_professionnels),
                 nb_vol=VALUES(nb_vol),
+                nb_vol_factures=VALUES(nb_vol_factures),
                 nb_vol_particuliers=VALUES(nb_vol_particuliers),
                 nb_vol_professionnels=VALUES(nb_vol_professionnels),
                 nb_clvol=VALUES(nb_clvol),
+                nb_clvol_factures=VALUES(nb_clvol_factures),
                 nb_clvol_particuliers=VALUES(nb_clvol_particuliers),
                 nb_clvol_professionnels=VALUES(nb_clvol_professionnels),
                 nb_auto=VALUES(nb_auto),
+                nb_auto_factures=VALUES(nb_auto_factures),
                 nb_moto=VALUES(nb_moto),
+                nb_moto_factures=VALUES(nb_moto_factures),
                 total_presta_ht=VALUES(total_presta_ht),
                 total_presta_ht_particuliers=VALUES(total_presta_ht_particuliers),
                 total_presta_ht_professionnels=VALUES(total_presta_ht_professionnels),
@@ -542,15 +654,31 @@ class PopulateSyntheseCommand extends Command
                 temps_total=VALUES(temps_total),
                 temps_total_auto=VALUES(temps_total_auto),
                 temps_total_moto=VALUES(temps_total_moto),
+                temps_total_vtp=VALUES(temps_total_vtp),
+                temps_total_clvtp=VALUES(temps_total_clvtp),
+                temps_total_cv=VALUES(temps_total_cv),
+                temps_total_clcv=VALUES(temps_total_clcv),
+                temps_total_vtc=VALUES(temps_total_vtc),
+                temps_total_vol=VALUES(temps_total_vol),
+                temps_total_clvol=VALUES(temps_total_clvol),
                 taux_refus=VALUES(taux_refus),
                 refus_auto=VALUES(refus_auto),
                 refus_moto=VALUES(refus_moto),
+                refus_vtp=VALUES(refus_vtp),
+                refus_clvtp=VALUES(refus_clvtp),
+                refus_cv=VALUES(refus_cv),
+                refus_clcv=VALUES(refus_clcv),
+                refus_vtc=VALUES(refus_vtc),
+                refus_vol=VALUES(refus_vol),
+                refus_clvol=VALUES(refus_clvol),
                 nb_particuliers=VALUES(nb_particuliers),
                 nb_professionnels=VALUES(nb_professionnels),
                 nb_particuliers_auto=VALUES(nb_particuliers_auto),
                 nb_particuliers_moto=VALUES(nb_particuliers_moto),
                 nb_professionnels_auto=VALUES(nb_professionnels_auto),
-                nb_professionnels_moto=VALUES(nb_professionnels_moto)
+                nb_professionnels_moto=VALUES(nb_professionnels_moto),
+                agr_centre_cl=VALUES(agr_centre_cl),
+                salarie_agr_cl=VALUES(salarie_agr_cl)
         ";
 
         $this->connection->executeStatement($sql);
@@ -646,6 +774,53 @@ class PopulateSyntheseCommand extends Command
         $this->ensureColumn('total_ht_vol_professionnels', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
         $this->ensureColumn('total_ht_clvol_particuliers', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
         $this->ensureColumn('total_ht_clvol_professionnels', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+    }
+
+    /**
+     * Ensures detailed time and refusal metrics are available per synthesized subtype.
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    private function ensureDetailedControllerMetricsColumns(): void
+    {
+        $this->ensureColumn('temps_total_vtp', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('temps_total_clvtp', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('temps_total_cv', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('temps_total_clcv', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('temps_total_vtc', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('temps_total_vol', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('temps_total_clvol', 'INT NOT NULL DEFAULT 0');
+
+        $this->ensureColumn('refus_vtp', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('refus_clvtp', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('refus_cv', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('refus_clcv', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('refus_vtc', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('refus_vol', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('refus_clvol', 'INT NOT NULL DEFAULT 0');
+    }
+
+    /**
+     * Ensures billed control count columns are available for controller price metrics.
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    private function ensureBilledControlCountColumns(): void
+    {
+        $this->ensureColumn('nb_controles_factures', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_vtp_factures', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_clvtp_factures', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_cv_factures', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_clcv_factures', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_vtc_factures', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_vol_factures', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_clvol_factures', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_auto_factures', 'INT NOT NULL DEFAULT 0');
+        $this->ensureColumn('nb_moto_factures', 'INT NOT NULL DEFAULT 0');
     }
 
     /**

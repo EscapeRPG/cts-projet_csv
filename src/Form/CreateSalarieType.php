@@ -9,7 +9,6 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -20,6 +19,22 @@ class CreateSalarieType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $tailles = [];
+        $chaussures = [];
+
+        for ($i = 36; $i <= 52; $i += 2) {
+            $tailles[(string) $i] = (string) $i;
+
+            if ($i < 52) {
+                $inter = $i . '/' . ($i + 2);
+                $tailles[$inter] = $inter;
+            }
+        }
+
+        for ($y = 36; $y <= 50; $y++) {
+            $chaussures[$y] = $y;
+        }
+
         $builder
             ->add('societe', EntityType::class, [
                 'class' => Societe::class,
@@ -130,10 +145,12 @@ class CreateSalarieType extends AbstractType
                     'XXXXL' => 'XXXXL',
                 ]
             ])
-            ->add('pantalon', TextType::class, [
+            ->add('pantalon', ChoiceType::class, [
                 'label' => 'Pantalon : ',
                 'required' => false,
                 'empty_data' => null,
+                'placeholder' => '- Choisir -',
+                'choices' => $tailles
             ])
             ->add('teeShirts', ChoiceType::class, [
                 'label' => 'Tee-shirt : ',
@@ -167,10 +184,12 @@ class CreateSalarieType extends AbstractType
                     'XXXXL' => 'XXXXL',
                 ]
             ])
-            ->add('chaussures', IntegerType::class, [
+            ->add('chaussures', ChoiceType::class, [
                 'label' => 'Chaussures : ',
                 'required' => false,
                 'empty_data' => null,
+                'placeholder' => '- Choisir -',
+                'choices' => $chaussures
             ])
             ->add('isActive', CheckboxType::class, [
                 'label' => 'Actif ? ',

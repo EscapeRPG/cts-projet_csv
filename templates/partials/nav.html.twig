@@ -27,8 +27,15 @@
 
             {% if is_granted('ROLE_ADMIN') %}
                 <h2>ESPACE ADMIN</h2>
-                <h3>Utilisateurs</h3>
-                <ul>
+
+                <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('partials/svg/utilisateurs.html.twig') }}
+                        Utilisateurs
+                    </span>
+                    <span class="open-btn">></span>
+                </h3>
+                <ul class="menu">
                     <li>
                         <a href="{{ path('app_users_list') }}">
                             → Liste des utilisateurs
@@ -41,8 +48,14 @@
                     </li>
                 </ul>
 
-                <h3>Sociétés</h3>
-                <ul>
+                <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('partials/svg/societes.html.twig') }}
+                        Sociétés
+                    </span>
+                    <span class="open-btn">></span>
+                </h3>
+                <ul class="menu">
                     <li>
                         <a href="{{ path('app_societes_list') }}">
                             → Liste des sociétés
@@ -55,8 +68,14 @@
                     </li>
                 </ul>
 
-                <h3>Centres</h3>
-                <ul>
+                <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('partials/svg/centres.html.twig') }}
+                        Centres
+                    </span>
+                    <span class="open-btn">></span>
+                </h3>
+                <ul class="menu">
                     <li>
                         <a href="{{ path('app_centres_list') }}">
                             → Liste des centres
@@ -69,10 +88,16 @@
                     </li>
                 </ul>
 
-                <h3>Salariés</h3>
-                <ul>
+                <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('partials/svg/salaries.html.twig') }}
+                        Salariés
+                    </span>
+                    <span class="open-btn">></span>
+                </h3>
+                <ul class="menu">
                     <li>
-                        <a href="{{ path('app_salaries_list') }}">
+                        <a href="{{ path('app_salaries_list_uneditable') }}">
                             → Liste des salariés
                         </a>
                     </li>
@@ -87,7 +112,14 @@
 
             {% if is_granted('IS_AUTHENTICATED') %}
                 <h2>Suivis</h2>
-                <ul>
+                <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('partials/svg/activite.html.twig') }}
+                        Activité
+                    </span>
+                    <span class="open-btn">></span>
+                </h3>
+                <ul class="menu">
                     <li>
                         <a href="{{ path('app_suivi_activite') }}">
                             → Synthèse
@@ -110,7 +142,7 @@
                     </li>
                 </ul>
             {% else %}
-                <ul>
+                <ul class="profil">
                     <li>
                         <a href="{{ path('app_login') }}">
                             → Se connecter

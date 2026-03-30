@@ -51,9 +51,11 @@ class SuiviSyntheseBuilder
                 $centreTotals = $centreData['totaux'];
                 foreach ($this->types as $type) {
                     $totals['nb_' . $type] += (int)$centreTotals['nb_' . $type];
+                    $totals['nb_' . $type . '_factures'] += (int)$centreTotals['nb_' . $type . '_factures'];
                     $totals['ca_total_ht_' . $type] += (float)$centreTotals['ca_total_ht_' . $type];
                 }
                 $totals['nb_controles'] += (int)$centreTotals['nb_controles'];
+                $totals['nb_controles_factures'] += (int)$centreTotals['nb_controles_factures'];
                 $totals['ca_total_ht'] += (float)$centreTotals['ca_total_ht'];
             }
 
@@ -62,9 +64,11 @@ class SuiviSyntheseBuilder
 
             foreach ($this->types as $type) {
                 $globalTotals['nb_' . $type] += $totals['nb_' . $type];
+                $globalTotals['nb_' . $type . '_factures'] += $totals['nb_' . $type . '_factures'];
                 $globalTotals['ca_total_ht_' . $type] += $totals['ca_total_ht_' . $type];
             }
             $globalTotals['nb_controles'] += $totals['nb_controles'];
+            $globalTotals['nb_controles_factures'] += $totals['nb_controles_factures'];
             $globalTotals['ca_total_ht'] += $totals['ca_total_ht'];
         }
 
@@ -111,13 +115,17 @@ class SuiviSyntheseBuilder
                         'ville' => $row['centre_ville'] ?? '',
                         'reseau' => $row['reseau_nom'] ?? '',
                         'reseau_code' => $reseauCode,
+                        'agr' => $row['agr_centre'] ?? '',
+                        'agr_cl' => $row['agr_centre_cl'] ?? '',
                     ],
                     'salaries' => [],
                     'totaux' => array_merge(
                         array_fill_keys(array_map(fn($t) => 'nb_' . $t, $this->types), 0),
+                        array_fill_keys(array_map(fn($t) => 'nb_' . $t . '_factures', $this->types), 0),
                         array_fill_keys(array_map(fn($t) => 'ca_total_ht_' . $t, $this->types), 0),
                         [
                             'nb_controles' => 0,
+                            'nb_controles_factures' => 0,
                             'ca_total_ht' => 0,
                             'temps_total' => 0,
                             'taux_refus' => 0,
@@ -140,9 +148,13 @@ class SuiviSyntheseBuilder
                 'nom' => $this->safeUpper((string)$row['salarie_nom']),
                 'prenom' => $this->safeUcfirst((string)$row['salarie_prenom']),
                 'agr' => $row['salarie_agr'],
+                'agr_cl' => $row['salarie_agr_cl'] ?? '',
                 'nb_controles' => (int)$row['nb_controles'],
+                'nb_controles_factures' => (int)($row['nb_controles_factures'] ?? 0),
                 'nb_auto' => (int)($row['nb_auto'] ?? 0),
+                'nb_auto_factures' => (int)($row['nb_auto_factures'] ?? 0),
                 'nb_moto' => (int)($row['nb_moto'] ?? 0),
+                'nb_moto_factures' => (int)($row['nb_moto_factures'] ?? 0),
                 'temps_total' => (int)$row['temps_total'],
                 'temps_total_auto' => (int)($row['temps_total_auto'] ?? 0),
                 'temps_total_moto' => (int)($row['temps_total_moto'] ?? 0),
@@ -160,10 +172,12 @@ class SuiviSyntheseBuilder
 
                 $nb = (int)$row[$nbCol];
                 $ca = (float)$row[$caCol];
+                $nbFacturesCol = $nbCol . '_factures';
 
                 $salarieData[$nbCol] = $nb;
+                $salarieData[$nbFacturesCol] = (int)($row[$nbFacturesCol] ?? 0);
                 $salarieData[$caCol] = $ca;
-                $salarieData['prix_moyen_' . $type] = $nb ? $ca / $nb : 0;
+                $salarieData['prix_moyen_' . $type] = $salarieData[$nbFacturesCol] ? $ca / $salarieData[$nbFacturesCol] : 0;
             }
 
             $data[$societe][$centre]['salaries'][] = $salarieData;
@@ -172,10 +186,12 @@ class SuiviSyntheseBuilder
             $totaux =& $data[$societe][$centre]['totaux'];
             foreach ($this->types as $type) {
                 $totaux['nb_' . $type] += $salarieData['nb_' . $type];
+                $totaux['nb_' . $type . '_factures'] += $salarieData['nb_' . $type . '_factures'];
                 $totaux['ca_total_ht_' . $type] += $salarieData['total_ht_' . $type];
             }
 
             $totaux['nb_controles'] += $salarieData['nb_controles'];
+            $totaux['nb_controles_factures'] += $salarieData['nb_controles_factures'];
             $totaux['ca_total_ht'] += $salarieData['total_presta_ht'];
             $totaux['temps_total'] += $salarieData['temps_total'];
             $totaux['taux_refus'] += $salarieData['taux_refus'];
@@ -199,8 +215,8 @@ class SuiviSyntheseBuilder
             foreach ($centres as &$centre) {
                 $totaux = $centre['totaux'];
                 foreach ($this->types as $type) {
-                    $totaux['prix_moyen_' . $type] = $totaux['nb_' . $type]
-                        ? $totaux['ca_total_ht_' . $type] / $totaux['nb_' . $type]
+                    $totaux['prix_moyen_' . $type] = $totaux['nb_' . $type . '_factures']
+                        ? $totaux['ca_total_ht_' . $type] / $totaux['nb_' . $type . '_factures']
                         : 0;
                 }
                 $centre['totaux'] = $totaux;
@@ -282,9 +298,11 @@ class SuiviSyntheseBuilder
     {
         return array_merge(
             array_fill_keys(array_map(fn($t) => 'nb_' . $t, $this->types), 0),
+            array_fill_keys(array_map(fn($t) => 'nb_' . $t . '_factures', $this->types), 0),
             array_fill_keys(array_map(fn($t) => 'ca_total_ht_' . $t, $this->types), 0.0),
             [
                 'nb_controles' => 0,
+                'nb_controles_factures' => 0,
                 'ca_total_ht' => 0.0,
             ],
             array_fill_keys(array_map(fn($t) => 'prix_moyen_' . $t, $this->types), 0.0),
@@ -301,8 +319,8 @@ class SuiviSyntheseBuilder
     private function computeActivityAverages(array &$totals): void
     {
         foreach ($this->types as $type) {
-            $totals['prix_moyen_' . $type] = $totals['nb_' . $type] > 0
-                ? $totals['ca_total_ht_' . $type] / $totals['nb_' . $type]
+            $totals['prix_moyen_' . $type] = $totals['nb_' . $type . '_factures'] > 0
+                ? $totals['ca_total_ht_' . $type] / $totals['nb_' . $type . '_factures']
                 : 0.0;
         }
     }

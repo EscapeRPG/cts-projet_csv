@@ -45,6 +45,10 @@
             }
         }
     }
+
+    &.profile-form {
+        min-height: fit-content;
+    }
 }
 
 .dropzone {

@@ -148,7 +148,7 @@ class Salarie
         return $this;
     }
 
-    public function getDateNaissance(): \DateTimeImmutable
+    public function getDateNaissance(): ?\DateTimeImmutable
     {
         return $this->dateNaissance;
     }

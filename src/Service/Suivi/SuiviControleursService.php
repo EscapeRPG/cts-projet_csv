@@ -30,7 +30,9 @@ class SuiviControleursService
                             'nom' => $salarie['nom'] . ' ' . $salarie['prenom'],
                             'agr' => $agr,
                             'nb_controles_auto' => 0,
+                            'nb_controles_auto_factures' => 0,
                             'nb_controles_moto' => 0,
+                            'nb_controles_moto_factures' => 0,
                             'ca_auto' => 0.0,
                             'ca_moto' => 0.0,
                             'temps_total_auto' => 0.0,
@@ -49,7 +51,9 @@ class SuiviControleursService
                     }
 
                     $controleursStats[$key]['nb_controles_auto'] += (int)($salarie['nb_auto'] ?? 0);
+                    $controleursStats[$key]['nb_controles_auto_factures'] += (int)($salarie['nb_auto_factures'] ?? 0);
                     $controleursStats[$key]['nb_controles_moto'] += (int)($salarie['nb_moto'] ?? 0);
+                    $controleursStats[$key]['nb_controles_moto_factures'] += (int)($salarie['nb_moto_factures'] ?? 0);
                     $controleursStats[$key]['ca_auto'] += (float)($salarie['total_ht_vtp'] + $salarie['total_ht_cv'] + $salarie['total_ht_vtc'] + $salarie['total_ht_vol']);
                     $controleursStats[$key]['ca_moto'] += (float)($salarie['total_ht_clvtp'] + $salarie['total_ht_clcv'] + $salarie['total_ht_clvol']);
                     $controleursStats[$key]['temps_total_auto'] += (float)($salarie['temps_total_auto'] ?? 0);
@@ -65,8 +69,8 @@ class SuiviControleursService
         }
 
         foreach ($controleursStats as &$c) {
-            $c['prix_moyen_auto'] = $c['nb_controles_auto'] > 0 ? $c['ca_auto'] / $c['nb_controles_auto'] : 0.0;
-            $c['prix_moyen_moto'] = $c['nb_controles_moto'] > 0 ? $c['ca_moto'] / $c['nb_controles_moto'] : 0.0;
+            $c['prix_moyen_auto'] = $c['nb_controles_auto_factures'] > 0 ? $c['ca_auto'] / $c['nb_controles_auto_factures'] : 0.0;
+            $c['prix_moyen_moto'] = $c['nb_controles_moto_factures'] > 0 ? $c['ca_moto'] / $c['nb_controles_moto_factures'] : 0.0;
             $c['temps_moyen_auto'] = $c['nb_controles_auto'] > 0 ? $c['temps_total_auto'] / $c['nb_controles_auto'] : 0.0;
             $c['temps_moyen_moto'] = $c['nb_controles_moto'] > 0 ? $c['temps_total_moto'] / $c['nb_controles_moto'] : 0.0;
             $c['taux_refus_auto'] = $c['nb_controles_auto'] > 0 ? ($c['refus_auto'] / $c['nb_controles_auto']) * 100 : 0.0;
@@ -80,7 +84,9 @@ class SuiviControleursService
         unset($c);
 
         $sumNbAuto = (float)array_sum(array_column($controleursStats, 'nb_controles_auto'));
+        $sumNbAutoFactures = (float)array_sum(array_column($controleursStats, 'nb_controles_auto_factures'));
         $sumNbMoto = (float)array_sum(array_column($controleursStats, 'nb_controles_moto'));
+        $sumNbMotoFactures = (float)array_sum(array_column($controleursStats, 'nb_controles_moto_factures'));
         $sumCaAuto = (float)array_sum(array_column($controleursStats, 'ca_auto'));
         $sumCaMoto = (float)array_sum(array_column($controleursStats, 'ca_moto'));
         $sumTempsAuto = (float)array_sum(array_column($controleursStats, 'temps_total_auto'));
@@ -93,8 +99,8 @@ class SuiviControleursService
         $moyennesGlobales = [
             'nb_controles_auto' => $nbControleursAutoActifs > 0 ? $sumNbAuto / $nbControleursAutoActifs : 0.0,
             'nb_controles_moto' => $nbControleursMotoActifs > 0 ? $sumNbMoto / $nbControleursMotoActifs : 0.0,
-            'prix_moyen_auto' => $sumNbAuto > 0 ? $sumCaAuto / $sumNbAuto : 0.0,
-            'prix_moyen_moto' => $sumNbMoto > 0 ? $sumCaMoto / $sumNbMoto : 0.0,
+            'prix_moyen_auto' => $sumNbAutoFactures > 0 ? $sumCaAuto / $sumNbAutoFactures : 0.0,
+            'prix_moyen_moto' => $sumNbMotoFactures > 0 ? $sumCaMoto / $sumNbMotoFactures : 0.0,
             'temps_moyen_auto' => $sumNbAuto > 0 ? $sumTempsAuto / $sumNbAuto : 0.0,
             'temps_moyen_moto' => $sumNbMoto > 0 ? $sumTempsMoto / $sumNbMoto : 0.0,
             'taux_refus_auto' => $sumNbAuto > 0 ? ($sumRefusAuto / $sumNbAuto) * 100 : 0.0,
