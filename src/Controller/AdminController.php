@@ -217,7 +217,7 @@ final class AdminController extends AbstractController
      *
      * @return Response Rendered HTML response containing employees and their forms.
      */
-    #[Route("/admin/salaries/list", name: 'app_salaries_list')]
+    #[Route("/admin/cts/salaries/list", name: 'app_salaries_list')]
     public function listSalaries(
         Request             $request,
         SalarieRepository    $salarieRepository,
@@ -259,14 +259,14 @@ final class AdminController extends AbstractController
      *
      * @return Response Rendered HTML response containing employees and their forms.
      */
-    #[Route("/admin/salaries/list-salaries", name: 'app_salaries_list_uneditable')]
+    #[Route("/admin/cts/salaries/list-salaries", name: 'app_salaries_list_uneditable')]
     public function listSalariesNonEditable(
         SalarieRepository    $salarieRepository,
     ): Response
     {
         $salaries = $salarieRepository->findBy([], ['nom' => 'ASC']);
 
-        return $this->render('salaries/list_uneditable.html.twig', [
+        return $this->render('cts/salaries/list_uneditable.html.twig', [
             'salaries' => $salaries,
         ]);
     }
@@ -279,7 +279,7 @@ final class AdminController extends AbstractController
      *
      * @return Response Rendered add form on GET/invalid submit, or redirect after creation.
      */
-    #[Route("/admin/salaries/add", name: 'app_salaries_add')]
+    #[Route("/admin/cts/salaries/add", name: 'app_salaries_add')]
     public function addSalarie(
         Request                $request,
         EntityManagerInterface $em
@@ -299,7 +299,7 @@ final class AdminController extends AbstractController
             return $this->redirectToRoute('app_salaries_list');
         }
 
-        return $this->render('salaries/add.html.twig', [
+        return $this->render('cts/salaries/add.html.twig', [
             'form' => $form->createView(),
         ]);
     }
@@ -314,7 +314,7 @@ final class AdminController extends AbstractController
      *
      * @return Response Redirect response on success, or rendered list with validation errors.
      */
-    #[Route('/admin/salaries/update/{id}', name: 'app_salaries_update', methods: ['POST'])]
+    #[Route('/admin/cts/salaries/update/{id}', name: 'app_salaries_update', methods: ['POST'])]
     public function updateSalarie(
         Salarie                $salarie,
         Request                $request,
@@ -379,7 +379,7 @@ final class AdminController extends AbstractController
      *
      * @return Response Rendered HTML response containing companies and their forms.
      */
-    #[Route('/admin/societes/list', name: 'app_societes_list')]
+    #[Route('/admin/cts/societes/list', name: 'app_societes_list')]
     public function listSocietes(
         SocieteRepository    $societeRepository,
         FormFactoryInterface $formFactory
@@ -402,7 +402,7 @@ final class AdminController extends AbstractController
                 ->createView();
         }
 
-        return $this->render('societes/list.html.twig', [
+        return $this->render('cts/societes/list.html.twig', [
             'societes' => $societes,
             'forms' => $forms,
         ]);
@@ -416,7 +416,7 @@ final class AdminController extends AbstractController
      *
      * @return Response Rendered add form on GET/invalid submit, or redirect after creation.
      */
-    #[Route('/admin/societes/add', name: 'app_societes_add')]
+    #[Route('/admin/cts/societes/add', name: 'app_societes_add')]
     public function addSociete(
         Request                $request,
         EntityManagerInterface $em
@@ -437,7 +437,7 @@ final class AdminController extends AbstractController
             return $this->redirectToRoute('app_societes_list');
         }
 
-        return $this->render('societes/add.html.twig', [
+        return $this->render('cts/societes/add.html.twig', [
             'form' => $form->createView(),
         ]);
     }
@@ -452,7 +452,7 @@ final class AdminController extends AbstractController
      *
      * @return Response Redirect response on success, or rendered list with validation errors.
      */
-    #[Route('/admin/societes/update/{id}', name: 'app_societes_update', methods: ['POST'])]
+    #[Route('/admin/cts/societes/update/{id}', name: 'app_societes_update', methods: ['POST'])]
     public function updateSociete(
         Societe                $societe,
         Request                $request,
@@ -496,7 +496,7 @@ final class AdminController extends AbstractController
 
         $this->addFlash('error', 'Erreur dans le formulaire, vérifiez les champs.');
 
-        return $this->render('societes/list.html.twig', [
+        return $this->render('cts/societes/list.html.twig', [
             'societes' => $societes,
             'forms' => $forms,
         ]);
@@ -510,7 +510,7 @@ final class AdminController extends AbstractController
      *
      * @return Response Rendered HTML response containing centers and their forms.
      */
-    #[Route("/admin/centres/list", name: 'app_centres_list')]
+    #[Route("/admin/cts/centres/list", name: 'app_centres_list')]
     public function listCentres(
         CentreRepository     $centreRepository,
         FormFactoryInterface $formFactory
@@ -553,7 +553,7 @@ final class AdminController extends AbstractController
                 ->createView();
         }
 
-        return $this->render('centres/list.html.twig', [
+        return $this->render('cts/centres/list.html.twig', [
             'centres' => $centres,
             'forms' => $forms,
         ]);
@@ -567,7 +567,7 @@ final class AdminController extends AbstractController
      *
      * @return Response Rendered add form on GET/invalid submit, or redirect after creation.
      */
-    #[Route("/admin/centres/add", name: 'app_centres_add')]
+    #[Route("/admin/cts/centres/add", name: 'app_centres_add')]
     public function addCentre(
         Request                $request,
         EntityManagerInterface $em
@@ -590,7 +590,7 @@ final class AdminController extends AbstractController
             return $this->redirectToRoute('app_centres_list');
         }
 
-        return $this->render('centres/add.html.twig', [
+        return $this->render('cts/centres/add.html.twig', [
             'form' => $form->createView(),
         ]);
     }
@@ -605,7 +605,7 @@ final class AdminController extends AbstractController
      *
      * @return Response Redirect response on success, or rendered list with validation errors.
      */
-    #[Route('/admin/centres/update/{id}', name: 'app_centres_update', methods: ['POST'])]
+    #[Route('/admin/cts/centres/update/{id}', name: 'app_centres_update', methods: ['POST'])]
     public function updateCentre(
         Centre                 $centre,
         Request                $request,
@@ -653,7 +653,7 @@ final class AdminController extends AbstractController
 
         $this->addFlash('error', 'Erreur dans le formulaire, vérifiez les champs.');
 
-        return $this->render('centres/list.html.twig', [
+        return $this->render('cts/centres/list.html.twig', [
             'centres' => $centres,
             'forms' => $forms,
         ]);
@@ -670,7 +670,7 @@ final class AdminController extends AbstractController
      */
     public function getResponse(array $salaries, array $forms, mixed $page, int $perPage, int $totalItems, mixed $totalPages): Response
     {
-        return $this->render('salaries/list.html.twig', [
+        return $this->render('cts/salaries/list.html.twig', [
             'salaries' => $salaries,
             'forms' => $forms,
             'pagination' => [

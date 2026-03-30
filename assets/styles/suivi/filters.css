@@ -35,7 +35,7 @@
     display: flex;
     align-items: flex-end;
     width: calc(100% - 250px);
-    margin: 20px auto 0 250px;
+    margin: 20px auto 0 210px;
     gap: 10px;
 
     a {

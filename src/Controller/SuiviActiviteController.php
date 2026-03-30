@@ -127,7 +127,7 @@ final class SuiviActiviteController extends AbstractController
      * @throws Exception If data retrieval from persistence fails.
      * @throws InvalidArgumentException If cache keys or cache arguments are invalid.
      */
-    #[Route('/suivi/activite', name: 'app_suivi_activite')]
+    #[Route('/cts/suivi/activite', name: 'app_suivi_activite')]
     public function index(Request $request): Response
     {
         $filters = $this->applyDefaultCurrentYearForYearFilteredPages(
@@ -141,7 +141,7 @@ final class SuiviActiviteController extends AbstractController
         $synthese = $this->syntheseBuilder->buildSynthese($rows);
         $activityTotals = $this->syntheseBuilder->buildActivityTotals($synthese);
 
-        return $this->render('suivis/activite.html.twig', array_merge(
+        return $this->render('cts/suivis/activite.html.twig', array_merge(
             $this->commonViewDataBuilder->build($filters),
             [
                 'synthese' => $synthese,
@@ -161,7 +161,7 @@ final class SuiviActiviteController extends AbstractController
      * @throws Exception If data retrieval from persistence fails.
      * @throws InvalidArgumentException If cache keys or cache arguments are invalid.
      */
-    #[Route('/suivi/controleurs', name: 'app_suivi_controleurs')]
+    #[Route('/cts/suivi/controleurs', name: 'app_suivi_controleurs')]
     public function suiviControleurs(Request $request): Response
     {
         $filters = $this->applyDefaultCurrentYearForYearFilteredPages(
@@ -176,7 +176,7 @@ final class SuiviActiviteController extends AbstractController
         [$controleursStats, $moyennesGlobales] = $this->controleursService->getControleursStats($synthese);
 
         if ($request->isXmlHttpRequest()) {
-            return $this->render('suivis/_controleurs_results.html.twig', array_merge(
+            return $this->render('cts/suivis/_controleurs_results.html.twig', array_merge(
                 $this->commonViewDataBuilder->build($filters),
                 [
                     'controleursStats' => $controleursStats,
@@ -185,7 +185,7 @@ final class SuiviActiviteController extends AbstractController
             ));
         }
 
-        return $this->render('suivis/controleurs.html.twig', array_merge(
+        return $this->render('cts/suivis/controleurs.html.twig', array_merge(
             $this->commonViewDataBuilder->build($filters),
             [
                 'controleursStats' => $controleursStats,
@@ -204,7 +204,7 @@ final class SuiviActiviteController extends AbstractController
      * @throws Exception If data retrieval from persistence fails.
      * @throws InvalidArgumentException If cache keys or cache arguments are invalid.
      */
-    #[Route('/suivi/focus-pro', name: 'app_suivi_focus_pro')]
+    #[Route('/cts/suivi/focus-pro', name: 'app_suivi_focus_pro')]
     public function suiviFocusPro(Request $request): Response
     {
         $filters = $this->applyDefaultMonthsToCurrentMonth(
@@ -227,7 +227,7 @@ final class SuiviActiviteController extends AbstractController
             25
         );
 
-        return $this->render('suivis/professionnels.html.twig', array_merge(
+        return $this->render('cts/suivis/professionnels.html.twig', array_merge(
             $this->commonViewDataBuilder->build($filters),
             [
                 'clients' => $paginated['items'],
@@ -248,7 +248,7 @@ final class SuiviActiviteController extends AbstractController
      * @throws Exception If data retrieval from persistence fails.
      * @throws InvalidArgumentException If cache keys or cache arguments are invalid.
      */
-    #[Route('/suivi/centres', name: 'app_suivi_centres')]
+    #[Route('/cts/suivi/centres', name: 'app_suivi_centres')]
     public function suiviCentres(Request $request): Response
     {
         $filters = $this->applyDefaultMonthsToCurrentMonth(
@@ -264,7 +264,7 @@ final class SuiviActiviteController extends AbstractController
         $splitSummary = $this->centresAnalyticsService->buildRevenueSplitSummary($centres);
         $proCharts = $this->proAnalyticsService->buildMonthlyCharts($rows, $referenceYear);
 
-        return $this->render('suivis/centres.html.twig', array_merge(
+        return $this->render('cts/suivis/centres.html.twig', array_merge(
             $this->commonViewDataBuilder->build($filters),
             [
                 'clients' => $centres,
@@ -285,7 +285,7 @@ final class SuiviActiviteController extends AbstractController
      * @throws InvalidArgumentException If cache keys or cache arguments are invalid.
      * @throws Exception If data retrieval from persistence fails.
      */
-    #[Route('/suivi/filters/dependent', name: 'app_suivi_filters_dependent', methods: ['GET'])]
+    #[Route('/cts/suivi/filters/dependent', name: 'app_suivi_filters_dependent', methods: ['GET'])]
     public function dependentFilters(
         Request $request,
     ): JsonResponse

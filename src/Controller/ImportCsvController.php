@@ -34,7 +34,7 @@ final class ImportCsvController extends AbstractController
      *
      * @return Response Rendered import page with form state and optional success message.
      */
-    #[Route('/import', name: 'import_csv')]
+    #[Route('/cts/import', name: 'import_csv')]
     public function import(
         Request      $request,
         ImportRouter $importRouter,
@@ -91,7 +91,7 @@ final class ImportCsvController extends AbstractController
             }
         }
 
-        return $this->render('import_csv/index.html.twig', [
+        return $this->render('cts/import_csv/index.html.twig', [
             'form' => $form,
             'errors' => $form->getErrors(),
         ]);

@@ -119,7 +119,8 @@ header {
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
-            height: calc(100vh - 100px);
+            height: 100vh;
+            box-sizing: border-box;
             transform: translateX(-100%);
             transition: transform .4s ease;
             background: linear-gradient(var(--cts-main), var(--cts-alt));
@@ -344,7 +345,7 @@ header {
 
 .container {
     width: 95%;
-    max-height: 85vh;
+    max-height: 80vh;
     background: var(--blocks);
     box-shadow: var(--box-shadow);
     border-radius: 10px;

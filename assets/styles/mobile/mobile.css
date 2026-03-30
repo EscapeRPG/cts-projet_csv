@@ -1,33 +1,17 @@
-@media screen and (max-width: 1000px) {
+@media screen and (max-width: 1280px) {
+    .loading-content {
+        height: auto;
+        width: 90%;
+        margin-top: 40px;
+    }
+
     header {
+        background: var(--cts-main-light);
+        border-bottom: 1px solid var(--cts-main);
+        box-shadow: var(--box-shadow);
+
         nav .burger-container {
             transform: rotate(45deg) scale(.7);
-        }
-
-        nav #responsive {
-            padding: 20px;
-            overflow: auto;
-
-            * {
-                font-size: .9em;
-            }
-
-            h2, h3 {
-                margin: 5px;
-            }
-
-            h2 {
-                margin-top: 30px;
-            }
-        }
-
-        .meta-info {
-            width: 100%;
-            margin: 0;
-            padding: 10px;
-            bottom: 0;
-            font-size: .7em;
-            background: linear-gradient(transparent, var(--blocks) 20% 100%);
         }
 
         a.home {
@@ -42,39 +26,29 @@
     main {
         display: flex;
         align-items: center;
-        margin: 50px auto;
+        margin: 90px auto 20px auto;
         width: 100%;
-        min-height: calc(100vh - 100px);
+        min-height: calc(100vh - 110px);
     }
 
-    .loading-content {
-        height: auto;
-        width: 90%;
+    .entreprise {
+        img {
+            width: 150px;
+        }
     }
 
     .app-container {
         margin-bottom: 50px;
-    }
 
-    .app {
-        align-items: flex-start;
-
-        img {
-            width: 60%;
-            margin: 0 auto;
-        }
-
-        .inner-div, &:hover .inner-div {
-            bottom: 0;
-            height: 35%;
-            transform: none;
+        .app img {
+            width: 80%;
         }
     }
 
     .container {
         overflow: auto;
-        height: 70vh;
-        margin: auto;
+        width: 100%;
+        margin: 0;
     }
 
     .annees-filter {
@@ -89,7 +63,7 @@
             border-radius: 10px;
             border: 2px solid var(--cts-main);
             padding: 5px 10px;
-            font-size: .8em !important;
+            font-size: .8em;
         }
     }
 
@@ -107,7 +81,7 @@
 
     .mobile-filters-toggle {
         position: fixed;
-        top: 10px;
+        top: 25px;
         left: 50%;
         transform: translateX(-50%);
         border: 1px solid var(--cts-main);
@@ -208,14 +182,20 @@
 
     .suivi-container {
         height: auto;
+        width: 100%;
     }
 
     .pro-stats-container {
         max-height: unset;
+        width: 100%;
     }
 
     .pro-stats-panel {
         flex-direction: column;
+    }
+
+    .summary {
+        flex-direction: row;
     }
 
     .chart-canvas-wrap {
@@ -234,6 +214,7 @@
 
     .pro-part-panel {
         width: calc(100% - 20px);
+        height: 300px !important;
     }
 
     .graphique {
@@ -289,6 +270,14 @@
 
     .pro-stats-container.panel-focus-mode {
         min-height: 72vh;
+    }
+
+    .table-wrapper {
+        max-height: 80vh;
+    }
+
+    .form-wrapper {
+        max-height: 70vh;
     }
 }
 

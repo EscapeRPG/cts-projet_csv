@@ -65,7 +65,7 @@ let pendingCentreChange = false;
 let mobileFiltersState = null;
 const PANEL_FOCUS_SYMBOL = '\u{1F5D6}';
 const PANEL_RESTORE_SYMBOL = '\u{1F5D7}';
-const MOBILE_FILTERS_QUERY = '(max-width: 1000px)';
+const MOBILE_FILTERS_QUERY = '(max-width: 1280px)';
 
 /**
  * Returns focusable result panels within a container.
