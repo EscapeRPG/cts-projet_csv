@@ -3,52 +3,103 @@
 {% block title %}Tableau de bord{% endblock %}
 
 {% block body %}
-    <h1>Bonjour {{ user.username }},</h1>
+    <h2>Bonjour {{ user.username }}, bienvenue sur votre tableau de bord.</h2>
 
-    <p>Bienvenue sur votre tableau de bord.</p>
+    {% if is_granted('ROLE_CTS') %}
+        <div class="entreprise">
+            <img src="{{ asset('img/logo-cts.png') }}" alt="cts">
 
-    <div class="app-container">
-        <div class="app-category">
-            {% if is_granted('ROLE_ADMIN') %}
-                <h2>Listes</h2>
-                <a href="{{ path('app_societes_list') }}" class="app">
-                    <img src="{{ asset('img/liste-societes.png') }}" alt="liste des sociétés">
-                    <div class="inner-div">Sociétés</div>
-                </a>
+            <div class="app-container">
+                <fieldset class="app-category">
+                    <legend>Listes</legend>
+                    <a href="{{ path('app_societes_list') }}" class="app">
+                        <img src="{{ asset('img/liste-societes.png') }}" alt="liste des sociétés">
+                        <div class="inner-div">Sociétés</div>
+                    </a>
 
-                <a href="{{ path('app_centres_list') }}" class="app">
-                    <img src="{{ asset('img/liste-centres.png') }}" alt="liste des centres">
-                    <div class="inner-div">Centres</div>
-                </a>
+                    <a href="{{ path('app_centres_list') }}" class="app">
+                        <img src="{{ asset('img/liste-centres.png') }}" alt="liste des centres">
+                        <div class="inner-div">Centres</div>
+                    </a>
 
-                <a href="{{ path('app_salaries_list_uneditable') }}" class="app">
-                    <img src="{{ asset('img/liste-controleurs.png') }}" alt="liste des salariés">
-                    <div class="inner-div">Salariés</div>
-                </a>
-            {% endif %}
+                    <a href="{{ path('app_salaries_list_uneditable') }}" class="app">
+                        <img src="{{ asset('img/liste-controleurs.png') }}" alt="liste des salariés">
+                        <div class="inner-div">Salariés</div>
+                    </a>
+                </fieldset>
+
+                <fieldset class="app-category">
+                    <legend>Suivis</legend>
+                    <a href="{{ path('app_suivi_activite') }}" class="app">
+                        <img src="{{ asset('img/stats-activite.png') }}" alt="suivi activité">
+                        <div class="inner-div">Activité</div>
+                    </a>
+
+                    <a href="{{ path('app_suivi_centres') }}" class="app">
+                        <img src="{{ asset('img/stats-centres.png') }}" alt="suivi centres">
+                        <div class="inner-div">Centres</div>
+                    </a>
+
+                    <a href="{{ path('app_suivi_focus_pro') }}" class="app">
+                        <img src="{{ asset('img/stats-pros.png') }}" alt="suivi clients professionnels">
+                        <div class="inner-div">Professionnels</div>
+                    </a>
+
+                    <a href="{{ path('app_suivi_controleurs') }}" class="app">
+                        <img src="{{ asset('img/stats-controleurs.png') }}" alt="suivi contrôleurs">
+                        <div class="inner-div">Contrôleurs</div>
+                    </a>
+                </fieldset>
+            </div>
         </div>
+    {% endif %}
 
-        <div class="app-category">
-            <h2>Suivis</h2>
-            <a href="{{ path('app_suivi_activite') }}" class="app">
-                <img src="{{ asset('img/stats-activite.png') }}" alt="suivi activité">
-                <div class="inner-div">Activité</div>
-            </a>
+    {% if is_granted('ROLE_ASTIKOTO') %}
+        <div class="entreprise">
+            <img src="{{ asset('img/logo-astikoto.png') }}" alt="astikoto">
 
-            <a href="{{ path('app_suivi_centres') }}" class="app">
-                <img src="{{ asset('img/stats-centres.png') }}" alt="suivi centres">
-                <div class="inner-div">Centres</div>
-            </a>
+            <div class="app-container">
+                <fieldset class="app-category">
+                    <legend>Listes</legend>
+                    <a href="{{ path('app_societes_list') }}" class="app">
+                        <img src="{{ asset('img/liste-societes.png') }}" alt="liste des sociétés">
+                        <div class="inner-div">Sociétés</div>
+                    </a>
 
-            <a href="{{ path('app_suivi_focus_pro') }}" class="app">
-                <img src="{{ asset('img/stats-pros.png') }}" alt="suivi clients professionnels">
-                <div class="inner-div">Professionnels</div>
-            </a>
+                    <a href="{{ path('app_centres_list') }}" class="app">
+                        <img src="{{ asset('img/liste-centres.png') }}" alt="liste des centres">
+                        <div class="inner-div">Centres</div>
+                    </a>
 
-            <a href="{{ path('app_suivi_controleurs') }}" class="app">
-                <img src="{{ asset('img/stats-controleurs.png') }}" alt="suivi contrôleurs">
-                <div class="inner-div">Contrôleurs</div>
-            </a>
+                    <a href="{{ path('app_salaries_list_uneditable') }}" class="app">
+                        <img src="{{ asset('img/liste-controleurs.png') }}" alt="liste des salariés">
+                        <div class="inner-div">Salariés</div>
+                    </a>
+                </fieldset>
+
+                <fieldset class="app-category">
+                    <legend>Suivis</legend>
+                    <a href="{{ path('app_suivi_activite') }}" class="app">
+                        <img src="{{ asset('img/stats-activite.png') }}" alt="suivi activité">
+                        <div class="inner-div">Activité</div>
+                    </a>
+
+                    <a href="{{ path('app_suivi_centres') }}" class="app">
+                        <img src="{{ asset('img/stats-centres.png') }}" alt="suivi centres">
+                        <div class="inner-div">Centres</div>
+                    </a>
+
+                    <a href="{{ path('app_suivi_focus_pro') }}" class="app">
+                        <img src="{{ asset('img/stats-pros.png') }}" alt="suivi clients professionnels">
+                        <div class="inner-div">Professionnels</div>
+                    </a>
+
+                    <a href="{{ path('app_suivi_controleurs') }}" class="app">
+                        <img src="{{ asset('img/stats-controleurs.png') }}" alt="suivi contrôleurs">
+                        <div class="inner-div">Contrôleurs</div>
+                    </a>
+                </fieldset>
+            </div>
         </div>
-    </div>
+    {% endif %}
 {% endblock %}

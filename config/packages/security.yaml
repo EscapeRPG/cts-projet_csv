@@ -51,7 +51,12 @@ security:
 
     role_hierarchy:
         ROLE_IMPORT: ROLE_USER
-        ROLE_ADMIN: ROLE_IMPORT
+        ROLE_CTS: ROLE_USER
+        ROLE_ASTIKOTO: ROLE_USER
+        ROLE_ADMIN:
+            - ROLE_IMPORT
+            - ROLE_CTS
+            - ROLE_ASTIKOTO
 
 when@test:
     security:
