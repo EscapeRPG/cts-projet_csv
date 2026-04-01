@@ -55,8 +55,8 @@
                         {% for agrCentre, centreData in centres %}
                             {% for salarie in centreData.salaries %}
                                 <tr>
-                                    <td>{{ salarie.nom }} {{ salarie.prenom }}</td>
-                                    <td>
+                                    <td class="sticky-salarie-name">{{ salarie.nom }} {{ salarie.prenom }}</td>
+                                    <td class="sticky-salarie-agr">
                                         {{ salarie.agr }}
                                         {% if salarie.agr_cl is not empty %}
                                             - {{ salarie.agr_cl }}
@@ -124,7 +124,7 @@
 
                         {% set societeTotal = societeTotals[societe] ?? null %}
                         {% if societeTotal %}
-                        <tr class="total-row societe">
+                        <tr class="sticky-centre total-row societe">
                             <td colspan="2">{{ societe }}</td>
                             <td data-activity-column data-type-family="VTP" data-vehicle-family="VL">{{ societeTotal.nb_vtp }}</td>
                             <td data-activity-column data-type-family="VTP" data-vehicle-family="CL">{{ societeTotal.nb_clvtp }}</td>
@@ -154,7 +154,7 @@
                     {% endfor %}
 
                     {% if globalTotals is defined %}
-                    <tr class="total-row global">
+                    <tr class="sticky-centre total-row global">
                         <td colspan="2">
                             TOUS RESEAUX / SOCIETES
                         </td>

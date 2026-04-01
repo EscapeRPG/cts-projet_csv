@@ -127,6 +127,20 @@ table {
     }
 }
 
+.sticky-salarie-name,
+.sticky-salarie-agr {
+    position: sticky;
+    background: var(--blocks);
+}
+
+.sticky-salarie-name {
+    left: 0;
+}
+
+.sticky-salarie-agr {
+    left: 140px;
+}
+
 .sticky-centre {
     position: sticky;
     left: 0;
