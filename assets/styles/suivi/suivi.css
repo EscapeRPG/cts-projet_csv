@@ -196,10 +196,6 @@
     }
 
     .table-pros {
-        tbody tr:hover {
-            filter: brightness(.9);
-        }
-
         td {
             background: var(--blocks);
             text-align: center;

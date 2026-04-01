@@ -68,7 +68,9 @@
                                 {% set percent = maxAuto > 0 ? (salarie[keyAuto] / maxAuto) * 100 : 0 %}
 
                                 <div class="bar-container">
-                                    <div class="bar" style="width: {{ percent }}%"></div>
+                                    <div class="bar-track">
+                                        <div class="bar" style="width: {{ percent }}%"></div>
+                                    </div>
                                 </div>
                             {% endfor %}
 
@@ -114,7 +116,9 @@
                                 {% set percent = maxMoto > 0 ? (salarie[keyMoto] / maxMoto) * 100 : 0 %}
 
                                 <div class="bar-container">
-                                    <div class="bar" style="width: {{ percent }}%"></div>
+                                    <div class="bar-track">
+                                        <div class="bar" style="width: {{ percent }}%"></div>
+                                    </div>
                                 </div>
                             {% endfor %}
 

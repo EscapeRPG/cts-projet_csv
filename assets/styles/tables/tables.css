@@ -23,7 +23,7 @@ table {
         z-index: 2;
 
         tr {
-            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.15);
+            box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.15);
 
             th {
                 padding: 5px;
@@ -48,6 +48,10 @@ table {
 
     th.sorted-desc::after {
         content: ' ↓';
+    }
+
+    tr:not(.recap) td {
+        background: var(--blocks);
     }
 
     td {
@@ -128,9 +132,15 @@ table {
 }
 
 .sticky-salarie-name,
-.sticky-salarie-agr {
+.sticky-salarie-agr,
+.sticky-centre {
     position: sticky;
     background: var(--blocks);
+}
+
+th.sticky-salarie-name,
+th.sticky-salarie-agr {
+    background: var(--cts-main);
 }
 
 .sticky-salarie-name {
@@ -142,7 +152,6 @@ table {
 }
 
 .sticky-centre {
-    position: sticky;
     left: 0;
 }
 
@@ -150,10 +159,24 @@ th.sticky-centre {
     background: var(--cts-main);
 }
 
-td.sticky-centre {
-    background: var(--blocks);
+td.sticky-centre.total {
+    background: var(--cts-main-light);
+}
 
-    &.total {
-        background: var(--cts-main-light);
-    }
+.sticky-societe,
+.sticky-total {
+    position: sticky;
+    left: 0;
+}
+
+.sticky-societe {
+    background: var(--cts-alt);
+}
+
+.sticky-total {
+    background: var(--cts-main);
+}
+
+tbody tr:not(.recap):hover {
+    filter: brightness(.9);
 }

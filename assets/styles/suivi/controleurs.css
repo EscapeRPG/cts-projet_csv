@@ -1,21 +1,35 @@
 .salaries-chart {
     width: 95%;
-    margin: auto;
+    margin: 10px auto;
     position: relative;
     display: flex;
+    /* Keep row heights stable across columns (prevents drift on browser zoom). */
+    --cts-row-h: 2.2rem;
+    --cts-row-gap: 6px;
+    --cts-cell-pad-x: 10px;
+    --cts-bar-h: 0.65rem;
 
-    .salarie-name, .bar-container, .salarie-row {
-        white-space: nowrap;
-        font-size: 1em;
-        padding: 0 10px;
+    .chart-cols {
+        display: flex;
+        flex-direction: column;
+        gap: var(--cts-row-gap);
     }
 
-    .salarie-name, .salarie-row {
-        margin: 5px 0;
+    .salarie-name,
+    .bar-container,
+    .salarie-row {
+        white-space: nowrap;
+        font-size: 1em;
+        padding: 0 var(--cts-cell-pad-x);
+        margin: 0;
+        box-sizing: border-box;
+        min-height: var(--cts-row-h);
+        line-height: var(--cts-row-h);
     }
 
     .salarie-name {
         text-align: right;
+        /* Make text "cell" height deterministic (pairs with min-height above). */
 
         &:first-child:not(.repartition) {
             text-align: center;
@@ -26,6 +40,9 @@
     .bars {
         position: relative;
         flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: var(--cts-row-gap);
 
         .avg-line {
             position: absolute;
@@ -58,37 +75,46 @@
             transform: translateX(-100%);
         }
 
-        .bar-container, .bar {
+        .bar-container,
+        .bar {
             box-sizing: border-box;
         }
 
         .bar-container {
+            background: transparent;
+            /* Spacing is handled by the column gap to keep rows aligned across columns. */
+            min-height: 0;
+            height: var(--cts-row-h);
+            position: relative;
+            align-items: center;
+        }
+
+        /* The thin track draws the "container" and clips the colored bar for tiny values. */
+        .bar-track {
+            width: 100%;
+            height: var(--cts-bar-h);
             background: rgba(0, 0, 0, 0.2);
-            margin: 15px 0;
-
-            &:nth-child(2) {
-                margin-top: 11px;
-            }
-
-            &:last-of-type {
-                margin-bottom: 5px;
-            }
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            align-items: stretch;
         }
 
         .bar {
             background: linear-gradient(90deg, var(--cts-main), var(--cts-alt));
             color: white;
-            padding: 4px 0;
+            height: 100%;
+            padding: 0;
             white-space: nowrap;
-            border-radius: 4px;
+            border-radius: inherit;
         }
 
         .stacked-bar {
             display: flex;
-            height: 18.13px;
+            height: 18px;
             overflow: hidden;
             background: var(--cts-alt-light);
-            margin: 5px 0;
+            margin: 0;
         }
 
         .bar-part {
@@ -101,7 +127,8 @@
             height: 100%;
         }
 
-        .bar-part, .bar-pro {
+        .bar-part,
+        .bar-pro {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -110,10 +137,18 @@
             font-size: .8em;
         }
 
-        .bar-container, .repartition-bars-container {
-            flex: 1;
+        .bar-container,
+        .repartition-bars-container {
             border-radius: 4px;
             display: flex;
+        }
+
+        .bar-container {
+            padding: 0 var(--cts-cell-pad-x);
+        }
+
+        .repartition-bars-container {
+            flex: 1;
             align-items: center;
             padding: 0;
         }
@@ -122,4 +157,11 @@
     .nb {
         text-align: right;
     }
+}
+
+/* First 4 panels (nb_controles, prix_moyen, temps_moyen, taux_refus): thinner rows/bars. */
+.stats-container > .stats-wrapper:nth-child(-n+4) .salaries-chart {
+    --cts-row-h: 1.1rem;
+    --cts-row-gap: 6px;
+    --cts-bar-h: 0.45rem;
 }
