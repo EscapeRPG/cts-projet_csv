@@ -2,8 +2,10 @@
 
 namespace App\Form;
 
+use App\Entity\Centre;
 use App\Entity\Salarie;
 use App\Entity\Societe;
+use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -53,6 +55,31 @@ class CreateSalarieType extends AbstractType
                 'required' => false,
                 'empty_data' => null,
             ])
+            ->add('centres', EntityType::class, [
+                'class' => Centre::class,
+                'label' => 'Centre(s) : ',
+                'required' => false,
+                'multiple' => true,
+                'expanded' => false,
+                'choice_label' => static function (Centre $centre): string {
+                    $ville = (string) ($centre->getVille() ?? '');
+                    $agr = (string) ($centre->getAgrCentre() ?? '');
+
+                    return trim($agr === '' ? $ville : "{$ville} ({$agr})");
+                },
+                'group_by' => static fn (Centre $centre): string => (string) ($centre->getReseauNom() ?? ''),
+                'attr' => [
+                    // Used by JS to transform this <select multiple> into a select-like checkbox dropdown.
+                    'data-centres-selectlike' => '1',
+                    // Keep the native widget compact when JS is disabled.
+                    'size' => 1,
+                ],
+                'query_builder' => static function (EntityRepository $er) {
+                    return $er->createQueryBuilder('c')
+                        ->orderBy('c.reseauNom', 'ASC')
+                        ->addOrderBy('c.ville', 'ASC');
+                },
+            ])
             ->add('nom', TextType::class, [
                 'label' => '*Nom : ',
                 'required' => true,
@@ -63,7 +90,7 @@ class CreateSalarieType extends AbstractType
             ])
             ->add('dateNaissance', null, [
                 'widget' => 'single_text',
-                'label' => 'Date de naissance : ',
+                'label' => '*Date de naissance : ',
                 'required' => false,
                 'empty_data' => null,
             ])

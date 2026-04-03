@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Repository\SuiviActiviteRepository;
 use App\Service\Suivi\ArrayPaginator;
 use App\Service\Suivi\SuiviCentresAnalyticsService;
+use App\Service\Suivi\SuiviCentresScope;
 use App\Service\Suivi\SuiviCommonViewDataBuilder;
 use App\Service\Suivi\SuiviControleursService;
 use App\Service\Suivi\SuiviFiltersResolver;
@@ -110,6 +111,7 @@ final class SuiviActiviteController extends AbstractController
         private readonly SuiviProService $focusProService,
         private readonly SuiviFiltersProvider $filtersProvider,
         private readonly SuiviFiltersResolver $filtersResolver,
+        private readonly SuiviCentresScope $centresScope,
         private readonly SuiviCommonViewDataBuilder $commonViewDataBuilder,
         private readonly SuiviProAnalyticsService $proAnalyticsService,
         private readonly SuiviCentresAnalyticsService $centresAnalyticsService,
@@ -133,6 +135,8 @@ final class SuiviActiviteController extends AbstractController
         $filters = $this->applyDefaultCurrentYearForYearFilteredPages(
             $this->filtersResolver->resolveFromRequest($request)
         );
+        $filters = $this->centresScope->apply($filters);
+
         $queryFilters = $filters;
         $queryFilters['type'] = [];
         $queryFilters['vehicule'] = [];
@@ -169,6 +173,7 @@ final class SuiviActiviteController extends AbstractController
                 $this->filtersResolver->resolveFromRequest($request)
             )
         );
+        $filters = $this->centresScope->apply($filters);
 
         $rows = $this->repo->fetchSyntheseRows($filters);
         $synthese = $this->syntheseBuilder->buildSynthese($rows);
@@ -212,6 +217,7 @@ final class SuiviActiviteController extends AbstractController
                 $this->filtersResolver->resolveFromRequest($request)
             )
         );
+        $filters = $this->centresScope->apply($filters);
         $referenceYear = $this->resolveReferenceYear($filters);
 
         $rows = $this->repo->fetchProClients($filters);
@@ -256,6 +262,7 @@ final class SuiviActiviteController extends AbstractController
                 $this->filtersResolver->resolveFromRequest($request)
             )
         );
+        $filters = $this->centresScope->apply($filters);
         $referenceYear = $this->resolveReferenceYear($filters);
 
         $rows = $this->repo->fetchCentres($filters);
@@ -291,6 +298,7 @@ final class SuiviActiviteController extends AbstractController
     ): JsonResponse
     {
         $selectedFilters = $this->filtersResolver->resolveDependentSelections($request);
+        $selectedFilters = $this->centresScope->apply($selectedFilters);
         $filtersData = $this->filtersProvider->getFilters($selectedFilters);
 
         return $this->json([

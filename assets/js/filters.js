@@ -946,12 +946,16 @@ function init() {
             pendingSocieteChange = false;
             pendingCentreChange = false;
 
+            const preserveCentreOnClear = form.dataset.preserveCentreOnClear === '1';
             const checkedBoxes = form.querySelectorAll('input[type="checkbox"]:checked');
             checkedBoxes.forEach((input) => {
+                if (preserveCentreOnClear && input instanceof HTMLInputElement && input.name === 'centre[]') {
+                    return;
+                }
                 input.checked = false;
             });
 
-            await refreshDependentFilters(form, true, false);
+            await refreshDependentFilters(form, true, preserveCentreOnClear);
             await refreshResults(form);
         });
     }

@@ -73,6 +73,13 @@ class Salarie
     private ?bool $isActive = null;
 
     /**
+     * @var Collection<int, Centre>
+     */
+    #[ORM\ManyToMany(targetEntity: Centre::class, inversedBy: 'salaries')]
+    #[ORM\JoinTable(name: 'salarie_centre')]
+    private Collection $centres;
+
+    /**
      * @var Collection<int, Notification>
      */
     #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: 'salarie')]
@@ -81,6 +88,7 @@ class Salarie
     public function __construct()
     {
         $this->notifications = new ArrayCollection();
+        $this->centres = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -216,6 +224,33 @@ class Salarie
     public function setNbHeures(?string $nbHeures): static
     {
         $this->nbHeures = $nbHeures;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Centre>
+     */
+    public function getCentres(): Collection
+    {
+        return $this->centres;
+    }
+
+    public function addCentre(Centre $centre): static
+    {
+        if (!$this->centres->contains($centre)) {
+            $this->centres->add($centre);
+            $centre->addSalarie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCentre(Centre $centre): static
+    {
+        if ($this->centres->removeElement($centre)) {
+            $centre->removeSalarie($this);
+        }
 
         return $this;
     }

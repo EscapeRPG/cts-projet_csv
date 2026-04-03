@@ -87,6 +87,14 @@ final class AdminController extends AbstractController
             $role = $form->get('roles')->getData();
             $user->setRoles([$role]);
 
+            if ($role === 'ROLE_CTS' && $user->getSalarie() === null) {
+                $form->get('salarie')->addError(new FormError('Pour un compte CTS, veuillez sélectionner le salarié associé.'));
+
+                return $this->render('users/add.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            }
+
             try {
                 $em->persist($user);
                 $em->flush();

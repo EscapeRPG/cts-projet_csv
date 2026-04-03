@@ -14,6 +14,7 @@
                 <thead>
                 <tr>
                     <th>Société</th>
+                    <th class="td-centres-selectlike">Centres</th>
                     <th>Agr</th>
                     <th>Agr CL</th>
                     <th>Nom</th>
@@ -40,6 +41,7 @@
 
                     <tr>
                         <td>{{ form_widget(forms[salarie.id].societe, {'attr': {'form': formId}}) }}</td>
+                        <td class="td-centres-selectlike">{{ form_widget(forms[salarie.id].centres, {'attr': {'form': formId}}) }}</td>
                         <td>{{ form_widget(forms[salarie.id].agrControleur, {'attr': {'form': formId}}) }}</td>
                         <td>{{ form_widget(forms[salarie.id].agrClControleur, {'attr': {'form': formId}}) }}</td>
                         <td>{{ form_widget(forms[salarie.id].nom, {'attr': {'form': formId}}) }}</td>
@@ -65,7 +67,10 @@
                             }) }}
                             {{ form_errors(forms[salarie.id]) }}
                             <button type="submit" disabled form="{{ formId }}">Enregistrer</button>
-                            {{ form_end(forms[salarie.id]) }}
+                            <div class="inline-form-rest" hidden>
+                                {{ form_rest(forms[salarie.id]) }}
+                            </div>
+                            {{ form_end(forms[salarie.id], { render_rest: false }) }}
                         </td>
                     </tr>
                 {% endfor %}

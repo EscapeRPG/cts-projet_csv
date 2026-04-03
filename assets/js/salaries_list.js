@@ -37,4 +37,6 @@ function init() {
     enableSubmitOnChange(table);
 }
 
-document.addEventListener('turbo:load', init);
+document.addEventListener('turbo:load', () => {
+    init();
+});

@@ -88,6 +88,7 @@ readonly class SuiviFiltersProvider
 
                     return [
                         'agr_centre' => $c['agr_centre'],
+                        'reseau_nom' => $c['reseau_nom'],
                         'label' => $reseauCode . ' ' . $c['ville'],
                         'societe_nom' => $c['societe_nom'],
                     ];
@@ -96,6 +97,39 @@ readonly class SuiviFiltersProvider
                 'types_controles' => ['VTP', 'VTC', 'CV', 'VOL'],
             ];
         });
+
+        $allowedCentres = array_values(array_filter(array_map(
+            static fn ($value): string => trim((string) $value),
+            $currentFilters['allowed_centres'] ?? []
+        )));
+        if ($allowedCentres === []) {
+            $allowedCentres = null;
+        }
+
+        $scopedReseaux = $baseFilters['reseaux'];
+        $scopedSocietes = $baseFilters['societes'];
+
+        if ($allowedCentres !== null) {
+            $allowedSet = array_flip($allowedCentres);
+            $scopedCentresAll = array_values(array_filter(
+                $baseFilters['centres'],
+                static fn (array $centre): bool => isset($allowedSet[$centre['agr_centre'] ?? ''])
+            ));
+
+            $scopedReseaux = array_values(array_unique(array_filter(array_map(
+                static fn (array $centre): string => trim((string) ($centre['reseau_nom'] ?? '')),
+                $scopedCentresAll
+            ))));
+            sort($scopedReseaux, SORT_NATURAL | SORT_FLAG_CASE);
+
+            $scopedSocietes = array_values(array_unique(array_filter(array_map(
+                static fn (array $centre): string => trim((string) ($centre['societe_nom'] ?? '')),
+                $scopedCentresAll
+            ))));
+            // Keep existing global exclusions.
+            $scopedSocietes = array_values(array_diff($scopedSocietes, ['CTS', 'KERMILO']));
+            sort($scopedSocietes, SORT_NATURAL | SORT_FLAG_CASE);
+        }
 
         $selectedSocietes = array_values(array_filter(array_map(
             static fn($s) => trim((string)$s),
@@ -107,37 +141,82 @@ readonly class SuiviFiltersProvider
         )));
 
         if (empty($selectedSocietes) && empty($selectedCentres)) {
+            $centres = $baseFilters['centres'];
+            if ($allowedCentres !== null) {
+                $allowedSet = array_flip($allowedCentres);
+                $centres = array_values(array_filter(
+                    $centres,
+                    static fn (array $centre): bool => isset($allowedSet[$centre['agr_centre'] ?? ''])
+                ));
+            }
+
+            $controleurs = $baseFilters['controleurs'];
+            if ($allowedCentres !== null) {
+                $controleurs = $this->connection->executeQuery(
+                    "
+                        SELECT DISTINCT sa.id, sa.nom, sa.prenom
+                        FROM synthese_controles sc
+                        INNER JOIN salarie sa ON sa.id = sc.salarie_id
+                        WHERE sc.agr_centre IN (:allowed_centres)
+                        ORDER BY sa.nom, sa.prenom
+                    ",
+                    ['allowed_centres' => $allowedCentres],
+                    ['allowed_centres' => ArrayParameterType::STRING]
+                )->fetchAllAssociative();
+            }
+
             return [
                 ...$baseFilters,
+                'reseaux' => $scopedReseaux,
+                'societes' => $scopedSocietes,
                 'centres' => array_map(fn($c) => [
                     'agr_centre' => $c['agr_centre'],
                     'label' => $c['label'],
-                ], $baseFilters['centres']),
+                ], $centres),
                 'controleurs' => array_map(fn($c) => [
                     'id' => $c['id'],
                     'nom' => $c['nom'],
                     'prenom' => $c['prenom'],
-                ], $baseFilters['controleurs']),
+                ], $controleurs),
             ];
         }
 
-        $filteredCentresRaw = $selectedSocietes === []
-            ? $this->connection->fetchAllAssociative("
+        $centresParams = [];
+        $centresTypes = [];
+
+        if ($selectedSocietes === []) {
+            $centresSql = "
                 SELECT c.agr_centre, c.reseau_nom, c.ville
                 FROM centre c
-                ORDER BY c.reseau_nom, c.ville
-            ")
-            : $this->connection->executeQuery(
-                "
-                    SELECT c.agr_centre, c.reseau_nom, c.ville
-                    FROM centre c
-                    INNER JOIN societe s ON s.id = c.societe_id
-                    WHERE s.nom IN (:societes)
-                    ORDER BY c.reseau_nom, c.ville
-                ",
-                ['societes' => $selectedSocietes],
-                ['societes' => ArrayParameterType::STRING]
-            )->fetchAllAssociative();
+            ";
+            $centresWhere = [];
+        } else {
+            $centresSql = "
+                SELECT c.agr_centre, c.reseau_nom, c.ville
+                FROM centre c
+                INNER JOIN societe s ON s.id = c.societe_id
+            ";
+            $centresWhere = ['s.nom IN (:societes)'];
+            $centresParams['societes'] = $selectedSocietes;
+            $centresTypes['societes'] = ArrayParameterType::STRING;
+        }
+
+        if ($allowedCentres !== null) {
+            $centresWhere[] = 'c.agr_centre IN (:allowed_centres)';
+            $centresParams['allowed_centres'] = $allowedCentres;
+            $centresTypes['allowed_centres'] = ArrayParameterType::STRING;
+        }
+
+        if ($centresWhere !== []) {
+            $centresSql .= ' WHERE ' . implode(' AND ', $centresWhere);
+        }
+        $centresSql .= ' ORDER BY c.reseau_nom, c.ville';
+
+        $filteredCentresRaw = $this->connection->executeQuery(
+            $centresSql,
+            $centresParams,
+            $centresTypes
+        )->fetchAllAssociative();
 
         $controleursWhere = [];
         $controleursParams = [];
@@ -152,6 +231,11 @@ readonly class SuiviFiltersProvider
             $controleursWhere[] = 'sc.agr_centre IN (:centres)';
             $controleursParams['centres'] = $selectedCentres;
             $controleursTypes['centres'] = ArrayParameterType::STRING;
+        }
+        if ($allowedCentres !== null) {
+            $controleursWhere[] = 'sc.agr_centre IN (:allowed_centres)';
+            $controleursParams['allowed_centres'] = $allowedCentres;
+            $controleursTypes['allowed_centres'] = ArrayParameterType::STRING;
         }
 
         $controleursSql = "
@@ -181,6 +265,8 @@ readonly class SuiviFiltersProvider
 
         return [
             ...$baseFilters,
+            'reseaux' => $scopedReseaux,
+            'societes' => $scopedSocietes,
             'centres' => array_map(fn($c) => [
                 'agr_centre' => $c['agr_centre'],
                 'label' => (($codes[$c['reseau_nom']] ?? strtoupper(substr($c['reseau_nom'], 0, 2))) . ' ' . $c['ville']),

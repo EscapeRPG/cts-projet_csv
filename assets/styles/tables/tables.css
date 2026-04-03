@@ -31,8 +31,8 @@ table {
         }
     }
 
-    td,
-    th {
+    td:not(.td-centres-selectlike),
+    th:not(.td-centres-selectlike) {
         width: fit-content;
         max-width: 130px;
         overflow: clip;
@@ -40,6 +40,20 @@ table {
 
         input {
             max-width: 100% !important;
+        }
+    }
+
+    .td-centres-selectlike {
+        width: 100% !important;
+
+        .selectlike-multi {
+            width: max-content;
+
+            .selectlike-multi__dropdown {
+                left: 0;
+                right: unset;
+                width: max-content !important;
+            }
         }
     }
 
@@ -188,4 +202,8 @@ td.sticky-centre.total {
 
 tbody tr:not(.recap):hover {
     filter: brightness(.9);
+
+    .selectlike-multi__dropdown {
+        filter: none;
+    }
 }

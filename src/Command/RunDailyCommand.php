@@ -25,6 +25,10 @@ final class RunDailyCommand extends Command
      */
     private const array COMMAND_CHAIN = [
         [
+            'command' => 'app:db:ensure-indexes',
+            'args' => [],
+        ],
+        [
             'command' => 'app:import:sftp',
             'args' => [],
         ],

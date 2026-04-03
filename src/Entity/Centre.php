@@ -60,9 +60,16 @@ class Centre
     #[ORM\OneToMany(targetEntity: Voiture::class, mappedBy: 'centre')]
     private Collection $voitures;
 
+    /**
+     * @var Collection<int, Salarie>
+     */
+    #[ORM\ManyToMany(targetEntity: Salarie::class, mappedBy: 'centres')]
+    private Collection $salaries;
+
     public function __construct()
     {
         $this->voitures = new ArrayCollection();
+        $this->salaries = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -212,6 +219,30 @@ class Centre
     public function setCp(string $cp): static
     {
         $this->cp = $cp;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Salarie>
+     */
+    public function getSalaries(): Collection
+    {
+        return $this->salaries;
+    }
+
+    public function addSalarie(Salarie $salarie): static
+    {
+        if (!$this->salaries->contains($salarie)) {
+            $this->salaries->add($salarie);
+        }
+
+        return $this;
+    }
+
+    public function removeSalarie(Salarie $salarie): static
+    {
+        $this->salaries->removeElement($salarie);
 
         return $this;
     }

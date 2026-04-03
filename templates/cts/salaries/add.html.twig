@@ -48,6 +48,13 @@
         </div>
 
         <div>
+            {{ form_label(form.centres) }}
+            <div class="centres-selectlike">
+                {{ form_widget(form.centres) }}
+            </div>
+        </div>
+
+        <div>
             {{ form_label(form.agrControleur) }}
             {{ form_widget(form.agrControleur) }}
         </div>
