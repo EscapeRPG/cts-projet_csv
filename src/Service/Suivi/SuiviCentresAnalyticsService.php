@@ -55,6 +55,8 @@ final class SuiviCentresAnalyticsService
                     'nb_ctrl_part_n2' => 0,
                     'per_n1' => 0.0,
                     'per_n2' => 0.0,
+                    'per_ca_n1' => 0.0,
+                    'per_ca_n2' => 0.0,
                 ];
             }
 
@@ -100,6 +102,14 @@ final class SuiviCentresAnalyticsService
             $centre['per_n2'] = $centre['nb_ctrl_n2'] !== 0
                 ? (($centre['nb_ctrl_now'] - $centre['nb_ctrl_n2']) / $centre['nb_ctrl_n2']) * 100
                 : ($centre['nb_ctrl_now'] === 0 ? 0.0 : 100.0);
+
+            $centre['per_ca_n1'] = $centre['ca_n1'] !== 0.0
+                ? (($centre['ca_now'] - $centre['ca_n1']) / $centre['ca_n1']) * 100
+                : ($centre['ca_now'] === 0.0 ? 0.0 : 100.0);
+
+            $centre['per_ca_n2'] = $centre['ca_n2'] !== 0.0
+                ? (($centre['ca_now'] - $centre['ca_n2']) / $centre['ca_n2']) * 100
+                : ($centre['ca_now'] === 0.0 ? 0.0 : 100.0);
         }
         unset($centre);
 

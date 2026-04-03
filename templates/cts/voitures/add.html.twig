@@ -41,7 +41,89 @@
         <small class="required-inputs">Les champs marqués d'un * sont obligatoires.</small><br><br>
 
         {{ form_start(form, {'attr': {'data-turbo': 'false'}}) }}
+
+        <div>
+            {{ form_label(form.societe) }}
+            {{ form_widget(form.societe) }}
+        </div>
+
+        <div>
+            {{ form_label(form.centre) }}
+            {{ form_widget(form.centre) }}
+        </div>
+
+        <div>
+            {{ form_label(form.immatriculation) }}
+            {{ form_widget(form.immatriculation) }}
+        </div>
+
+        <div>
+            {{ form_label(form.marque) }}
+            {{ form_widget(form.marque) }}
+        </div>
+
+        <div>
+            {{ form_label(form.couleur) }}
+            {{ form_widget(form.couleur) }}
+        </div>
+
+        <div>
+            {{ form_label(form.modele) }}
+            {{ form_widget(form.modele) }}
+        </div>
+
+        <div>
+            {{ form_label(form.flocable) }}
+            {{ form_widget(form.flocable) }}
+        </div>
+
+        <div>
+            {{ form_label(form.annee) }}
+            {{ form_widget(form.annee) }}
+        </div>
+
+        <div>
+            {{ form_label(form.controleTechnique) }}
+            {{ form_widget(form.controleTechnique) }}
+        </div>
+
+        <div>
+            {{ form_label(form.km) }}
+            {{ form_widget(form.km) }}
+        </div>
+
+        <div>
+            {{ form_label(form.prix) }}
+            {{ form_widget(form.prix) }}
+        </div>
+
+        <div>
+            {{ form_label(form.carteGrise) }}
+            {{ form_widget(form.carteGrise) }}
+        </div>
+
+        <div>
+            {{ form_label(form.lieu) }}
+            {{ form_widget(form.lieu) }}
+        </div>
+
+        <div>
+            {{ form_label(form.utilisateur) }}
+            {{ form_widget(form.utilisateur) }}
+        </div>
+
+        <div>
+            {{ form_label(form.remarques) }}
+            {{ form_widget(form.remarques) }}
+        </div>
+
+        <div class="remember-me">
+            {{ form_label(form.active) }}
+            {{ form_widget(form.active) }}
+        </div>
+
+        {{ form_rest(form) }}
         <button type="submit">Enregistrer</button>
-        {{ form_end(form) }}
+        {{ form_end(form, { render_rest: false }) }}
     </div>
 {% endblock %}

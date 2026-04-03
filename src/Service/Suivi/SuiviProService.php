@@ -41,6 +41,8 @@ class SuiviProService
                             'nb_ctrl_n2' => 0,
                             'per_n1' => null,
                             'per_n2' => null,
+                            'per_ca_n1' => null,
+                            'per_ca_n2' => null,
                         ];
                     }
 
@@ -67,6 +69,14 @@ class SuiviProService
             $client['per_n2'] = $client['nb_ctrl_n2'] != 0
                 ? (($client['nb_ctrl_now'] - $client['nb_ctrl_n2']) / $client['nb_ctrl_n2']) * 100
                 : ($client['nb_ctrl_now'] == 0 ? 0 : 100);
+
+            $client['per_ca_n1'] = (float) $client['ca_n1'] !== 0.0
+                ? ((($client['ca_now'] - $client['ca_n1']) / $client['ca_n1']) * 100)
+                : ((float) $client['ca_now'] === 0.0 ? 0.0 : 100.0);
+
+            $client['per_ca_n2'] = (float) $client['ca_n2'] !== 0.0
+                ? ((($client['ca_now'] - $client['ca_n2']) / $client['ca_n2']) * 100)
+                : ((float) $client['ca_now'] === 0.0 ? 0.0 : 100.0);
         }
         unset($client);
 

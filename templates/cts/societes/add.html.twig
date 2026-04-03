@@ -37,7 +37,19 @@
         <small class="required-inputs">Les champs marqués d'un * sont obligatoires.</small><br><br>
 
         {{ form_start(form, {'attr': {'data-turbo': 'false'}}) }}
+
+        <div>
+            {{ form_label(form.nom) }}
+            {{ form_widget(form.nom) }}
+        </div>
+
+        <div>
+            {{ form_label(form.numTva) }}
+            {{ form_widget(form.numTva) }}
+        </div>
+
+        {{ form_rest(form) }}
         <button type="submit">Enregistrer</button>
-        {{ form_end(form) }}
+        {{ form_end(form, { render_rest: false }) }}
     </div>
 {% endblock %}

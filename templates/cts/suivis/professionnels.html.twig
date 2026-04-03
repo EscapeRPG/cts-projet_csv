@@ -73,11 +73,13 @@
                             <th>CA N</th>
                             <th>CA N-1</th>
                             <th>CA N-2</th>
+                            <th>CA // N-1</th>
+                            <th>CA // N-2</th>
                             <th>Vol. N</th>
                             <th>Vol. N-1</th>
                             <th>Vol. N-2</th>
-                            <th>// N-1</th>
-                            <th>// N-2</th>
+                            <th>Vol. // N-1</th>
+                            <th>Vol. // N-2</th>
                         </tr>
                         </thead>
 
@@ -90,6 +92,10 @@
                                 </td>
                                 <td class="right">{{ client.ca_n1|number_format(2, ',', ' ') }} €</td>
                                 <td class="right">{{ client.ca_n2|number_format(2, ',', ' ') }} €</td>
+                                <td class="{{ client.per_ca_n1 < 0 ? 'decreased' : 'increased' }}">{{ client.per_ca_n1|number_format(2, ',', ' ') }}%
+                                </td>
+                                <td class="{{ client.per_ca_n2 < 0 ? 'decreased' : 'increased' }}">{{ client.per_ca_n2|number_format(2, ',', ' ') }}%
+                                </td>
                                 <td>{{ client.nb_ctrl_now }}</td>
                                 <td>{{ client.nb_ctrl_n1 }}</td>
                                 <td>{{ client.nb_ctrl_n2 }}</td>

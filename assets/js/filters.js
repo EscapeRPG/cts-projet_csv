@@ -66,6 +66,7 @@ let mobileFiltersState = null;
 const PANEL_FOCUS_SYMBOL = '\u{1F5D6}';
 const PANEL_RESTORE_SYMBOL = '\u{1F5D7}';
 const MOBILE_FILTERS_QUERY = '(max-width: 1280px)';
+const PANEL_FOCUS_STORAGE_PREFIX = 'suivi.panel_focus.';
 
 /**
  * Returns focusable result panels within a container.
@@ -158,6 +159,7 @@ function setPanelFocus(container, panel) {
         }
     }
 
+    persistPanelFocus(container);
     document.dispatchEvent(new CustomEvent('suivi:panel-focus-changed'));
 }
 
@@ -191,8 +193,68 @@ function clearPanelFocus(container, emitEvent = true) {
         }
     });
 
+    persistPanelFocus(container);
     if (emitEvent) {
         document.dispatchEvent(new CustomEvent('suivi:panel-focus-changed'));
+    }
+}
+
+function getPanelFocusStorageKey() {
+    // Keep per-page state. Query params change often due to filters and should not create new entries.
+    const path = window.location.pathname || '';
+    return PANEL_FOCUS_STORAGE_PREFIX + path;
+}
+
+function persistPanelFocus(container) {
+    if (!(container instanceof HTMLElement)) return;
+
+    try {
+        const key = getPanelFocusStorageKey();
+        if (container.getAttribute('data-panel-focus') !== '1') {
+            sessionStorage.removeItem(key);
+            return;
+        }
+
+        const panels = getFocusPanels(container);
+        const focusedIndex = panels.findIndex((panel) =>
+            panel instanceof HTMLElement
+            && (panel.classList.contains('panel-isolated') || panel.classList.contains('panel-inner-isolated'))
+        );
+
+        if (focusedIndex < 0) {
+            sessionStorage.removeItem(key);
+            return;
+        }
+
+        sessionStorage.setItem(key, JSON.stringify({ index: focusedIndex }));
+    } catch (e) {
+        // Ignore storage failures (private mode, quota, etc.).
+    }
+}
+
+function restorePanelFocus(container) {
+    if (!(container instanceof HTMLElement)) return;
+
+    try {
+        const key = getPanelFocusStorageKey();
+        const raw = sessionStorage.getItem(key);
+        if (!raw) return;
+
+        const data = JSON.parse(raw);
+        const index = Number(data && data.index);
+        if (!Number.isFinite(index) || index < 0) return;
+
+        const panels = getFocusPanels(container).filter((panel) => panel instanceof HTMLElement);
+        const target = panels[index];
+        if (!(target instanceof HTMLElement)) return;
+
+        const alreadyFocused = container.getAttribute('data-panel-focus') === '1' &&
+            (target.classList.contains('panel-isolated') || target.classList.contains('panel-inner-isolated'));
+        if (alreadyFocused) return;
+
+        setPanelFocus(container, target);
+    } catch (e) {
+        // Ignore parse/storage failures.
     }
 }
 
@@ -252,6 +314,9 @@ function initPanelTools() {
 
             panel.prepend(bar);
         });
+
+        // Re-apply persisted focus after AJAX refresh replaces the results container.
+        restorePanelFocus(container);
     });
 }
 

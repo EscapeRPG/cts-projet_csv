@@ -41,7 +41,69 @@
         <small class="required-inputs">Les champs marqués d'un * sont obligatoires.</small><br><br>
 
         {{ form_start(form, {'attr': {'data-turbo': 'false'}}) }}
+
+        <div>
+            {{ form_label(form.societe) }}
+            {{ form_widget(form.societe) }}
+        </div>
+
+        <div>
+            {{ form_label(form.reseau) }}
+            {{ form_widget(form.reseau) }}
+        </div>
+
+        <div>
+            {{ form_label(form.reseauNom) }}
+            {{ form_widget(form.reseauNom) }}
+        </div>
+
+        <div>
+            {{ form_label(form.agrCentre) }}
+            {{ form_widget(form.agrCentre) }}
+        </div>
+
+        <div>
+            {{ form_label(form.agrClCentre) }}
+            {{ form_widget(form.agrClCentre) }}
+        </div>
+
+        <div>
+            {{ form_label(form.coordonnees) }}
+            {{ form_widget(form.coordonnees) }}
+        </div>
+
+        <div>
+            {{ form_label(form.cp) }}
+            {{ form_widget(form.cp) }}
+        </div>
+
+        <div>
+            {{ form_label(form.ville) }}
+            {{ form_widget(form.ville) }}
+        </div>
+
+        <div>
+            {{ form_label(form.telephone) }}
+            {{ form_widget(form.telephone) }}
+        </div>
+
+        <div>
+            {{ form_label(form.email) }}
+            {{ form_widget(form.email) }}
+        </div>
+
+        <div>
+            {{ form_label(form.siteWeb) }}
+            {{ form_widget(form.siteWeb) }}
+        </div>
+
+        <div>
+            {{ form_label(form.numSiret) }}
+            {{ form_widget(form.numSiret) }}
+        </div>
+
+        {{ form_rest(form) }}
         <button type="submit">Enregistrer</button>
-        {{ form_end(form) }}
+        {{ form_end(form, { render_rest: false }) }}
     </div>
 {% endblock %}
