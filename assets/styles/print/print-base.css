@@ -1,0 +1,312 @@
+/* Print pages have their own layout; keep this file self-contained and avoid touching the main CSS. */
+:root {
+    color-scheme: light;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    background: #fff;
+    color: #000;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.25;
+}
+
+.print-shell {
+    min-height: 100%;
+}
+
+.print-header {
+    /* Keep the header only on the first printed page: do not use fixed positioning. */
+    position: static;
+    background: #fff;
+    border-bottom: 1px solid #d7d7d7;
+    padding: 8mm 10mm 4mm 10mm;
+}
+
+.print-header .print-title {
+    margin: 0 0 2mm 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.print-header .print-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2mm 6mm;
+    font-size: 11px;
+    color: #111;
+}
+
+.print-header .print-meta .item {
+    white-space: nowrap;
+}
+
+.print-header .print-meta .k {
+    font-weight: 700;
+    margin-right: 2mm;
+}
+
+.print-content {
+    padding: 6mm 10mm 10mm 10mm;
+}
+
+.print-content h2 {
+    margin: 0 0 4mm 0;
+    background: none;
+}
+
+.print-content .chart-toolbar {
+    display: none !important;
+}
+
+.print-content .stats-wrapper,
+.print-content .stats-panel,
+.print-content .pro-stats-panel,
+.print-content .pro-stats-container,
+.print-content .stats-container {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+.print-content .table-wrapper {
+    max-height: none !important;
+    overflow: visible !important;
+    border-radius: 0 !important;
+}
+
+.print-content .sticky-salarie-name,
+.print-content .sticky-salarie-agr,
+.print-content .sticky-total {
+    position: static !important;
+    left: auto !important;
+}
+
+.print-content table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.print-content th,
+.print-content td {
+    border: 1px solid #cfcfcf;
+    padding: 2px 4px;
+    vertical-align: top;
+}
+
+.print-content th {
+    font-weight: 700;
+}
+
+.print-content .print-canvas-image {
+    display: block;
+    max-width: 100%;
+    page-break-inside: avoid;
+}
+
+/* Variant: Activite (plain table, fit-to-width, minimal chrome). */
+.print-variant-activite .print-content {
+    padding-left: 6mm;
+    padding-right: 6mm;
+}
+
+.print-variant-activite .print-content table {
+    font-size: 8px;
+}
+
+.print-variant-activite .print-content th,
+.print-variant-activite .print-content td {
+    padding: 1px 2px;
+}
+
+.print-variant-activite .print-content .table-wrapper {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+}
+
+.print-variant-activite .print-content [data-print-fit="1"] {
+    display: inline-block;
+}
+
+.print-variant-activite .print-content [data-print-fit="1"] table {
+    width: max-content;
+}
+
+.print-variant-activite .print-content table thead {
+    position: static !important;
+    top: auto !important;
+}
+
+.print-variant-activite .print-content table .total-row.global {
+    position: static !important;
+    bottom: auto !important;
+}
+
+.print-variant-activite .print-content .table-wrapper {
+    overflow: visible !important;
+    max-height: none !important;
+}
+
+/* Variant: Centres recap and Pros recap need the pro-stats styles but without the blue container background. */
+.print-variant-centres-recap .print-content .pro-stats-container,
+.print-variant-pros-recap .print-content .pro-stats-container {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+.print-variant-centres-recap .print-content .pro-stats-panel,
+.print-variant-pros-recap .print-content .pro-stats-panel {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Panels: remove colored backgrounds and use a subtle border instead. */
+.print-variant-centres-recap .print-content .ca-summary,
+.print-variant-pros-recap .print-content .ca-summary,
+.print-variant-centres-recap .print-content .pro-part-panel,
+.print-variant-pros-recap .print-content .pro-part-panel,
+.print-variant-centres-recap .print-content .stats-wrapper.graphique,
+.print-variant-pros-recap .print-content .stats-wrapper.graphique {
+    background: #fff !important;
+    border: 1px solid #d7d7d7 !important;
+    box-shadow: none !important;
+}
+
+.print-variant-centres-recap .print-content .panel-tools,
+.print-variant-pros-recap .print-content .panel-tools {
+    background: #fff !important;
+}
+
+/* Recap layout: summaries in a row, chart below. */
+.print-variant-centres-recap .print-content .pro-stats-panel,
+.print-variant-pros-recap .print-content .pro-stats-panel {
+    flex-wrap: wrap !important;
+    align-items: stretch !important;
+}
+
+.print-variant-centres-recap .print-content .pro-stats-panel > .summary,
+.print-variant-pros-recap .print-content .pro-stats-panel > .summary {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    flex-direction: row;
+}
+
+.print-variant-centres-recap .print-content .pro-stats-panel > .stats-wrapper.graphique,
+.print-variant-pros-recap .print-content .pro-stats-panel > .stats-wrapper.graphique {
+    flex: 1 1 100% !important;
+    order: 10 !important;
+}
+
+.print-variant-centres-recap .print-content .chart-canvas-wrap,
+.print-variant-pros-recap .print-content .chart-canvas-wrap {
+    height: 180px !important;
+    min-height: 180px !important;
+}
+
+.print-variant-centres-recap .print-content .stats-wrapper.graphique,
+.print-variant-pros-recap .print-content .stats-wrapper.graphique {
+    min-height: 0 !important;
+}
+
+/* Light compaction so the whole recap fits on a single page. */
+.print-variant-centres-recap .print-content,
+.print-variant-pros-recap .print-content {
+    font-size: 11px;
+}
+
+.print-variant-centres-recap .print-content .ca-summary,
+.print-variant-pros-recap .print-content .ca-summary {
+    padding: 6px !important;
+}
+
+.print-variant-centres-recap .print-content .ca-summary strong,
+.print-variant-pros-recap .print-content .ca-summary strong {
+    font-size: 1.6em !important;
+}
+
+.print-variant-centres-recap .print-content .ca-summary .previous,
+.print-variant-pros-recap .print-content .ca-summary .previous {
+    padding-top: 10px !important;
+    margin: 6px auto !important;
+}
+
+.print-variant-centres-recap .print-content .pro-part-panel,
+.print-variant-pros-recap .print-content .pro-part-panel {
+    padding: 6px !important;
+}
+
+.print-variant-centres-recap .print-content .stats-wrapper.graphique,
+.print-variant-pros-recap .print-content .stats-wrapper.graphique {
+    padding: 6px !important;
+}
+
+/* Variant: Centres recap (keep panel content + colored bars, remove heavy outer chrome). */
+.print-variant-centres-recap .print-content .pro-stats-panel,
+.print-variant-centres-recap .print-content .stats-wrapper,
+.print-variant-centres-recap .print-content .stats-panel {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Variant: Controleurs (no blue backgrounds; each wrapper like a focused panel). */
+.print-variant-controleurs .print-content .stats-container {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8mm !important;
+}
+
+.print-variant-controleurs .print-content .stats-wrapper {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+}
+
+.print-variant-controleurs .print-content .stats-panel {
+    width: 100% !important;
+    max-width: none !important;
+    border: 1px solid #d7d7d7 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+}
+
+.print-variant-controleurs .print-content h2 {
+    position: static !important;
+}
+
+.print-variant-controleurs .avg-line span {
+    position: absolute !important;
+    top: 20px !important;
+}
+
+@media print {
+    /* Keep chrome from stripping some colors in the generated images/text. */
+    * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    a[href]:after {
+        content: "";
+    }
+}

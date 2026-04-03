@@ -199,6 +199,33 @@ final class SuiviActiviteController extends AbstractController
         ));
     }
 
+    #[Route('/cts/suivi/controleurs/print', name: 'app_suivi_controleurs_print')]
+    public function suiviControleursPrint(Request $request): Response
+    {
+        $filters = $this->applyDefaultCurrentYearForYearFilteredPages(
+            $this->applyDefaultVehicleFilter(
+                $this->filtersResolver->resolveFromRequest($request)
+            )
+        );
+        $filters = $this->centresScope->apply($filters);
+
+        $rows = $this->repo->fetchSyntheseRows($filters);
+        $synthese = $this->syntheseBuilder->buildSynthese($rows);
+
+        [$controleursStats, $moyennesGlobales] = $this->controleursService->getControleursStats($synthese);
+
+        $view = $this->commonViewDataBuilder->build($filters);
+        $view['printFilters'] = $this->buildPrintFilters($filters, $view);
+
+        return $this->render('cts/suivis/print/controleurs.html.twig', array_merge(
+            $view,
+            [
+                'controleursStats' => $controleursStats,
+                'moyennesGlobales' => $moyennesGlobales,
+            ]
+        ));
+    }
+
     /**
      * Renders the professional clients focus page with summary metrics, charts, and pagination.
      *
@@ -244,6 +271,61 @@ final class SuiviActiviteController extends AbstractController
         ));
     }
 
+    #[Route('/cts/suivi/focus-pro/print', name: 'app_suivi_focus_pro_print_recap')]
+    public function suiviFocusProPrintRecap(Request $request): Response
+    {
+        $filters = $this->applyDefaultMonthsToCurrentMonth(
+            $this->applyDefaultVehicleFilter(
+                $this->filtersResolver->resolveFromRequest($request)
+            )
+        );
+        $filters = $this->centresScope->apply($filters);
+        $referenceYear = $this->resolveReferenceYear($filters);
+
+        $rows = $this->repo->fetchProClients($filters);
+        $synthese = $this->syntheseBuilder->buildClientPro($rows);
+        $proCharts = $this->proAnalyticsService->buildMonthlyCharts($rows, $referenceYear);
+
+        $allClients = $this->focusProService->getFocusPro($synthese);
+        $summary = $this->proAnalyticsService->buildSummary($allClients);
+
+        $view = $this->commonViewDataBuilder->build($filters);
+        $view['printFilters'] = $this->buildPrintFilters($filters, $view);
+
+        return $this->render('cts/suivis/print/professionnels_recap.html.twig', array_merge(
+            $view,
+            [
+                'summary' => $summary,
+                'proCharts' => $proCharts,
+            ]
+        ));
+    }
+
+    #[Route('/cts/suivi/focus-pro/print-table', name: 'app_suivi_focus_pro_print_table')]
+    public function suiviFocusProPrintTable(Request $request): Response
+    {
+        $filters = $this->applyDefaultMonthsToCurrentMonth(
+            $this->applyDefaultVehicleFilter(
+                $this->filtersResolver->resolveFromRequest($request)
+            )
+        );
+        $filters = $this->centresScope->apply($filters);
+
+        $rows = $this->repo->fetchProClients($filters);
+        $synthese = $this->syntheseBuilder->buildClientPro($rows);
+        $allClients = $this->focusProService->getFocusPro($synthese);
+
+        $view = $this->commonViewDataBuilder->build($filters);
+        $view['printFilters'] = $this->buildPrintFilters($filters, $view);
+
+        return $this->render('cts/suivis/print/professionnels_table.html.twig', array_merge(
+            $view,
+            [
+                'clients' => $allClients,
+            ]
+        ));
+    }
+
     /**
      * Renders the centers page with center-level metrics, revenue split summary, and monthly charts.
      *
@@ -278,6 +360,90 @@ final class SuiviActiviteController extends AbstractController
                 'summary' => $summary,
                 'splitSummary' => $splitSummary,
                 'proCharts' => $proCharts,
+            ]
+        ));
+    }
+
+    #[Route('/cts/suivi/centres/print', name: 'app_suivi_centres_print_recap')]
+    public function suiviCentresPrintRecap(Request $request): Response
+    {
+        $filters = $this->applyDefaultMonthsToCurrentMonth(
+            $this->applyDefaultVehicleFilter(
+                $this->filtersResolver->resolveFromRequest($request)
+            )
+        );
+        $filters = $this->centresScope->apply($filters);
+        $referenceYear = $this->resolveReferenceYear($filters);
+
+        $rows = $this->repo->fetchCentres($filters);
+        $centres = $this->centresAnalyticsService->buildCentresRows($rows, $referenceYear);
+        $summary = $this->proAnalyticsService->buildSummary($centres);
+        $splitSummary = $this->centresAnalyticsService->buildRevenueSplitSummary($centres);
+        $proCharts = $this->proAnalyticsService->buildMonthlyCharts($rows, $referenceYear);
+
+        $view = $this->commonViewDataBuilder->build($filters);
+        $view['printFilters'] = $this->buildPrintFilters($filters, $view);
+
+        return $this->render('cts/suivis/print/centres_recap.html.twig', array_merge(
+            $view,
+            [
+                'summary' => $summary,
+                'splitSummary' => $splitSummary,
+                'proCharts' => $proCharts,
+            ]
+        ));
+    }
+
+    #[Route('/cts/suivi/centres/print-table', name: 'app_suivi_centres_print_table')]
+    public function suiviCentresPrintTable(Request $request): Response
+    {
+        $filters = $this->applyDefaultMonthsToCurrentMonth(
+            $this->applyDefaultVehicleFilter(
+                $this->filtersResolver->resolveFromRequest($request)
+            )
+        );
+        $filters = $this->centresScope->apply($filters);
+        $referenceYear = $this->resolveReferenceYear($filters);
+
+        $rows = $this->repo->fetchCentres($filters);
+        $centres = $this->centresAnalyticsService->buildCentresRows($rows, $referenceYear);
+
+        $view = $this->commonViewDataBuilder->build($filters);
+        $view['printFilters'] = $this->buildPrintFilters($filters, $view);
+
+        return $this->render('cts/suivis/print/centres_table.html.twig', array_merge(
+            $view,
+            [
+                'clients' => $centres,
+            ]
+        ));
+    }
+
+    #[Route('/cts/suivi/activite/print', name: 'app_suivi_activite_print')]
+    public function suiviActivitePrint(Request $request): Response
+    {
+        $filters = $this->applyDefaultCurrentYearForYearFilteredPages(
+            $this->filtersResolver->resolveFromRequest($request)
+        );
+        $filters = $this->centresScope->apply($filters);
+
+        $queryFilters = $filters;
+        $queryFilters['type'] = [];
+        $queryFilters['vehicule'] = [];
+
+        $rows = $this->repo->fetchSyntheseRows($queryFilters);
+        $synthese = $this->syntheseBuilder->buildSynthese($rows);
+        $activityTotals = $this->syntheseBuilder->buildActivityTotals($synthese);
+
+        $view = $this->commonViewDataBuilder->build($filters);
+        $view['printFilters'] = $this->buildPrintFilters($filters, $view);
+
+        return $this->render('cts/suivis/print/activite.html.twig', array_merge(
+            $view,
+            [
+                'synthese' => $synthese,
+                'societeTotals' => $activityTotals['societes'],
+                'globalTotals' => $activityTotals['global'],
             ]
         ));
     }
@@ -379,5 +545,96 @@ final class SuiviActiviteController extends AbstractController
         }
 
         return $filters;
+    }
+
+    /**
+     * @param array<string, mixed> $filters
+     * @param array<string, mixed> $viewData Output of SuiviCommonViewDataBuilder::build()
+     * @return array<int, array{label: string, value: string}>
+     */
+    private function buildPrintFilters(array $filters, array $viewData): array
+    {
+        $formatList = static function (array $items, int $limit = 12): string {
+            $items = array_values(array_filter(array_map(
+                static fn ($v): string => trim((string) $v),
+                $items
+            )));
+
+            if ($items === []) {
+                return 'Tous';
+            }
+
+            if (count($items) <= $limit) {
+                return implode(', ', $items);
+            }
+
+            $head = array_slice($items, 0, $limit);
+            $rest = count($items) - $limit;
+            return implode(', ', $head) . " (+{$rest})";
+        };
+
+        $items = [];
+
+        $annee = $filters['annee'] ?? null;
+        if (is_int($annee) && $annee > 0) {
+            $items[] = ['label' => 'Annee', 'value' => (string) $annee];
+        }
+
+        $moisSelected = $filters['mois'] ?? [];
+        $moisLabels = [];
+        $moisMap = is_array($viewData['mois'] ?? null) ? $viewData['mois'] : [];
+        if (is_array($moisSelected)) {
+            foreach ($moisSelected as $m) {
+                $key = (int) $m;
+                if ($key > 0 && isset($moisMap[$key])) {
+                    $moisLabels[] = (string) $moisMap[$key];
+                }
+            }
+        }
+        $items[] = ['label' => 'Mois', 'value' => $formatList($moisLabels)];
+
+        $items[] = ['label' => 'Reseaux', 'value' => $formatList(is_array($filters['reseau'] ?? null) ? $filters['reseau'] : [])];
+        $items[] = ['label' => 'Societes', 'value' => $formatList(is_array($filters['societe'] ?? null) ? $filters['societe'] : [])];
+
+        $centresSelected = is_array($filters['centre'] ?? null) ? $filters['centre'] : [];
+        $centreMap = [];
+        foreach (($viewData['centres'] ?? []) as $c) {
+            if (!is_array($c)) continue;
+            $id = trim((string) ($c['agr_centre'] ?? ''));
+            $label = trim((string) ($c['label'] ?? $id));
+            if ($id !== '') {
+                $centreMap[$id] = $label;
+            }
+        }
+        $centresLabels = [];
+        foreach ($centresSelected as $id) {
+            $id = trim((string) $id);
+            if ($id === '' || $id === '__none__') continue;
+            $centresLabels[] = $centreMap[$id] ?? $id;
+        }
+        $items[] = ['label' => 'Centres', 'value' => $formatList($centresLabels)];
+
+        $controleursSelected = is_array($filters['controleur'] ?? null) ? $filters['controleur'] : [];
+        $controleurMap = [];
+        foreach (($viewData['controleurs'] ?? []) as $c) {
+            if (!is_array($c)) continue;
+            $id = trim((string) ($c['id'] ?? ''));
+            if ($id === '') continue;
+            $nom = trim((string) ($c['nom'] ?? ''));
+            $prenom = trim((string) ($c['prenom'] ?? ''));
+            $controleurMap[$id] = trim($nom . ' ' . $prenom);
+        }
+        $controleursLabels = [];
+        foreach ($controleursSelected as $id) {
+            $id = trim((string) $id);
+            if ($id === '') continue;
+            $controleursLabels[] = $controleurMap[$id] ?? $id;
+        }
+        $items[] = ['label' => 'Controleurs', 'value' => $formatList($controleursLabels)];
+
+        $items[] = ['label' => 'Types', 'value' => $formatList(is_array($filters['type'] ?? null) ? $filters['type'] : [])];
+        $items[] = ['label' => 'Vehicules', 'value' => $formatList(is_array($filters['vehicule'] ?? null) ? $filters['vehicule'] : [])];
+
+        return $items;
     }
 }

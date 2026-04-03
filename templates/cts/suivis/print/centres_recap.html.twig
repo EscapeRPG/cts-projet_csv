@@ -1,0 +1,128 @@
+{% extends 'cts/suivis/print/_base.html.twig' %}
+
+{% set printTitle = 'Suivi centres (recap + graphiques)' %}
+{% set printOrientation = 'landscape' %}
+{% set autoPrint = true %}
+{% set printVariant = 'centres-recap' %}
+
+{% block content %}
+    <div class="pro-stats-container">
+        <div class="pro-stats-panel">
+            <div class="summary">
+                <div class="ca-summary">
+                    <h2>CA {{ "now"|date('Y') }}</h2>
+                    <strong>{{ summary.ca_now|number_format(2, ',', ' ') }} €</strong>
+
+                    <div class="previous">
+                        <div class="row">
+                            <strong>{{ "now"|date('Y') - 1 }}</strong>
+                            {{ summary.ca_n1|number_format(2, ',', ' ') }} €
+                            <div class="{{ summary.per_ca_n1 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ca_n1|number_format(2, ',', ' ') }}%</div>
+                        </div>
+
+                        <div class="row">
+                            <strong>{{ "now"|date('Y') - 2 }}</strong>
+                            {{ summary.ca_n2|number_format(2, ',', ' ') }} €
+                            <div class="{{ summary.per_ca_n2 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ca_n2|number_format(2, ',', ' ') }}%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ca-summary">
+                    <h2>Contrôles {{ "now"|date('Y') }}</h2>
+                    <strong>{{ summary.vol_now|number_format(0, ',', ' ') }}</strong>
+
+                    <div class="previous">
+                        <div class="row">
+                            <strong>{{ "now"|date('Y') - 1 }}</strong>
+                            {{ summary.vol_n1|number_format(0, ',', ' ') }}
+                            <div class="{{ summary.per_ctrl_n1 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ctrl_n1|number_format(2, ',', ' ') }}%</div>
+                        </div>
+
+                        <div class="row">
+                            <strong>{{ "now"|date('Y') - 2 }}</strong>
+                            {{ summary.vol_n2|number_format(0, ',', ' ') }}
+                            <div class="{{ summary.per_ctrl_n2 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ctrl_n2|number_format(2, ',', ' ') }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary">
+                <div class="pro-part-panel">
+                    {% set years = [
+                        {'label': ("now"|date('Y') - 2), 'ca_part': splitSummary.ca_part_n2, 'ca_pro': splitSummary.ca_pro_n2, 'vol_part': splitSummary.vol_part_n2, 'vol_pro': splitSummary.vol_pro_n2},
+                        {'label': ("now"|date('Y') - 1), 'ca_part': splitSummary.ca_part_n1, 'ca_pro': splitSummary.ca_pro_n1, 'vol_part': splitSummary.vol_part_n1, 'vol_pro': splitSummary.vol_pro_n1},
+                        {'label': ("now"|date('Y')),     'ca_part': splitSummary.ca_part_now, 'ca_pro': splitSummary.ca_pro_now, 'vol_part': splitSummary.vol_part_now, 'vol_pro': splitSummary.vol_pro_now},
+                    ] %}
+
+                    {% set max_ca_total = max(
+                        splitSummary.ca_part_n2 + splitSummary.ca_pro_n2,
+                        splitSummary.ca_part_n1 + splitSummary.ca_pro_n1,
+                        splitSummary.ca_part_now + splitSummary.ca_pro_now
+                    ) %}
+                    {% set max_vol_total = max(
+                        splitSummary.vol_part_n2 + splitSummary.vol_pro_n2,
+                        splitSummary.vol_part_n1 + splitSummary.vol_pro_n1,
+                        splitSummary.vol_part_now + splitSummary.vol_pro_now
+                    ) %}
+
+                    <div class="panel-tools">
+                        <span class="panel-tools-title">CA</span>
+                        <div class="legende">
+                            <div class="part"></div>
+                            Part
+                            <div class="pro"></div>
+                            Pros
+                        </div>
+                    </div>
+
+                    <div class="ca-pro-part">
+                        {% for y in years %}
+                            {% set percent_ca_part = max_ca_total > 0 ? (y.ca_part / max_ca_total) * 100 : 0 %}
+                            {% set percent_ca_pro = max_ca_total > 0 ? (y.ca_pro / max_ca_total) * 100 : 0 %}
+                            {% set percent_vol_part = max_vol_total > 0 ? (y.vol_part / max_vol_total) * 100 : 0 %}
+                            {% set percent_vol_pro = max_vol_total > 0 ? (y.vol_pro / max_vol_total) * 100 : 0 %}
+
+                            <div class="row col-pro-part">
+                                <div class="metric metric-top">
+                                    <span class="col-part" style="height: {{ percent_ca_part }}%">
+                                        <span class="bar-label">{{ (y.ca_part / 1000)|number_format(2, ',', ' ') }} K</span>
+                                    </span>
+                                    <span class="col-pro" style="height: {{ percent_ca_pro }}%">
+                                        <span class="bar-label">{{ (y.ca_pro / 1000)|number_format(2, ',', ' ') }} K</span>
+                                    </span>
+                                </div>
+
+                                <span class="years">{{ y.label }}</span>
+
+                                <div class="metric metric-bottom">
+                                    <span class="col-pro" style="height: {{ percent_vol_pro }}%">
+                                        <span class="bar-label">{{ y.vol_pro|number_format(0, ',', ' ') }}</span>
+                                    </span>
+                                    <span class="col-part" style="height: {{ percent_vol_part }}%">
+                                        <span class="bar-label">{{ y.vol_part|number_format(0, ',', ' ') }}</span>
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="panel-tools bottom">
+                        <span class="panel-tools-title">Contrôles</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-wrapper graphique" data-pro-charts='{{ proCharts|json_encode|e('html_attr') }}'>
+                <div class="chart-toolbar">
+                    <button type="button" class="chart-toggle active" data-chart-kind="ca">CA</button>
+                    <button type="button" class="chart-toggle" data-chart-kind="volumes">Contrôles</button>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas class="pro-chart-canvas" aria-label="Comparatif {{ "now"|date('Y') - 2 }} a {{ "now"|date('Y') }}"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

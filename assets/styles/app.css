@@ -343,6 +343,13 @@ header {
     100% { transform: none; }
 }
 
+main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
 .container {
     width: 95%;
     max-height: 80vh;
@@ -350,6 +357,22 @@ header {
     box-shadow: var(--box-shadow);
     border-radius: 10px;
     overflow: hidden;
+}
+
+.btn-link {
+    background: var(--cts-main);
+    color: var(--blocks);
+    padding: 10px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    margin: 10px auto;
+    text-decoration: none;
+    font-weight: bold;
+
+    &:hover {
+        background: var(--cts-alt);
+        transform: scale(1.1);
+    }
 }
 
 footer {

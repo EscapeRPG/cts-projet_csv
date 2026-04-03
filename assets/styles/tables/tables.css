@@ -1,4 +1,5 @@
-.table-wrapper, .pro-table-wrapper {
+.table-wrapper,
+.pro-table-wrapper {
     max-height: 100%;
     overflow: auto;
     box-sizing: border-box;
@@ -31,15 +32,17 @@ table {
         }
     }
 
-    td:not(.td-centres-selectlike),
-    th:not(.td-centres-selectlike) {
-        width: fit-content;
-        max-width: 130px;
-        overflow: clip;
-        text-overflow: ellipsis;
+    &:not(.voitures-list) {
+        td:not(.td-centres-selectlike),
+        th:not(.td-centres-selectlike) {
+            width: fit-content;
+            max-width: 130px;
+            overflow: clip;
+            text-overflow: ellipsis;
 
-        input {
-            max-width: 100% !important;
+            input {
+                max-width: 100% !important;
+            }
         }
     }
 

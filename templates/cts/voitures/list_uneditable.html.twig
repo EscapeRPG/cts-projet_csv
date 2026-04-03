@@ -58,8 +58,6 @@
         </div>
     </div>
 
-
-
     {% set errorsMessages = app.flashes('error') %}
     {% if errorsMessages is not empty %}
         <div id="modal" class="modal-overlay" data-controller="modals" data-modals-target="overlay">
@@ -103,4 +101,6 @@
             </div>
         </div>
     {% endif %}
+
+    <a href="{{ path('app_voitures_list') }}" class="btn-link">Éditer</a>
 {% endblock %}

@@ -188,4 +188,13 @@
             </div>
         </div>
     </div>
+
+    <div class="filters-print-actions">
+        <a href="{{ path('app_suivi_activite_print') }}"
+           data-print-keep-filters="1"
+           data-print-base-href="{{ path('app_suivi_activite_print') }}"
+           target="_blank"
+           rel="noopener"
+           class="btn-link">Imprimer</a>
+    </div>
 {% endblock %}

@@ -4,7 +4,7 @@
     flex-direction: row;
     align-items: stretch;
     width: 95%;
-    height: 80vh;
+    height: 75vh;
     margin: 0 auto;
 }
 
@@ -303,4 +303,8 @@
     font-size: .85em;
     font-weight: 600;
     opacity: .7;
+}
+
+.filters-print-actions {
+    margin-top: 20px;
 }

@@ -196,4 +196,19 @@
             </div>
         </div>
     </div>
+
+    <div class="filters-print-actions">
+        <a href="{{ path('app_suivi_centres_print_recap') }}"
+           data-print-keep-filters="1"
+           data-print-base-href="{{ path('app_suivi_centres_print_recap') }}"
+           target="_blank"
+           rel="noopener"
+           class="btn-link">Imprimer récap</a>
+        <a href="{{ path('app_suivi_centres_print_table') }}"
+           data-print-keep-filters="1"
+           data-print-base-href="{{ path('app_suivi_centres_print_table') }}"
+           target="_blank"
+           rel="noopener"
+           class="btn-link">Imprimer table</a>
+    </div>
 {% endblock %}

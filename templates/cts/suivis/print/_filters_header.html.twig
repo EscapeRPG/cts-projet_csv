@@ -1,0 +1,18 @@
+<header class="print-header">
+    <h1 class="print-title">{{ printTitle|default('Impression') }}</h1>
+
+    <div class="print-meta">
+        {% for item in printFilters|default([]) %}
+            <div class="item">
+                <span class="k">{{ item.label }} :</span>
+                <span class="v">{{ item.value }}</span>
+            </div>
+        {% endfor %}
+
+        <div class="item">
+            <span class="k">Imprimé le :</span>
+            <span class="v">{{ "now"|date('d/m/Y H:i') }}</span>
+        </div>
+    </div>
+</header>
+

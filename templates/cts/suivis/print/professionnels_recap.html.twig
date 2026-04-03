@@ -1,0 +1,62 @@
+{% extends 'cts/suivis/print/_base.html.twig' %}
+
+{% set printTitle = 'Suivi professionnels (recap + graphiques)' %}
+{% set printOrientation = 'landscape' %}
+{% set autoPrint = true %}
+{% set printVariant = 'pros-recap' %}
+
+{% block content %}
+    <div class="pro-stats-container">
+        <div class="pro-stats-panel">
+            <div class="summary">
+                <div class="ca-summary">
+                    <h2>CA {{ "now"|date('Y') }}</h2>
+                    <strong>{{ summary.ca_now|number_format(2, ',', ' ') }} €</strong>
+
+                    <div class="previous">
+                        <div class="row">
+                            <strong>{{ "now"|date('Y') - 1 }}</strong>
+                            {{ summary.ca_n1|number_format(2, ',', ' ') }} €
+                            <div class="{{ summary.per_ca_n1 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ca_n1|number_format(2, ',', ' ') }}%</div>
+                        </div>
+
+                        <div class="row">
+                            <strong>{{ "now"|date('Y') - 2 }}</strong>
+                            {{ summary.ca_n2|number_format(2, ',', ' ') }} €
+                            <div class="{{ summary.per_ca_n2 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ca_n2|number_format(2, ',', ' ') }}%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ca-summary">
+                    <h2>Contrôles {{ "now"|date('Y') }}</h2>
+                    <strong>{{ summary.vol_now|number_format(0, ',', ' ') }}</strong>
+
+                    <div class="previous">
+                        <div class="row">
+                            <strong>{{ "now"|date('Y') - 1 }}</strong>
+                            {{ summary.vol_n1|number_format(0, ',', ' ') }}
+                            <div class="{{ summary.per_ctrl_n1 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ctrl_n1|number_format(2, ',', ' ') }}%</div>
+                        </div>
+
+                        <div class="row">
+                            <strong>{{ "now"|date('Y') - 2 }}</strong>
+                            {{ summary.vol_n2|number_format(0, ',', ' ') }}
+                            <div class="{{ summary.per_ctrl_n2 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ctrl_n2|number_format(2, ',', ' ') }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-wrapper graphique" data-pro-charts='{{ proCharts|json_encode|e('html_attr') }}'>
+                <div class="chart-toolbar">
+                    <button type="button" class="chart-toggle active" data-chart-kind="ca">CA</button>
+                    <button type="button" class="chart-toggle" data-chart-kind="volumes">Contrôles</button>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas class="pro-chart-canvas" aria-label="Comparatif {{ "now"|date('Y') - 2 }} a {{ "now"|date('Y') }}"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -51,6 +51,12 @@ final class RunDailyCommand extends Command
             ],
         ],
         [
+            'command' => 'app:cts:sync-salarie-centres',
+            'args' => [
+                '--execute' => true,
+            ],
+        ],
+        [
             'command' => 'app:notifications:birthdays',
             'args' => [],
         ],

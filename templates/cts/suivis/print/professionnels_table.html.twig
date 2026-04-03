@@ -1,0 +1,48 @@
+{% extends 'cts/suivis/print/_base.html.twig' %}
+
+{% set printTitle = 'Suivi professionnels (table)' %}
+{% set printOrientation = 'portrait' %}
+{% set autoPrint = true %}
+{% set printVariant = 'pros-table' %}
+
+{% block content %}
+    <div class="stats-wrapper">
+        <div class="stats-panel table-panel">
+            <table class="table-pros pro-table-wrapper">
+                <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>CA N</th>
+                    <th>CA N-1</th>
+                    <th>CA N-2</th>
+                    <th>CA // N-1</th>
+                    <th>CA // N-2</th>
+                    <th>Vol. N</th>
+                    <th>Vol. N-1</th>
+                    <th>Vol. N-2</th>
+                    <th>Vol. // N-1</th>
+                    <th>Vol. // N-2</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for client in clients %}
+                    <tr>
+                        <td>{{ client.nom }}</td>
+                        <td class="right">{{ client.ca_now|number_format(2, ',', ' ') }} €</td>
+                        <td class="right">{{ client.ca_n1|number_format(2, ',', ' ') }} €</td>
+                        <td class="right">{{ client.ca_n2|number_format(2, ',', ' ') }} €</td>
+                        <td>{{ client.per_ca_n1|number_format(2, ',', ' ') }}%</td>
+                        <td>{{ client.per_ca_n2|number_format(2, ',', ' ') }}%</td>
+                        <td>{{ client.nb_ctrl_now }}</td>
+                        <td>{{ client.nb_ctrl_n1 }}</td>
+                        <td>{{ client.nb_ctrl_n2 }}</td>
+                        <td>{{ client.per_n1|number_format(2, ',', ' ') }}%</td>
+                        <td>{{ client.per_n2|number_format(2, ',', ' ') }}%</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

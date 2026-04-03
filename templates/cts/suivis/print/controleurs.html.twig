@@ -1,0 +1,11 @@
+{% extends 'cts/suivis/print/_base.html.twig' %}
+
+{% set printTitle = 'Suivi controleurs' %}
+{% set printOrientation = 'portrait' %}
+{% set autoPrint = true %}
+{% set printVariant = 'controleurs' %}
+
+{% block content %}
+    {# Reuse the same markup as the screen page; print CSS keeps it clean. #}
+    {% include 'cts/suivis/_controleurs_results.html.twig' %}
+{% endblock %}

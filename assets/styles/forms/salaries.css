@@ -1,4 +1,7 @@
-.salaries-list, .centres-list, .societes-list {
+.salaries-list,
+.centres-list,
+.societes-list,
+.voitures-list {
     th,
     td {
         padding: 5px;
