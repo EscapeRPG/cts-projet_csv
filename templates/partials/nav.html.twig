@@ -9,7 +9,16 @@
         <div>
             {% if is_granted('IS_AUTHENTICATED') %}
                 <h3>{{ user.username }}</h3>
-                <h3>{{ ('ROLE_ADMIN' in user.roles) ? 'Administrateur' : 'Utilisateur' }}</h3>
+
+                <h3>
+                    {% if 'ROLE_ADMIN' in user.roles %}
+                        Administrateur
+                    {% elseif 'ROLE_ASTIKOTO' in user.roles %}
+                        Gérant Astikoto
+                    {% else %}
+                        Salarié
+                    {% endif %}
+                </h3>
 
                 <ul class="profil">
                     <li>
@@ -26,7 +35,7 @@
             {% endif %}
 
             {% if is_granted('ROLE_ADMIN') %}
-                <h2>ESPACE ADMIN CTS</h2>
+                <h2>ESPACE ADMIN</h2>
 
                 <h3 class="toggle">
                     <span class="toggle-title">
@@ -47,6 +56,10 @@
                         </a>
                     </li>
                 </ul>
+            {% endif %}
+
+            {% if is_granted('ROLE_CTS') %}
+                <h2>CTS</h2>
 
                 <h3 class="toggle">
                     <span class="toggle-title">
@@ -61,11 +74,14 @@
                             → Liste des sociétés
                         </a>
                     </li>
-                    <li>
-                        <a href="{{ path('app_societes_add') }}">
-                            → Ajouter une société
-                        </a>
-                    </li>
+
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <li>
+                            <a href="{{ path('app_societes_add') }}">
+                                → Ajouter une société
+                            </a>
+                        </li>
+                    {% endif %}
                 </ul>
 
                 <h3 class="toggle">
@@ -81,11 +97,37 @@
                             → Liste des centres
                         </a>
                     </li>
+
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <li>
+                            <a href="{{ path('app_centres_add') }}">
+                                → Ajouter un centre
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+
+                <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('partials/svg/voitures.html.twig') }}
+                        Voitures
+                    </span>
+                    <span class="open-btn">></span>
+                </h3>
+                <ul class="menu">
                     <li>
-                        <a href="{{ path('app_centres_add') }}">
-                            → Ajouter un centre
+                        <a href="{{ path('app_voitures_list_uneditable') }}">
+                            → Liste des voitures
                         </a>
                     </li>
+
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <li>
+                            <a href="{{ path('app_voitures_add') }}">
+                                → Ajouter une voiture
+                            </a>
+                        </li>
+                    {% endif %}
                 </ul>
 
                 <h3 class="toggle">
@@ -101,17 +143,16 @@
                             → Liste des salariés
                         </a>
                     </li>
-                    <li>
-                        <a href="{{ path('app_salaries_add') }}">
-                            → Ajouter un salarié
-                        </a>
-                    </li>
+
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <li>
+                            <a href="{{ path('app_salaries_add') }}">
+                                → Ajouter un salarié
+                            </a>
+                        </li>
+                    {% endif %}
                 </ul>
 
-            {% endif %}
-
-            {% if is_granted('IS_AUTHENTICATED') %}
-                <h2>Suivis</h2>
                 <h3 class="toggle">
                     <span class="toggle-title">
                         {{ include('partials/svg/activite.html.twig') }}
@@ -141,6 +182,12 @@
                         </a>
                     </li>
                 </ul>
+
+                {% if is_granted('ROLE_ASTIKOTO') %}
+                    <h2>ASTIKOTO</h2>
+
+                    <h3>En cours de construction</h3>
+                {% endif %}
             {% else %}
                 <ul class="profil">
                     <li>

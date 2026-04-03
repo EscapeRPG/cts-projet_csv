@@ -54,6 +54,17 @@ class Centre
     #[ORM\Column(length: 10)]
     private ?string $cp = null;
 
+    /**
+     * @var Collection<int, Voiture>
+     */
+    #[ORM\OneToMany(targetEntity: Voiture::class, mappedBy: 'centre')]
+    private Collection $voitures;
+
+    public function __construct()
+    {
+        $this->voitures = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -201,6 +212,36 @@ class Centre
     public function setCp(string $cp): static
     {
         $this->cp = $cp;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Voiture>
+     */
+    public function getVoitures(): Collection
+    {
+        return $this->voitures;
+    }
+
+    public function addVoiture(Voiture $voiture): static
+    {
+        if (!$this->voitures->contains($voiture)) {
+            $this->voitures->add($voiture);
+            $voiture->setCentre($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVoiture(Voiture $voiture): static
+    {
+        if ($this->voitures->removeElement($voiture)) {
+            // set the owning side to null (unless already changed)
+            if ($voiture->getCentre() === $this) {
+                $voiture->setCentre(null);
+            }
+        }
 
         return $this;
     }

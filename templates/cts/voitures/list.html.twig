@@ -1,0 +1,130 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des voitures{% endblock %}
+
+{% block body %}
+    <div class="container">
+        {% if pagination is defined %}
+            {% set startItem = pagination.total_items > 0 ? ((pagination.page - 1) * pagination.per_page) + 1 : 0 %}
+            {% set endItem = (pagination.page * pagination.per_page) > pagination.total_items ? pagination.total_items : (pagination.page * pagination.per_page) %}
+        {% endif %}
+
+        <div class="table-wrapper">
+            <table class="voitures-list">
+                <thead>
+                <tr>
+                    <th>Société</th>
+                    <th>Centre</th>
+                    <th>Immatriculation</th>
+                    <th>Marque</th>
+                    <th>Couleur</th>
+                    <th>Modèle</th>
+                    <th>Flocable</th>
+                    <th>Année</th>
+                    <th>Contrôle technique</th>
+                    <th>Kilométrage</th>
+                    <th>Prix</th>
+                    <th>Carte grise</th>
+                    <th>Lieu</th>
+                    <th>Utilisateur</th>
+                    <th>Remarques</th>
+                    <th>Active ?</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for voiture in voitures %}
+                    {% set formId = 'voiture-form-' ~ voiture.id %}
+
+                    <tr>
+                        <td>{{ form_widget(forms[voiture.id].societe, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[voiture.id].centre, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[voiture.id].immatriculation, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[voiture.id].marque, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[voiture.id].couleur, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[voiture.id].modele, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[voiture.id].flocable, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[voiture.id].annee, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[voiture.id].controleTechnique, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[voiture.id].km, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[voiture.id].prix, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[voiture.id].carteGrise, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[voiture.id].lieu, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[voiture.id].utilisateur, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[voiture.id].remarques, {'attr': {'form': formId}}) }}</td>
+                        <td>{{ form_widget(forms[voiture.id].active, {'attr': {'form': formId}}) }}</td>
+                        <td>
+                            {{ form_start(forms[voiture.id], {
+                                'action': path('app_voitures_update', {'id': voiture.id, 'page': pagination.page|default(1)}),
+                                'method': 'POST',
+                                'attr': {'data-turbo': 'false', 'id': formId}
+                            }) }}
+                            {{ form_errors(forms[voiture.id]) }}
+                            <button type="submit" disabled form="{{ formId }}">Enregistrer</button>
+                            {{ form_end(forms[voiture.id]) }}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if pagination is defined and pagination.total_pages > 1 %}
+        <div class="pagination-nav" aria-label="Pagination des voitures">
+            {% if pagination.has_previous %}
+                <a href="{{ path('app_voitures_list', app.request.query.all|merge({'page': 1})) }}">❮❮</a>
+                <a href="{{ path('app_voitures_list', app.request.query.all|merge({'page': pagination.previous_page})) }}">❮</a>
+            {% endif %}
+            <span>Page {{ pagination.page }} / {{ pagination.total_pages }} ({{ pagination.total_items }} voitures)</span>
+            {% if pagination.has_next %}
+                <a href="{{ path('app_voitures_list', app.request.query.all|merge({'page': pagination.next_page})) }}">❯</a>
+                <a href="{{ path('app_voitures_list', app.request.query.all|merge({'page': pagination.total_pages})) }}">❯❯</a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {% set errorsMessages = app.flashes('error') %}
+    {% if errorsMessages is not empty %}
+        <div id="modal" class="modal-overlay" data-controller="modals" data-modals-target="overlay">
+            <div class="modal error-modal" data-modals-target="modal">
+                <h3>Erreurs détectées</h3>
+                <ul>
+                    {% for error in errorsMessages %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+
+    {% set successMessages = app.flashes('success') %}
+    {% if successMessages is not empty %}
+        <div id="modal" class="modal-overlay" data-controller="modals" data-modals-target="overlay">
+            <div class="modal success-modal" data-modals-target="modal">
+                <h2>Succès</h2>
+
+                {% for message in successMessages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+
+                <button id="close-modal" data-action="click->modals#hide">OK</button>
+            </div>
+        </div>
+    {% endif %}
+
+    {% set warningMessages = app.flashes('warning') %}
+    {% if warningMessages is not empty %}
+        <div id="modal" class="modal-overlay" data-controller="modals" data-modals-target="overlay">
+            <div class="modal error-modal" data-modals-target="modal">
+                <h2>Attention</h2>
+
+                {% for message in warningMessages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+
+                <button id="close-modal" data-action="click->modals#hide">OK</button>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

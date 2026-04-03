@@ -33,10 +33,17 @@ class Societe
     #[ORM\OneToMany(targetEntity: Salarie::class, mappedBy: 'societe')]
     private Collection $salaries;
 
+    /**
+     * @var Collection<int, Voiture>
+     */
+    #[ORM\OneToMany(targetEntity: Voiture::class, mappedBy: 'societe')]
+    private Collection $voitures;
+
     public function __construct()
     {
         $this->centre = new ArrayCollection();
         $this->salaries = new ArrayCollection();
+        $this->voitures = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -122,6 +129,36 @@ class Societe
             // set the owning side to null (unless already changed)
             if ($salary->getSociete() === $this) {
                 $salary->setSociete(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Voiture>
+     */
+    public function getVoitures(): Collection
+    {
+        return $this->voitures;
+    }
+
+    public function addVoiture(Voiture $voiture): static
+    {
+        if (!$this->voitures->contains($voiture)) {
+            $this->voitures->add($voiture);
+            $voiture->setSociete($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVoiture(Voiture $voiture): static
+    {
+        if ($this->voitures->removeElement($voiture)) {
+            // set the owning side to null (unless already changed)
+            if ($voiture->getSociete() === $this) {
+                $voiture->setSociete(null);
             }
         }
 

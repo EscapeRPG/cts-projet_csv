@@ -31,9 +31,10 @@ table {
         }
     }
 
-    td, th {
+    td,
+    th {
         width: fit-content;
-        max-width: 120px;
+        max-width: 130px;
         overflow: clip;
         text-overflow: ellipsis;
 
@@ -67,7 +68,15 @@ table {
         }
 
         &.table-action {
+            width: fit-content;
+            max-width: 100%;
+            box-sizing: border-box;
             text-align: center;
+
+            * {
+                display: inline-block;
+                margin: 0 5px;
+            }
         }
     }
 

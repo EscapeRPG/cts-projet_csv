@@ -31,7 +31,9 @@ class CreateUserType extends AbstractType
                 'required' => true,
                 'mapped' => false,
                 'choices' => [
-                    'Utilisateur' => 'ROLE_IMPORT',
+                    'Utilisateur' => 'ROLE_USER',
+                    'Salarié CTS' => 'ROLE_CTS',
+                    'Astikoto' => 'ROLE_ASTIKOTO',
                     'Administrateur' => 'ROLE_ADMIN',
                 ]
             ])

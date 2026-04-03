@@ -11,19 +11,19 @@ function initTable(table) {
 }
 
 /**
- * Initializes sortable columns and inline submit behavior for salaries table.
+ * Initializes sortable columns and inline submit behavior for centers table.
  *
  * @returns {void}
  */
 function init() {
-    const table = document.querySelector('.salaries-list');
+    const table = document.querySelector('.voitures-list');
     if (!table) return;
 
     const headers = table.querySelectorAll('th');
 
     // Enable sorting only for selected columns.
     headers.forEach((th, index) => {
-        const sortableColumns = ['Société', 'Nom', 'Nb heures', 'Salaire brut', 'Agr', 'Agr CL'];
+        const sortableColumns = ['Société', 'Centre', 'Flocable', 'Active ?'];
         if (sortableColumns.includes(th.textContent.trim())) {
             th.style.cursor = 'pointer';
             th.addEventListener('click', () => {

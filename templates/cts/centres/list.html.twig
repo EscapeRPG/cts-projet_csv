@@ -56,4 +56,48 @@
             </table>
         </div>
     </div>
+
+    {% set errorsMessages = app.flashes('error') %}
+    {% if errorsMessages is not empty %}
+        <div id="modal" class="modal-overlay" data-controller="modals" data-modals-target="overlay">
+            <div class="modal error-modal" data-modals-target="modal">
+                <h3>Erreurs détectées</h3>
+                <ul>
+                    {% for error in errorsMessages %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+
+    {% set successMessages = app.flashes('success') %}
+    {% if successMessages is not empty %}
+        <div id="modal" class="modal-overlay" data-controller="modals" data-modals-target="overlay">
+            <div class="modal success-modal" data-modals-target="modal">
+                <h2>Succès</h2>
+
+                {% for message in successMessages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+
+                <button id="close-modal" data-action="click->modals#hide">OK</button>
+            </div>
+        </div>
+    {% endif %}
+
+    {% set warningMessages = app.flashes('warning') %}
+    {% if warningMessages is not empty %}
+        <div id="modal" class="modal-overlay" data-controller="modals" data-modals-target="overlay">
+            <div class="modal error-modal" data-modals-target="modal">
+                <h2>Attention</h2>
+
+                {% for message in warningMessages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+
+                <button id="close-modal" data-action="click->modals#hide">OK</button>
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}
