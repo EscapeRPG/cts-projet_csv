@@ -9,6 +9,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:db:ensure-indexes',
@@ -102,13 +103,15 @@ class EnsureIndexesCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io = new SymfonyStyle($input, $output);
+
         $dryRun = (bool)$input->getOption('dry-run');
         $created = 0;
         $skipped = 0;
 
-        $output->writeln(sprintf(
+        $io->title(sprintf(
             '[db:ensure-indexes] Démarrage (%s).',
-            $dryRun ? 'dry-run' : 'execution'
+            $dryRun ? 'simulation' : 'exécution'
         ));
 
         foreach (self::INDEX_SPECS as $spec) {
@@ -121,8 +124,8 @@ class EnsureIndexesCommand extends Command
                     $dryRun
                 );
             } catch (\Throwable $e) {
-                $output->writeln(sprintf(
-                    '<error>ERROR: %s.%s (%s)</error>',
+                $io->error(sprintf(
+                    '<error>ERREUR: %s.%s (%s)</error>',
                     $spec['table'],
                     $spec['name'],
                     $e->getMessage()
@@ -130,16 +133,16 @@ class EnsureIndexesCommand extends Command
                 return Command::FAILURE;
             }
 
-            $output->writeln($status);
-            if (str_starts_with($status, 'CREATED:')) {
+            $io->writeln($status);
+            if (str_starts_with($status, '<info>CRÉÉ:</info>')) {
                 $created++;
             } else {
                 $skipped++;
             }
         }
 
-        $output->writeln(sprintf(
-            '[db:ensure-indexes] Terminé. created=%d, skipped=%d',
+        $io->success(sprintf(
+            '[db:ensure-indexes] Terminé. créés=%d, ignorés=%d',
             $created,
             $skipped
         ));
@@ -178,7 +181,7 @@ class EnsureIndexesCommand extends Command
         ) > 0;
 
         if (!$tableExists) {
-            return sprintf('SKIPPED: %s.%s (table missing)', $table, $indexName);
+            return sprintf('<error>IGNORÉ:</error> %s.%s <comment>(table absente)</comment>', $table, $indexName);
         }
 
         $existing = $this->connection->fetchAllAssociative(
@@ -206,7 +209,7 @@ class EnsureIndexesCommand extends Command
             $existingSig = (string)($row['sig'] ?? '');
             if ($existingName === $indexName || $existingSig === $signature) {
                 return sprintf(
-                    'SKIPPED: %s.%s (already exists or equivalent)',
+                    '<comment>IGNORÉ:</comment> %s.%s <comment>(déjà présent ou équivalent)</comment>',
                     $table,
                     $indexName
                 );
@@ -214,11 +217,11 @@ class EnsureIndexesCommand extends Command
         }
 
         if ($dryRun) {
-            return sprintf('CREATED: %s.%s (dry-run)', $table, $indexName);
+            return sprintf('<info>CRÉÉ:</info> %s.%s <comment>(simulation)</comment>', $table, $indexName);
         }
 
         $this->connection->executeStatement($createSql);
 
-        return sprintf('CREATED: %s.%s', $table, $indexName);
+        return sprintf('<info>CRÉÉ:</info> %s.%s', $table, $indexName);
     }
 }

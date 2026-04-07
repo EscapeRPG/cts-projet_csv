@@ -38,7 +38,7 @@ final readonly class NotificationCleanupService
             ];
         }
 
-        $result = $this->entityManager->wrapInTransaction(function () use ($expiredIds): array {
+        return $this->entityManager->wrapInTransaction(function () use ($expiredIds): array {
             $deletedUserNotifications = $this->userNotificationRepository->deleteByNotificationIds($expiredIds);
             $deletedNotifications = $this->notificationRepository->deleteByIds($expiredIds);
 
@@ -48,7 +48,5 @@ final readonly class NotificationCleanupService
                 'deleted_user_notifications' => $deletedUserNotifications,
             ];
         });
-
-        return $result;
     }
 }

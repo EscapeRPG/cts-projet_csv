@@ -12,15 +12,24 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:notifications:purge-expired',
-    description: 'Removes expired notifications and their per-user delivery state.'
+    description: 'Supprime les notifications expirées et leurs états de remise par utilisateur.'
 )]
+/**
+ * Removes expired notifications and their per-user delivery states.
+ */
 final class PurgeExpiredNotificationsCommand extends Command
 {
+    /**
+     * @param NotificationCleanupService $notificationCleanupService Notification purge service.
+     */
     public function __construct(private readonly NotificationCleanupService $notificationCleanupService)
     {
         parent::__construct();
     }
 
+    /**
+     * Configures command options.
+     */
     protected function configure(): void
     {
         $this
@@ -28,19 +37,30 @@ final class PurgeExpiredNotificationsCommand extends Command
                 'before',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'Cutoff datetime in YYYY-MM-DD HH:MM:SS format. Defaults to now.'
+                'Date/heure limite au format YYYY-MM-DD HH:MM:SS (par défaut: maintenant).'
             )
             ->addOption(
                 'dry-run',
                 null,
                 InputOption::VALUE_NONE,
-                'Counts expired notifications without deleting them.'
+                'Compte les notifications expirées sans les supprimer.'
             );
     }
 
+    /**
+     * Executes the expired notifications purge.
+     *
+     * @param InputInterface $input Console input.
+     * @param OutputInterface $output Console output.
+     *
+     * @return int Command exit status.
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+
+        $io->title('[purge-expired] Démarrage du nettoyage des notifications obsolètes.');
+
         $beforeOption = $input->getOption('before');
         $dryRun = (bool) $input->getOption('dry-run');
 

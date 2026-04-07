@@ -63,6 +63,11 @@
 
     &:hover {
         transform: scale(1.1);
+
+        .inner-div {
+            max-height: 100%;
+            border: none;
+        }
     }
 
     img {
@@ -84,10 +89,5 @@
         color: var(--blocks);
         transition: all .25s ease;
         border-top: 2px solid var(--blocks);
-
-        &.hovered {
-            max-height: 100%;
-            border: none;
-        }
     }
 }

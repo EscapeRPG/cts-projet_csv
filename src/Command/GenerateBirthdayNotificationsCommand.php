@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Service\Notification\BirthdayNotificationGenerator;
+use DateMalformedStringException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -12,10 +13,16 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:notifications:birthdays',
-    description: 'Generates notifications for upcoming employee birthdays.'
+    description: 'Génère des notifications pour les anniversaires de salariés à venir.'
 )]
+/**
+ * Generates notifications for upcoming employee birthdays.
+ */
 final class GenerateBirthdayNotificationsCommand extends Command
 {
+    /**
+     * Configures command options.
+     */
     protected function configure(): void
     {
         $this
@@ -23,31 +30,47 @@ final class GenerateBirthdayNotificationsCommand extends Command
                 'date',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'Reference date in YYYY-MM-DD format.',
+                'Date de référence au format YYYY-MM-DD.',
             )
             ->addOption(
                 'days',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'Number of days ahead to inspect.',
+                'Nombre de jours à venir à inspecter.',
                 BirthdayNotificationGenerator::DEFAULT_DAYS_AHEAD
             )
             ->addOption(
                 'dry-run',
                 null,
                 InputOption::VALUE_NONE,
-                'Simulates notification generation without persisting changes.',
+                'Simule la génération sans enregistrer en base.',
             );
     }
 
+    /**
+     * @param BirthdayNotificationGenerator $generator Generates birthday notifications.
+     */
     public function __construct(private readonly BirthdayNotificationGenerator $generator)
     {
         parent::__construct();
     }
 
+    /**
+     * Executes birthday notification generation.
+     *
+     * @param InputInterface $input Console input.
+     * @param OutputInterface $output Console output.
+     *
+     * @return int Command exit status.
+     *
+     * @throws DateMalformedStringException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+
+        $io->title('[notifications:birthdays] Démarrage de la création automatique de notification(s) d\'anniversaire(s).');
+
         $dateOption = $input->getOption('date');
         $daysOption = $input->getOption('days');
         $dryRun = (bool) $input->getOption('dry-run');

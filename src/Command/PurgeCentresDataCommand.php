@@ -10,10 +10,11 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:data:purge-centres',
-    description: 'Purges imported data related to a list of centre approvals (agr_centre).'
+    description: 'Purge les données importées liées à une liste d’agréments centre (agr_centre).'
 )]
 /**
  * Deletes imported records linked to specific center approvals.
@@ -69,13 +70,13 @@ final class PurgeCentresDataCommand extends Command
                 'agr',
                 null,
                 InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY,
-                'Center approval to purge (repeat option: --agr=S085T150 --agr=L085T271).'
+                'Agrément centre à purger (option répétable: --agr=S085T150 --agr=L085T271).'
             )
             ->addOption(
                 'execute',
                 null,
                 InputOption::VALUE_NONE,
-                'Execute purge (without this flag, command runs in preview mode).'
+                'Exécute la purge (sans ce flag, le traitement est en mode aperçu).'
             );
     }
 
@@ -90,25 +91,18 @@ final class PurgeCentresDataCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io = new SymfonyStyle($input, $output);
+
+        $io->title('[purge-centres] Démarrage de la purge des centres non CTS.');
         $rawAgrs = $input->getOption('agr');
         $inputAgrs = $this->normalizeAgrs(is_array($rawAgrs) ? $rawAgrs : []);
         $agrs = $inputAgrs !== [] ? $inputAgrs : $this->normalizeAgrs(self::DEFAULT_TARGET_AGRS);
         $execute = (bool)$input->getOption('execute');
 
         if ($agrs === []) {
-            $output->writeln('<error>[purge-centres] No target approvals configured. Fill DEFAULT_TARGET_AGRS or pass --agr.</error>');
+            $io->writeln('<error>[purge-centres] Aucun agrément cible configuré. Renseignez DEFAULT_TARGET_AGRS ou passez --agr.</error>');
             return Command::INVALID;
         }
-
-        $output->writeln(sprintf(
-            '[purge-centres] Mode: %s',
-            $execute ? 'EXECUTE' : 'PREVIEW'
-        ));
-        $output->writeln(sprintf(
-            '[purge-centres] Source: %s',
-            $inputAgrs !== [] ? 'CLI (--agr)' : 'DEFAULT_TARGET_AGRS'
-        ));
-        $output->writeln('[purge-centres] Target agr_centre list: ' . implode(', ', $agrs));
 
         try {
             $this->connection->beginTransaction();
@@ -116,26 +110,19 @@ final class PurgeCentresDataCommand extends Command
             $this->prepareTargetControlsTempTable($agrs);
             $stats = $this->collectStats($agrs);
 
-            $output->writeln(sprintf(
-                '[purge-centres] Matching controls: %d',
-                $stats['target_controls']
-            ));
-            $output->writeln(sprintf(
-                '[purge-centres] Matching clients_controles rows: %d',
-                $stats['target_clients_controles']
-            ));
-            $output->writeln(sprintf(
-                '[purge-centres] synthese_controles rows to remove: %d',
-                $stats['target_synthese_controles']
-            ));
-            $output->writeln(sprintf(
-                '[purge-centres] synthese_pros rows to remove: %d',
-                $stats['target_synthese_pros']
-            ));
+            $io->definitionList(
+                ['Mode' => $execute ? 'EXÉCUTION' : 'APERÇU'],
+                ['Source' => $inputAgrs !== [] ? 'Ligne de commande (--agr)' : 'DEFAULT_TARGET_AGRS'],
+                ['Liste agr_centre ciblée' => implode(', ', $agrs)],
+                ['Contrôles correspondants' => $stats['target_controls']],
+                ['Lignes clients_controles correspondantes' => $stats['target_clients_controles']],
+                ['Lignes synthese_controles à supprimer' => $stats['target_synthese_controles']],
+                ['Lignes synthese_pros à supprimer' => $stats['target_synthese_pros']],
+            );
 
             if (!$execute) {
                 $this->connection->rollBack();
-                $output->writeln('<comment>[purge-centres] Preview complete. Re-run with --execute to apply changes.</comment>');
+                $io->success('[purge-centres] Aperçu terminé. Relancez avec --execute pour appliquer.');
                 return Command::SUCCESS;
             }
 
@@ -148,14 +135,16 @@ final class PurgeCentresDataCommand extends Command
 
             $this->connection->commit();
 
-            $output->writeln('<info>[purge-centres] Purge completed.</info>');
-            $output->writeln(sprintf('  - clients_controles deleted: %d', $deletedClientsControles));
-            $output->writeln(sprintf('  - controles_factures deleted: %d', $deletedControlesFactures));
-            $output->writeln(sprintf('  - controles_non_factures deleted: %d', $deletedControlesNonFactures));
-            $output->writeln(sprintf('  - controles deleted: %d', $deletedControles));
-            $output->writeln(sprintf('  - synthese_controles deleted: %d', $deletedSyntheseControles));
-            $output->writeln(sprintf('  - synthese_pros deleted: %d', $deletedSynthesePros));
-            $output->writeln('<comment>[purge-centres] Tip: run app:synthese:summary and app:synthese:pros afterwards.</comment>');
+            $io->definitionList(
+                ['clients_controles supprimées' => $deletedClientsControles],
+                ['controles_factures supprimées' => $deletedControlesFactures],
+                ['controles_non_factures supprimées' => $deletedControlesNonFactures],
+                ['controles supprimés' => $deletedControles],
+                ['synthese_controles supprimées' => $deletedSyntheseControles],
+                ['synthese_pros supprimées' => $deletedSynthesePros],
+            );
+
+            $io->success('[purge-centres] Purge terminée.');
 
             return Command::SUCCESS;
         } catch (\Throwable $e) {
@@ -163,7 +152,7 @@ final class PurgeCentresDataCommand extends Command
                 $this->connection->rollBack();
             }
 
-            $output->writeln('<error>[purge-centres] Failed: ' . $e->getMessage() . '</error>');
+            $io->error('<error>[purge-centres] Échec: ' . $e->getMessage() . '</error>');
             return Command::FAILURE;
         }
     }

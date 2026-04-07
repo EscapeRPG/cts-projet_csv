@@ -8,6 +8,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:synthese:pros',
@@ -42,28 +43,30 @@ class PopulateClientProSummaryCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $output->writeln('[synthese:pros] Démarrage de la mise à jour glissante de synthese_pros.');
+        $io = new SymfonyStyle($input, $output);
+
+        $io->title('[synthese-pros] Démarrage de la mise à jour glissante de synthese_pros.');
 
         try {
             $startedAt = microtime(true);
 
-            $output->writeln('[synthese:pros] Vérification de la table cible...');
+            $io->writeln('<comment>Vérification de la table cible...</comment>');
             $stepStartedAt = microtime(true);
             $this->ensureTable();
-            $output->writeln(sprintf(
-                '[synthese:pros] Table cible prête (%.3f s).',
+            $io->writeln(sprintf(
+                '<info>Table cible prête (%.3f s).</info>',
                 microtime(true) - $stepStartedAt
             ));
 
-            $output->writeln('[synthese:pros] Ouverture de la transaction...');
+            $io->writeln('<comment>Ouverture de la transaction...</comment>');
             $this->connection->beginTransaction();
 
             $yearNow = (int)date('Y');
             $yearN2 = $yearNow - 2;
             $dateFrom = sprintf('%d-01-01 00:00:00', $yearN2);
             $dateTo = sprintf('%d-01-01 00:00:00', $yearNow + 1);
-            $output->writeln(sprintf(
-                '[synthese:pros] Fenêtre de recalcul: %d à %d.',
+            $io->writeln(sprintf(
+                '<info>Fenêtre de recalcul : %d à %d.</info>',
                 $yearN2,
                 $yearNow
             ));
@@ -72,28 +75,28 @@ class PopulateClientProSummaryCommand extends Command
                 'SELECT last_run_at FROM synthese_meta WHERE meta_key = :meta_key',
                 ['meta_key' => self::META_KEY]
             );
-            $output->writeln(sprintf(
-                '[synthese:pros] Dernière exécution enregistrée: %s.',
+            $io->writeln(sprintf(
+                '<info>Dernière exécution enregistrée : %s.</info>',
                 $lastRunAt ?: 'aucune'
             ));
 
             // Purge des années obsolètes
-            $output->writeln('[synthese:pros] Purge des années obsolètes...');
+            $io->writeln('<comment>Purge des années obsolètes...</comment>');
             $stepStartedAt = microtime(true);
             $this->connection->executeStatement(
                 'DELETE FROM synthese_pros WHERE annee < :annee_min',
                 ['annee_min' => $yearN2]
             );
-            $output->writeln(sprintf(
-                '[synthese:pros] Purge des années obsolètes terminée (%.3f s).',
+            $io->writeln(sprintf(
+                '<info>Purge des années obsolètes terminée (%.3f s).</info>',
                 microtime(true) - $stepStartedAt
             ));
 
-            $output->writeln('[synthese:pros] Détection des périodes impactées...');
+            $io->writeln('<comment>Détection des périodes impactées...</comment>');
             $stepStartedAt = microtime(true);
             $periods = $this->fetchPeriodsToRefresh($lastRunAt ?: null, $yearN2, $yearNow);
-            $output->writeln(sprintf(
-                '[synthese:pros] Périodes impactées détectées: %d (%.3f s).',
+            $io->writeln(sprintf(
+                '<info>Périodes impactées détectées : %d (%.3f s).</info>',
                 count($periods),
                 microtime(true) - $stepStartedAt
             ));
@@ -101,22 +104,22 @@ class PopulateClientProSummaryCommand extends Command
             if ($periods === []) {
                 $this->touchMeta();
                 $this->connection->commit();
-                $output->writeln(sprintf(
-                    '[synthese:pros] Aucune période à recalculer. Exécution terminée (%.3f s).',
+                $io->success(sprintf(
+                    'Aucune période à recalculer. Exécution terminée (%.3f s).',
                     microtime(true) - $startedAt
                 ));
                 return Command::SUCCESS;
             }
 
-            $output->writeln('[synthese:pros] Préparation de la table temporaire des périodes...');
+            $io->writeln('<comment>Préparation de la table temporaire des périodes...</comment>');
             $stepStartedAt = microtime(true);
             $this->populateTempPeriods($periods);
-            $output->writeln(sprintf(
-                '[synthese:pros] Table temporaire alimentée (%.3f s).',
+            $io->writeln(sprintf(
+                '<info>Table temporaire alimentée (%.3f s).</info>',
                 microtime(true) - $stepStartedAt
             ));
 
-            $output->writeln('[synthese:pros] Suppression des agrégats existants sur les périodes impactées...');
+            $io->writeln('<comment>Suppression des agrégats existants sur les périodes impactées...</comment>');
             $stepStartedAt = microtime(true);
             $this->connection->executeStatement("
                 DELETE sp
@@ -124,8 +127,8 @@ class PopulateClientProSummaryCommand extends Command
                 INNER JOIN tmp_synthese_pros_periods p
                     ON p.annee = sp.annee AND p.mois = sp.mois
             ");
-            $output->writeln(sprintf(
-                '[synthese:pros] Suppression des agrégats existants terminée (%.3f s).',
+            $io->writeln(sprintf(
+                '<info>Suppression des agrégats existants terminée (%.3f s).</info>',
                 microtime(true) - $stepStartedAt
             ));
 
@@ -282,22 +285,22 @@ class PopulateClientProSummaryCommand extends Command
                     COALESCE(ce.reseau_nom, '')
             ";
 
-            $output->writeln('[synthese:pros] Recalcul et insertion des agrégats...');
+            $io->writeln('<comment>Recalcul et insertion des agrégats...</comment>');
             $stepStartedAt = microtime(true);
             $this->connection->executeStatement($sql, [
                 'date_from' => $dateFrom,
                 'date_to' => $dateTo,
             ]);
-            $output->writeln(sprintf(
-                '[synthese:pros] Recalcul terminé (%.3f s).',
+            $io->writeln(sprintf(
+                '<info>Recalcul terminé (%.3f s).</info>',
                 microtime(true) - $stepStartedAt
             ));
 
             $this->touchMeta();
             $this->connection->commit();
 
-            $output->writeln(sprintf(
-                '[synthese:pros] Mise à jour terminée avec succès (%.3f s).',
+            $io->success(sprintf(
+                'Mise à jour terminée avec succès (%.3f s).',
                 microtime(true) - $startedAt
             ));
             return Command::SUCCESS;
@@ -306,7 +309,7 @@ class PopulateClientProSummaryCommand extends Command
                 $this->connection->rollBack();
             }
 
-            $output->writeln('<error>[synthese:pros] Échec: ' . $e->getMessage() . '</error>');
+            $io->error('<error>Échec : ' . $e->getMessage() . '</error>');
             return Command::FAILURE;
         }
     }

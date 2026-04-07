@@ -8,6 +8,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:synthese:summary',
@@ -41,36 +42,38 @@ class PopulateSyntheseCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $output->writeln('[synthese:summary] Démarrage de la mise à jour incrémentale de synthese_controles.');
+        $io = new SymfonyStyle($input, $output);
+
+        $io->title('[synthese-summary] Démarrage de la mise à jour incrémentale de synthese_controles.');
 
         try {
             $startedAt = microtime(true);
 
-            $output->writeln('[synthese:summary] Vérification des tables techniques...');
+            $io->writeln('<comment>Vérification des tables techniques...</comment>');
             $stepStartedAt = microtime(true);
             $this->ensureTables();
-            $output->writeln(sprintf(
-                '[synthese:summary] Tables techniques prêtes (%.3f s).',
+            $io->writeln(sprintf(
+                '<info>Tables techniques prêtes (%.3f s).</info>',
                 microtime(true) - $stepStartedAt
             ));
 
-            $output->writeln('[synthese:summary] Ouverture de la transaction...');
+            $io->writeln('<comment>Ouverture de la transaction...</comment>');
             $this->connection->beginTransaction();
 
             $lastRunAt = $this->connection->fetchOne(
                 'SELECT last_run_at FROM synthese_meta WHERE meta_key = :meta_key',
                 ['meta_key' => self::META_KEY]
             );
-            $output->writeln(sprintf(
-                '[synthese:summary] Dernière exécution enregistrée: %s.',
+            $io->writeln(sprintf(
+                '<info>Dernière exécution enregistrée : %s.</info>',
                 $lastRunAt ?: 'aucune'
             ));
 
-            $output->writeln('[synthese:summary] Détection des périodes impactées...');
+            $io->writeln('<comment>Détection des périodes impactées...</comment>');
             $stepStartedAt = microtime(true);
             $periods = $this->fetchPeriodsToRefresh($this->forceFullRefresh ? null : ($lastRunAt ?: null));
-            $output->writeln(sprintf(
-                '[synthese:summary] Périodes impactées détectées: %d (%.3f s).',
+            $io->writeln(sprintf(
+                '<info>Périodes impactées détectées : %d (%.3f s).</info>',
                 count($periods),
                 microtime(true) - $stepStartedAt
             ));
@@ -78,34 +81,34 @@ class PopulateSyntheseCommand extends Command
             if ($periods === []) {
                 $this->touchMeta();
                 $this->connection->commit();
-                $output->writeln(sprintf(
-                    '[synthese:summary] Aucune période à recalculer. Exécution terminée (%.3f s).',
+                $io->success(sprintf(
+                    'Aucune période à recalculer. Exécution terminée (%.3f s).',
                     microtime(true) - $startedAt
                 ));
                 return Command::SUCCESS;
             }
 
-            $output->writeln('[synthese:summary] Préparation de la table temporaire des périodes...');
+            $io->writeln('<comment>Préparation de la table temporaire des périodes...</comment>');
             $stepStartedAt = microtime(true);
             $this->populateTempPeriods($periods);
-            $output->writeln(sprintf(
-                '[synthese:summary] Table temporaire alimentée (%.3f s).',
+            $io->writeln(sprintf(
+                '<info>Table temporaire alimentée (%.3f s).</info>',
                 microtime(true) - $stepStartedAt
             ));
 
-            $output->writeln('[synthese:summary] Suppression des agrégats existants pour les périodes impactées...');
+            $io->writeln('<comment>Suppression des agrégats existants pour les périodes impactées...</comment>');
             $stepStartedAt = microtime(true);
             $this->deleteExistingPeriods();
-            $output->writeln(sprintf(
-                '[synthese:summary] Agrégats précédents supprimés (%.3f s).',
+            $io->writeln(sprintf(
+                '<info>Agrégats précédents supprimés (%.3f s).</info>',
                 microtime(true) - $stepStartedAt
             ));
 
-            $output->writeln('[synthese:summary] Recalcul des agrégats...');
+            $io->writeln('<comment>Recalcul des agrégats...</comment>');
             $stepStartedAt = microtime(true);
             $this->insertAggregatesForPeriods();
-            $output->writeln(sprintf(
-                '[synthese:summary] Agrégats recalculés et insérés (%.3f s).',
+            $io->writeln(sprintf(
+                '<info>Agrégats recalculés et insérés (%.3f s).</info>',
                 microtime(true) - $stepStartedAt
             ));
 
@@ -113,9 +116,9 @@ class PopulateSyntheseCommand extends Command
 
             $this->connection->commit();
 
-            $output->writeln(sprintf('[synthese:summary] Périodes recalculées: %d.', count($periods)));
-            $output->writeln(sprintf(
-                '[synthese:summary] Mise à jour terminée avec succès (%.3f s).',
+            $io->writeln(sprintf('<info>Périodes recalculées : %d.</info>', count($periods)));
+            $io->success(sprintf(
+                'Mise à jour terminée avec succès (%.3f s).',
                 microtime(true) - $startedAt
             ));
             return Command::SUCCESS;
@@ -124,7 +127,7 @@ class PopulateSyntheseCommand extends Command
                 $this->connection->rollBack();
             }
 
-            $output->writeln('<error>[synthese:summary] Échec: ' . $e->getMessage() . '</error>');
+            $io->error('<error>Échec: ' . $e->getMessage() . '</error>');
             return Command::FAILURE;
         }
     }

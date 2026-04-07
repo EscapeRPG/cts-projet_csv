@@ -15,13 +15,22 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:cts:sync-salarie-centres',
     description: 'Associe les salaries aux centres via synthese_controles (salarie_id + agr_centre).'
 )]
+/**
+ * Synchronizes employee-to-centre associations from `synthese_controles`.
+ */
 final class SyncSalarieCentresFromSyntheseCommand extends Command
 {
+    /**
+     * @param Connection $connection DBAL connection used to read/write association data.
+     */
     public function __construct(private readonly Connection $connection)
     {
         parent::__construct();
     }
 
+    /**
+     * Configures command options.
+     */
     protected function configure(): void
     {
         $this
@@ -46,7 +55,15 @@ final class SyncSalarieCentresFromSyntheseCommand extends Command
     }
 
     /**
+     * Executes synchronization from `synthese_controles` into `salarie_centre`.
+     *
+     * @param InputInterface $input Console input.
+     * @param OutputInterface $output Console output.
+     *
+     * @return int Command exit status.
+     *
      * @throws Exception
+     * @throws \Throwable
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -62,7 +79,7 @@ final class SyncSalarieCentresFromSyntheseCommand extends Command
         ), static fn (int $y): bool => $y > 0));
 
         if ($reset && !$execute) {
-            $io->error('Option --reset interdite sans --execute (dry-run).');
+            $io->error('Option --reset interdite sans --execute (simulation).');
             return Command::INVALID;
         }
 
@@ -138,8 +155,8 @@ final class SyncSalarieCentresFromSyntheseCommand extends Command
         );
 
         $io->definitionList(
-            ['Mode' => $execute ? 'EXECUTE' : 'DRY-RUN'],
-            ['Filtre annee' => $years !== [] ? implode(', ', $years) : 'aucun'],
+            ['Mode' => $execute ? 'EXÉCUTION' : 'SIMULATION'],
+            ['Filtre année' => $years !== [] ? implode(', ', $years) : 'aucun'],
             ['Couples distincts (salarie_id, agr_centre)' => $distinctPairs],
             ['Couples joignables (salarie + centre)' => $joinablePairs],
             ['Couples sans centre correspondant' => $missingCentrePairs],
@@ -147,7 +164,7 @@ final class SyncSalarieCentresFromSyntheseCommand extends Command
         );
 
         if (!$execute) {
-            $io->note('Aucune ecriture en base (passer --execute pour appliquer).');
+            $io->note('Aucune écriture en base (passer --execute pour appliquer).');
             return Command::SUCCESS;
         }
 
@@ -176,9 +193,8 @@ final class SyncSalarieCentresFromSyntheseCommand extends Command
             throw $e;
         }
 
-        $io->success(sprintf('Synchronisation terminee. %d association(s) inseree(s) (doublons ignores).', $affected));
+        $io->success(sprintf('Synchronisation terminée. %d association(s) insérée(s) (doublons ignorés).', $affected));
 
         return Command::SUCCESS;
     }
 }
-

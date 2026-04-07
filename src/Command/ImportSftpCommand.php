@@ -11,6 +11,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Throwable;
 
@@ -77,6 +78,8 @@ class ImportSftpCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io = new SymfonyStyle($input, $output);
+
         $maxIgnoredRateOption = $input->getOption('max-ignored-rate');
         $maxIgnoredRate = is_numeric($maxIgnoredRateOption) ? (float)$maxIgnoredRateOption : 1.0;
         if ($maxIgnoredRate < 0) {
@@ -91,12 +94,15 @@ class ImportSftpCommand extends Command
 
         $strict = (bool)$input->getOption('strict');
 
-        $output->writeln(sprintf(
-            'Contrôle qualité import: max_ignored_rate=%.3f%%, min_rows=%d, strict=%s',
-            $maxIgnoredRate,
-            $minRowsForRate,
-            $strict ? 'yes' : 'no'
-        ));
+        $io->title(
+            '[app:import:sftp] Démarrage de l\'import des fichiers depuis le dossier sftp.',
+        );
+
+        $io->definitionList(
+            ['Taux max ignoré (%)' => $maxIgnoredRate],
+            ['Lignes min (pour appliquer le taux)' => $minRowsForRate],
+            ['Strict' => $strict ? 'oui' : 'non'],
+        );
 
         $activeReseaux = $this->reseauRepository->findBy(['isActive' => true]);
         $allReseaux = $this->reseauRepository->findAll();
@@ -118,7 +124,7 @@ class ImportSftpCommand extends Command
         }
 
         foreach ($this->sftpClient->listReseaux() as $reseauCode) {
-            $output->writeln("Réseau : $reseauCode");
+            $io->writeln("  <comment>Réseau :</comment> $reseauCode");
 
             // Vérifie que le réseau importé existe bel et bien (matching souple)
             $normalizedCode = $this->normalizeReseauName($reseauCode);
@@ -127,27 +133,27 @@ class ImportSftpCommand extends Command
             if (!$reseau) {
                 $reseau = $allReseauxByNormalizedName[$normalizedCode] ?? null;
                 if ($reseau && !$reseau->isActive()) {
-                    $output->writeln("<comment>Le réseau \"$reseauCode\" est inactif en base, import maintenu.</comment>");
+                    $io->writeln("<warning>Le réseau \"$reseauCode\" est inactif en base, import maintenu.</warning>");
                 }
             }
 
             if (!$reseau) {
-                $output->writeln("<comment>Le réseau \"$reseauCode\" est inconnu, n'existe pas ou est inactif.</comment>");
-                $output->writeln('<comment>Réseaux actifs attendus : ' . implode(', ', array_map(
+                $io->writeln("<warning>Le réseau \"$reseauCode\" est inconnu, n'existe pas ou est inactif.</warning>");
+                $io->writeln('<comment>Réseaux actifs attendus :</comment> ' . implode(', ', array_map(
                     static fn($r) => $r->getNom() ?? '',
                     $activeReseaux
-                )) . '</comment>');
+                )));
                 continue;
             }
 
             foreach ($this->sftpClient->listIncomingFiles($reseauCode) as $file) {
-                $output->writeln("  - $file");
+                $io->writeln("  - $file");
 
                 $path = $this->sftpClient->getIncomingPath($reseauCode) . '/' . $file;
 
                 try {
                     if (!$this->sftpClient->isIncomingFileStable($reseauCode, $file)) {
-                        $output->writeln("    <comment>Fichier non stable (upload en cours ou récent), reporté au prochain passage.</comment>");
+                        $io->writeln("    <warning>Fichier non stable (upload en cours ou récent), reporté au prochain passage.</warning>");
                         continue;
                     }
 
@@ -175,8 +181,8 @@ class ImportSftpCommand extends Command
                         $batchCount = (int)($stats['batches'] ?? 0);
                         $ignoredRate = $rowsRead > 0 ? ($rowsIgnored / $rowsRead) * 100 : 0.0;
 
-                        $output->writeln(sprintf(
-                            "    Lignes lues: %d, insérées: %d, ignorées: %d, batches: %d. Taux ignoré: %.3f%%",
+                        $io->writeln(sprintf(
+                            "    <info>Lignes lues:</info> %d, <info>insérées:</info> %d, <info>ignorées:</info> %d, <info>lots:</info> %d. <info>Taux ignoré:</info> %.3f%%",
                             $rowsRead,
                             $rowsInserted,
                             $rowsIgnored,
@@ -201,7 +207,7 @@ class ImportSftpCommand extends Command
                             ));
                         }
                     } else {
-                        $output->writeln(sprintf("    Lignes lues: %d", $readCount));
+                        $io->writeln(sprintf("    <info>Lignes lues:</info> %d", $readCount));
                     }
 
                     // Si moveToProcessed échoue, lève une exception
@@ -209,13 +215,15 @@ class ImportSftpCommand extends Command
                         throw new RuntimeException("Impossible de déplacer vers processed");
                     }
                 } catch (Throwable $e) {
-                    $output->writeln("<error>Erreur : {$e->getMessage()}</error>");
+                    $io->error("<error>Erreur : {$e->getMessage()}</error>");
 
                     // Déplace vers error
                     $this->sftpClient->moveToErrorSafe($reseauCode, $file);
                 }
             }
         }
+
+        $io->success('Import des fichiers terminé.');
 
         return Command::SUCCESS;
     }

@@ -11,7 +11,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
     name: 'app:daily:run',
-    description: 'Runs import and synthesis commands sequentially.'
+    description: 'Exécute les commandes d’import et de synthèse de manière séquentielle.'
 )]
 /**
  * Orchestrates the daily import and synthesis pipeline.
@@ -75,11 +75,11 @@ final class RunDailyCommand extends Command
     {
         $application = $this->getApplication();
         if ($application === null) {
-            $output->writeln('<error>[pipeline] Console application is not available.</error>');
+            $output->writeln('<error>[pipeline] L’application console n’est pas disponible.</error>');
             return Command::FAILURE;
         }
 
-        $output->writeln('<info>[pipeline] Starting command chain...</info>');
+        $output->writeln('<info>[pipeline] Démarrage de la chaîne de commandes...</info>');
 
         foreach (self::COMMAND_CHAIN as $step) {
             $commandName = $step['command'];
@@ -90,7 +90,7 @@ final class RunDailyCommand extends Command
                 $display .= ' ' . implode(' ', array_keys($commandArgs));
             }
 
-            $output->writeln(sprintf('<comment>[pipeline] Running %s...</comment>', $display));
+            $output->writeln(sprintf('<comment>[pipeline] Exécution de %s...</comment>', $display));
 
             $command = $application->find($commandName);
             $commandInput = new ArrayInput([
@@ -103,7 +103,7 @@ final class RunDailyCommand extends Command
 
             if ($exitCode !== Command::SUCCESS) {
                 $output->writeln(sprintf(
-                    '<error>[pipeline] Command %s failed with exit code %d.</error>',
+                    '<error>[pipeline] La commande %s a échoué avec le code de sortie %d.</error>',
                     $commandName,
                     $exitCode
                 ));
@@ -112,7 +112,7 @@ final class RunDailyCommand extends Command
             }
         }
 
-        $output->writeln('<info>[pipeline] All commands completed successfully.</info>');
+        $output->writeln('<info>[pipeline] Toutes les commandes se sont terminées avec succès.</info>');
 
         return Command::SUCCESS;
     }
