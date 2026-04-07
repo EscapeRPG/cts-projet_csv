@@ -66,7 +66,7 @@ class PopulateClientProSummaryCommand extends Command
             $dateFrom = sprintf('%d-01-01 00:00:00', $yearN2);
             $dateTo = sprintf('%d-01-01 00:00:00', $yearNow + 1);
             $io->writeln(sprintf(
-                '<info>Fenêtre de recalcul :</info> %d <info>à</info> %d.',
+                '<info>Fenêtre de recalcul :</info> %d à %d.',
                 $yearN2,
                 $yearNow
             ));
