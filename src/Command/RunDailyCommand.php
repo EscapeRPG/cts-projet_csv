@@ -41,10 +41,6 @@ final class RunDailyCommand extends Command
             'args' => [],
         ],
         [
-            'command' => 'app:notifications:purge-expired',
-            'args' => [],
-        ],
-        [
             'command' => 'app:data:purge-centres',
             'args' => [
                 '--execute' => true,
@@ -54,6 +50,12 @@ final class RunDailyCommand extends Command
             'command' => 'app:cts:sync-salarie-centres',
             'args' => [
                 '--execute' => true,
+            ],
+        ],
+        [
+            'command' => 'app:notifications:purge-expired',
+            'args' => [
+                '--before' => true,
             ],
         ],
         [

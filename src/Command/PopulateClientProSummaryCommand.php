@@ -54,7 +54,7 @@ class PopulateClientProSummaryCommand extends Command
             $stepStartedAt = microtime(true);
             $this->ensureTable();
             $io->writeln(sprintf(
-                '<info>Table cible prête.</info <comment>(%.3f s)</comment>',
+                '<info>Table cible prête.</info> <comment>(%.3f s)</comment>',
                 microtime(true) - $stepStartedAt
             ));
 

@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Notification;
 use App\Entity\Salarie;
+use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
@@ -33,6 +34,10 @@ final class CreateNotificationType extends AbstractType
                     $salarie->getPrenom(),
                     $salarie->getNom()
                 ),
+                'query_builder' => function (EntityRepository $er) {
+                    return $er->createQueryBuilder('c')
+                        ->orderBy('c.nom', 'ASC');
+                },
                 'placeholder' => 'Aucun salarié',
                 'required' => false,
             ])

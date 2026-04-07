@@ -78,13 +78,12 @@ final class PurgeExpiredNotificationsCommand extends Command
 
         $message = $dryRun
             ? 'Simulation terminée. %d notification(s) expirée(s) détectée(s).'
-            : 'Purge terminée. %d notification(s) expirée(s), %d notification(s) supprimée(s), %d remise(s) utilisateur supprimée(s).';
+            : 'Purge terminée. %d notification(s) expirée(s), %d notification(s) supprimée(s).';
 
         $io->success(sprintf(
             $message,
             $result['expired_notifications'],
-            $result['deleted_notifications'],
-            $result['deleted_user_notifications']
+            $result['deleted_notifications']
         ));
 
         return Command::SUCCESS;
