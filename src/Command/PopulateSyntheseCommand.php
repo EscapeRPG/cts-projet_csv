@@ -53,7 +53,7 @@ class PopulateSyntheseCommand extends Command
             $stepStartedAt = microtime(true);
             $this->ensureTables();
             $io->writeln(sprintf(
-                '<info>Tables techniques prêtes (%.3f s).</info>',
+                '<info>Tables techniques prêtes.</info> <comment>(%.3f s)</comment>',
                 microtime(true) - $stepStartedAt
             ));
 
@@ -65,7 +65,7 @@ class PopulateSyntheseCommand extends Command
                 ['meta_key' => self::META_KEY]
             );
             $io->writeln(sprintf(
-                '<info>Dernière exécution enregistrée : %s.</info>',
+                '<info>Dernière exécution enregistrée :</info> %s.',
                 $lastRunAt ?: 'aucune'
             ));
 
@@ -73,7 +73,7 @@ class PopulateSyntheseCommand extends Command
             $stepStartedAt = microtime(true);
             $periods = $this->fetchPeriodsToRefresh($this->forceFullRefresh ? null : ($lastRunAt ?: null));
             $io->writeln(sprintf(
-                '<info>Périodes impactées détectées : %d (%.3f s).</info>',
+                '<info>Périodes impactées détectées :</info> %d. <comment>(%.3f s)</comment>',
                 count($periods),
                 microtime(true) - $stepStartedAt
             ));
@@ -92,7 +92,7 @@ class PopulateSyntheseCommand extends Command
             $stepStartedAt = microtime(true);
             $this->populateTempPeriods($periods);
             $io->writeln(sprintf(
-                '<info>Table temporaire alimentée (%.3f s).</info>',
+                '<info>Table temporaire alimentée.</info> <comment>(%.3f s)</comment>',
                 microtime(true) - $stepStartedAt
             ));
 
@@ -100,7 +100,7 @@ class PopulateSyntheseCommand extends Command
             $stepStartedAt = microtime(true);
             $this->deleteExistingPeriods();
             $io->writeln(sprintf(
-                '<info>Agrégats précédents supprimés (%.3f s).</info>',
+                '<info>Agrégats précédents supprimés.</info> <comment>(%.3f s)</comment>',
                 microtime(true) - $stepStartedAt
             ));
 
@@ -108,7 +108,7 @@ class PopulateSyntheseCommand extends Command
             $stepStartedAt = microtime(true);
             $this->insertAggregatesForPeriods();
             $io->writeln(sprintf(
-                '<info>Agrégats recalculés et insérés (%.3f s).</info>',
+                '<info>Agrégats recalculés et insérés.</info> <comment>(%.3f s)</comment>',
                 microtime(true) - $stepStartedAt
             ));
 
@@ -116,7 +116,7 @@ class PopulateSyntheseCommand extends Command
 
             $this->connection->commit();
 
-            $io->writeln(sprintf('<info>Périodes recalculées : %d.</info>', count($periods)));
+            $io->writeln(sprintf('<info>Périodes recalculées :</info> %d.', count($periods)));
             $io->success(sprintf(
                 'Mise à jour terminée avec succès (%.3f s).',
                 microtime(true) - $startedAt

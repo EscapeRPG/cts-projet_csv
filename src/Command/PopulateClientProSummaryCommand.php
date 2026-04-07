@@ -54,7 +54,7 @@ class PopulateClientProSummaryCommand extends Command
             $stepStartedAt = microtime(true);
             $this->ensureTable();
             $io->writeln(sprintf(
-                '<info>Table cible prête (%.3f s).</info>',
+                '<info>Table cible prête.</info <comment>(%.3f s)</comment>',
                 microtime(true) - $stepStartedAt
             ));
 
@@ -66,7 +66,7 @@ class PopulateClientProSummaryCommand extends Command
             $dateFrom = sprintf('%d-01-01 00:00:00', $yearN2);
             $dateTo = sprintf('%d-01-01 00:00:00', $yearNow + 1);
             $io->writeln(sprintf(
-                '<info>Fenêtre de recalcul : %d à %d.</info>',
+                '<info>Fenêtre de recalcul :</info> %d <info>à</info> %d.',
                 $yearN2,
                 $yearNow
             ));
@@ -76,7 +76,7 @@ class PopulateClientProSummaryCommand extends Command
                 ['meta_key' => self::META_KEY]
             );
             $io->writeln(sprintf(
-                '<info>Dernière exécution enregistrée : %s.</info>',
+                '<info>Dernière exécution enregistrée :</info> %s.',
                 $lastRunAt ?: 'aucune'
             ));
 
@@ -88,7 +88,7 @@ class PopulateClientProSummaryCommand extends Command
                 ['annee_min' => $yearN2]
             );
             $io->writeln(sprintf(
-                '<info>Purge des années obsolètes terminée (%.3f s).</info>',
+                '<info>Purge des années obsolètes terminée.</info> <comment>(%.3f s)</comment>',
                 microtime(true) - $stepStartedAt
             ));
 
@@ -96,7 +96,7 @@ class PopulateClientProSummaryCommand extends Command
             $stepStartedAt = microtime(true);
             $periods = $this->fetchPeriodsToRefresh($lastRunAt ?: null, $yearN2, $yearNow);
             $io->writeln(sprintf(
-                '<info>Périodes impactées détectées : %d (%.3f s).</info>',
+                '<info>Périodes impactées détectées :</info> %d. <comment>(%.3f s)</comment>',
                 count($periods),
                 microtime(true) - $stepStartedAt
             ));
@@ -115,7 +115,7 @@ class PopulateClientProSummaryCommand extends Command
             $stepStartedAt = microtime(true);
             $this->populateTempPeriods($periods);
             $io->writeln(sprintf(
-                '<info>Table temporaire alimentée (%.3f s).</info>',
+                '<info>Table temporaire alimentée.</info> <comment>(%.3f s)</comment>',
                 microtime(true) - $stepStartedAt
             ));
 
@@ -128,7 +128,7 @@ class PopulateClientProSummaryCommand extends Command
                     ON p.annee = sp.annee AND p.mois = sp.mois
             ");
             $io->writeln(sprintf(
-                '<info>Suppression des agrégats existants terminée (%.3f s).</info>',
+                '<info>Suppression des agrégats existants terminée.</info> <comment>(%.3f s)</comment>',
                 microtime(true) - $stepStartedAt
             ));
 
@@ -292,7 +292,7 @@ class PopulateClientProSummaryCommand extends Command
                 'date_to' => $dateTo,
             ]);
             $io->writeln(sprintf(
-                '<info>Recalcul terminé (%.3f s).</info>',
+                '<info>Recalcul terminé.</info> <comment>(%.3f s)</comment>',
                 microtime(true) - $stepStartedAt
             ));
 
