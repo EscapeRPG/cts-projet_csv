@@ -260,3 +260,9 @@ function init() {
 
 document.addEventListener('DOMContentLoaded', init);
 document.addEventListener('turbo:load', init);
+document.addEventListener('cts:list:content-updated', (e) => {
+    const root = e?.detail?.container ?? document;
+    root.querySelectorAll('select[multiple][data-centres-selectlike="1"]').forEach((select) => {
+        enhanceCentresSelect(select);
+    });
+});

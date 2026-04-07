@@ -95,8 +95,10 @@ export function adjustColumnWidths(table) {
             const td = tr.children[colIndex];
             if (!td) return;
 
-            const input = td.querySelector('input, select, textarea');
+            const input = td.querySelector('input, select');
             if (!input) return;
+            if (input.matches('[data-row-change-ignore="1"]')) return;
+            if (input instanceof HTMLInputElement && input.type === 'file') return;
 
             if (input.tagName.toLowerCase() === 'select') {
                 for (const option of input.options) {
@@ -125,12 +127,22 @@ export function enableSubmitOnChange(table) {
     const rows = table.querySelectorAll('tbody tr');
 
     rows.forEach((row) => {
-        const inputs = row.querySelectorAll('input, select, textarea');
+        const inputs = Array.from(row.querySelectorAll('input, select, textarea')).filter((input) => {
+            if (!(input instanceof HTMLElement)) return false;
+            if (input.matches('[data-row-change-ignore="1"]')) return false;
+            if (input instanceof HTMLInputElement && input.type === 'file') {
+                return input.matches('[data-row-change-track="1"]');
+            }
+            return true;
+        });
         const submitButton = row.querySelector('button[type="submit"]');
         if (!submitButton) return;
 
         // Keep initial form state snapshot.
-        const initialValues = Array.from(inputs).map((input) => {
+        const initialValues = inputs.map((input) => {
+            if (input instanceof HTMLInputElement && input.type === 'file') {
+                return (input.files && input.files.length) ? input.files.length : 0;
+            }
             if (input.type === 'checkbox' || input.type === 'radio') {
                 return input.checked;
             }
@@ -138,7 +150,11 @@ export function enableSubmitOnChange(table) {
         });
 
         const checkChanged = () => {
-            return Array.from(inputs).some((input, i) => {
+            return inputs.some((input, i) => {
+                if (input instanceof HTMLInputElement && input.type === 'file') {
+                    const now = (input.files && input.files.length) ? input.files.length : 0;
+                    return now !== initialValues[i];
+                }
                 if (input.type === 'checkbox' || input.type === 'radio') {
                     return input.checked !== initialValues[i];
                 }

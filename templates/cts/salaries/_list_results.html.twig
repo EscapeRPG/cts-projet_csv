@@ -1,0 +1,82 @@
+<div class="table-wrapper">
+    <table class="salaries-list">
+        <thead>
+        <tr>
+            <th>Société</th>
+            <th class="td-centres-selectlike">Centres</th>
+            <th>Agr</th>
+            <th>Agr CL</th>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Date de naissance</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Échelons</th>
+            <th>Salaire</th>
+            <th>Heures</th>
+            <th>Veste</th>
+            <th>Polaire</th>
+            <th>Pantalon</th>
+            <th>Tee-shirt</th>
+            <th>Polo</th>
+            <th>Chaussures</th>
+            <th>Actif</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for salarie in salaries %}
+            {% set formId = 'salarie-form-' ~ salarie.id %}
+
+            <tr>
+                <td>{{ form_widget(forms[salarie.id].societe, {'attr': {'form': formId}}) }}</td>
+                <td class="td-centres-selectlike">{{ form_widget(forms[salarie.id].centres, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[salarie.id].agrControleur, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[salarie.id].agrClControleur, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[salarie.id].nom, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[salarie.id].prenom, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[salarie.id].dateNaissance, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[salarie.id].email, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[salarie.id].telephone, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[salarie.id].echelons, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[salarie.id].salaireBrut, {'attr': {'form': formId}}) }} €</td>
+                <td>{{ form_widget(forms[salarie.id].nbHeures, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[salarie.id].vesteMancheAmovible, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[salarie.id].polaire, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[salarie.id].pantalon, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[salarie.id].teeShirts, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[salarie.id].polo, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[salarie.id].chaussures, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[salarie.id].isActive, {'attr': {'form': formId}}) }}</td>
+                <td>
+                    {{ form_start(forms[salarie.id], {
+                        'action': path('app_salaries_update', {'id': salarie.id, 'page': pagination.page|default(1), 'q': app.request.query.get('q')}),
+                        'method': 'POST',
+                        'attr': {'data-turbo': 'false', 'id': formId}
+                    }) }}
+                    {{ form_errors(forms[salarie.id]) }}
+                    <button type="submit" disabled form="{{ formId }}" data-row-save-button="1">Enregistrer</button>
+                    <div class="inline-form-rest" hidden>
+                        {{ form_rest(forms[salarie.id]) }}
+                    </div>
+                    {{ form_end(forms[salarie.id], { render_rest: false }) }}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if pagination is defined and pagination.total_pages > 1 %}
+    <div class="pagination-nav" aria-label="Pagination des salariés">
+        {% if pagination.has_previous %}
+            <a href="{{ path('app_salaries_list', app.request.query.all|merge({'page': 1})) }}">❮❮</a>
+            <a href="{{ path('app_salaries_list', app.request.query.all|merge({'page': pagination.previous_page})) }}">❮</a>
+        {% endif %}
+        <span>Page {{ pagination.page }} / {{ pagination.total_pages }} ({{ pagination.total_items }} salariés)</span>
+        {% if pagination.has_next %}
+            <a href="{{ path('app_salaries_list', app.request.query.all|merge({'page': pagination.next_page})) }}">❯</a>
+            <a href="{{ path('app_salaries_list', app.request.query.all|merge({'page': pagination.total_pages})) }}">❯❯</a>
+        {% endif %}
+    </div>
+{% endif %}

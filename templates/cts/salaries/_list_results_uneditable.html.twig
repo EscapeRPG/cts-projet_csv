@@ -1,0 +1,49 @@
+<div class="table-wrapper">
+    <table class="salaries-list">
+        <thead>
+        <tr>
+            <th>Société</th>
+            <th>Agr</th>
+            <th>Agr CL</th>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Date de naissance</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Échelons</th>
+            <th>Salaire</th>
+            <th>Heures</th>
+            <th>Veste</th>
+            <th>Polaire</th>
+            <th>Pantalon</th>
+            <th>Tee-shirt</th>
+            <th>Polo</th>
+            <th>Chaussures</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for salarie in salaries %}
+            <tr>
+                <td>{{ salarie.societe.nom }}</td>
+                <td>{{ salarie.agrControleur }}</td>
+                <td>{{ salarie.agrClControleur }}</td>
+                <td>{{ salarie.nom }}</td>
+                <td>{{ salarie.prenom }}</td>
+                <td class="right">{{ salarie.dateNaissance ? salarie.dateNaissance|date('d/m/Y') : '' }}</td>
+                <td>{{ salarie.email }}</td>
+                <td>{{ salarie.telephone }}</td>
+                <td class="centered">{{ salarie.echelons }}</td>
+                <td class="right">{{ salarie.salaireBrut }} €</td>
+                <td class="right">{{ salarie.nbHeures }}</td>
+                <td class="centered">{{ salarie.vesteMancheAmovible }}</td>
+                <td class="centered">{{ salarie.polaire }}</td>
+                <td class="centered">{{ salarie.pantalon }}</td>
+                <td class="centered">{{ salarie.teeShirts }}</td>
+                <td class="centered">{{ salarie.polo }}</td>
+                <td class="centered">{{ salarie.chaussures }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+

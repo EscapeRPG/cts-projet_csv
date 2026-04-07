@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Voiture;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -38,6 +39,62 @@ class VoitureRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    public function countSearch(?string $q): int
+    {
+        $qb = $this->createQueryBuilder('v')
+            ->select('COUNT(v.id)');
+
+        $this->applySearchFilter($qb, $q);
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @return array<int, Voiture>
+     */
+    public function findPaginatedOrderedBySocieteSearch(int $limit, int $offset, ?string $q): array
+    {
+        $qb = $this->createQueryBuilder('v')
+            ->leftJoin('v.societe', 'so')
+            ->addSelect('so')
+            ->orderBy('so.nom', 'ASC')
+            ->addOrderBy('v.immatriculation', 'ASC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+
+        $this->applySearchFilter($qb, $q);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @return array<int, Voiture>
+     */
+    public function findOrderedBySocieteSearch(?string $q): array
+    {
+        $qb = $this->createQueryBuilder('v')
+            ->leftJoin('v.societe', 'so')
+            ->addSelect('so')
+            ->orderBy('so.nom', 'ASC')
+            ->addOrderBy('v.immatriculation', 'ASC');
+
+        $this->applySearchFilter($qb, $q);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    private function applySearchFilter(QueryBuilder $qb, ?string $q): void
+    {
+        $q = trim((string) $q);
+        if ($q === '') {
+            return;
+        }
+
+        $qb
+            ->andWhere('LOWER(v.immatriculation) LIKE :q')
+            ->setParameter('q', '%' . mb_strtolower($q) . '%');
     }
 
     //    /**

@@ -13,11 +13,14 @@ function initTable(table) {
 /**
  * Initializes sortable columns and inline submit behavior for centers table.
  *
+ * @param {ParentNode} root
  * @returns {void}
  */
-function init() {
-    const table = document.querySelector('.voitures-list');
+export function initVoituresList(root = document) {
+    const table = root.querySelector('.voitures-list');
     if (!table) return;
+    if (table.dataset.ctsInit === '1') return;
+    table.dataset.ctsInit = '1';
 
     const headers = table.querySelectorAll('th');
 
@@ -37,4 +40,7 @@ function init() {
     enableSubmitOnChange(table);
 }
 
-document.addEventListener('turbo:load', init);
+document.addEventListener('turbo:load', () => initVoituresList(document));
+document.addEventListener('cts:list:content-updated', (e) => {
+    initVoituresList(e?.detail?.container ?? document);
+});

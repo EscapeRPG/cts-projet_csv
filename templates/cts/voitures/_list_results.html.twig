@@ -1,0 +1,104 @@
+<div class="table-wrapper">
+    <table class="voitures-list">
+        <thead>
+        <tr>
+            <th>Société</th>
+            <th>Centre</th>
+            <th>Immatriculation</th>
+            <th>Marque</th>
+            <th>Couleur</th>
+            <th>Modèle</th>
+            <th>Flocable</th>
+            <th>Année</th>
+            <th>Contrôle technique</th>
+            <th>Kilométrage</th>
+            <th>Prix</th>
+            <th>Carte grise</th>
+            <th>Lieu</th>
+            <th>Utilisateur</th>
+            <th>Remarques</th>
+            <th>Certificat cession</th>
+            <th>Active ?</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for voiture in voitures %}
+            {% set formId = 'voiture-form-' ~ voiture.id %}
+
+            <tr>
+                <td>{{ form_widget(forms[voiture.id].societe, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[voiture.id].centre, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[voiture.id].immatriculation, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[voiture.id].marque, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[voiture.id].couleur, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[voiture.id].modele, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[voiture.id].flocable, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[voiture.id].annee, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[voiture.id].controleTechnique, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[voiture.id].km, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[voiture.id].prix, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[voiture.id].carteGrise, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[voiture.id].lieu, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[voiture.id].utilisateur, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[voiture.id].remarques, {'attr': {'form': formId}}) }}</td>
+                <td>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        {% if voiture.certificatCessionPath is not empty %}
+                            <a class="btn-link"
+                               href="{{ path('app_voitures_certificat_view', {'id': voiture.id}) }}"
+                               target="_blank"
+                               rel="noopener">Consulter</a>
+
+                            <a class="btn-link"
+                               href="{{ path('app_voitures_certificat_download', {'id': voiture.id}) }}"
+                               target="_blank"
+                               rel="noopener">Télécharger</a>
+
+                                    <form method="post"
+                                          action="{{ path('app_voitures_certificat_delete', {'id': voiture.id, 'page': pagination.page|default(1), 'q': app.request.query.get('q')}) }}"
+                                          data-turbo="false"
+                                          style="display:inline-block;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('voiture_certificat_delete_' ~ voiture.id) }}">
+                                <button type="submit">Supprimer</button>
+                            </form>
+                            <br>
+                            <br>
+                            <small>Remplacer:</small>
+                        {% endif %}
+
+                        {{ form_widget(forms[voiture.id].certificatCessionFile, {'attr': {'form': formId, 'data-row-change-track': '1'}}) }}
+                    {% else %}
+                        ---
+                    {% endif %}
+                </td>
+                <td>{{ form_widget(forms[voiture.id].active, {'attr': {'form': formId}}) }}</td>
+                <td>
+                    {{ form_start(forms[voiture.id], {
+                        'action': path('app_voitures_update', {'id': voiture.id, 'page': pagination.page|default(1), 'q': app.request.query.get('q')}),
+                        'method': 'POST',
+                        'attr': {'data-turbo': 'false', 'id': formId}
+                    }) }}
+                    {{ form_errors(forms[voiture.id]) }}
+                    <button type="submit" disabled form="{{ formId }}" data-row-save-button="1">Enregistrer</button>
+                    {{ form_end(forms[voiture.id]) }}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if pagination is defined and pagination.total_pages > 1 %}
+    <div class="pagination-nav" aria-label="Pagination des voitures">
+        {% if pagination.has_previous %}
+            <a href="{{ path('app_voitures_list', app.request.query.all|merge({'page': 1})) }}">❮❮</a>
+            <a href="{{ path('app_voitures_list', app.request.query.all|merge({'page': pagination.previous_page})) }}">❮</a>
+        {% endif %}
+        <span>Page {{ pagination.page }} / {{ pagination.total_pages }} ({{ pagination.total_items }} voitures)</span>
+        {% if pagination.has_next %}
+            <a href="{{ path('app_voitures_list', app.request.query.all|merge({'page': pagination.next_page})) }}">❯</a>
+            <a href="{{ path('app_voitures_list', app.request.query.all|merge({'page': pagination.total_pages})) }}">❯❯</a>
+        {% endif %}
+    </div>
+{% endif %}

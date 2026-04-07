@@ -1,0 +1,69 @@
+<div class="table-wrapper">
+    <table class="voitures-list">
+        <thead>
+        <tr>
+            <th>Société</th>
+            <th>Centre</th>
+            <th>Immatriculation</th>
+            <th>Marque</th>
+            <th>Couleur</th>
+            <th>Modèle</th>
+            <th>Flocable</th>
+            <th>Année</th>
+            <th>Contrôle technique</th>
+            <th>Kilométrage</th>
+            <th>Prix</th>
+            <th>Carte grise</th>
+            <th>Lieu</th>
+            <th>Utilisateur</th>
+            <th>Remarques</th>
+            <th>Certificat cession</th>
+            <th>Active</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for voiture in voitures %}
+            {% if voiture.centre %}
+                {% set centre = voiture.centre.reseauNom ~ ' ' ~ voiture.centre.ville %}
+            {% else %}
+                {% set centre = '' %}
+            {% endif %}
+
+            <tr>
+                <td>{{ voiture.societe.nom }}</td>
+                <td>{{ centre }}</td>
+                <td class="centered">{{ voiture.immatriculation }}</td>
+                <td class="centered">{{ voiture.marque }}</td>
+                <td class="centered">{{ voiture.couleur }}</td>
+                <td class="centered">{{ voiture.modele }}</td>
+                <td class="{{ voiture.flocable ? 'increased' : 'decreased' }} centered">{{ voiture.flocable ? '✓' : '✕' }}</td>
+                <td class="centered">{{ voiture.annee }}</td>
+                <td class="centered">{{ voiture.controleTechnique|date('d/m/Y') }}</td>
+                <td class="right">{{ voiture.km }}</td>
+                <td class="right">{{ voiture.prix ? voiture.prix : '---' }} €</td>
+                <td class="centered">{{ voiture.carteGrise }}</td>
+                <td>{{ voiture.lieu }}</td>
+                <td>{{ voiture.utilisateur }}</td>
+                <td>{{ voiture.remarques }}</td>
+                <td class="centered">
+                    {% if is_granted('ROLE_ADMIN') and voiture.certificatCessionPath is not empty %}
+                        <a class="btn-link"
+                           href="{{ path('app_voitures_certificat_view', {'id': voiture.id}) }}"
+                           target="_blank"
+                           rel="noopener">Consulter</a>
+
+                        <a class="btn-link"
+                           href="{{ path('app_voitures_certificat_download', {'id': voiture.id}) }}"
+                           target="_blank"
+                           rel="noopener">Télécharger</a>
+                    {% else %}
+                        ---
+                    {% endif %}
+                </td>
+                <td class="{{ voiture.active ? 'increased' : 'decreased' }} centered">{{ voiture.active == 1 ? '✓' : '✕' }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+

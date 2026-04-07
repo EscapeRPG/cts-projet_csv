@@ -13,11 +13,14 @@ function initTable(table) {
 /**
  * Initializes sortable columns and inline submit behavior for salaries table.
  *
+ * @param {ParentNode} root
  * @returns {void}
  */
-function init() {
-    const table = document.querySelector('.salaries-list');
+export function initSalariesList(root = document) {
+    const table = root.querySelector('.salaries-list');
     if (!table) return;
+    if (table.dataset.ctsInit === '1') return;
+    table.dataset.ctsInit = '1';
 
     const headers = table.querySelectorAll('th');
 
@@ -38,5 +41,9 @@ function init() {
 }
 
 document.addEventListener('turbo:load', () => {
-    init();
+    initSalariesList(document);
+});
+
+document.addEventListener('cts:list:content-updated', (e) => {
+    initSalariesList(e?.detail?.container ?? document);
 });

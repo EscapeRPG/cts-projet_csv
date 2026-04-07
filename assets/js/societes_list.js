@@ -13,11 +13,14 @@ function initTable(table) {
 /**
  * Initializes sortable columns and inline submit behavior for companies table.
  *
+ * @param {ParentNode} root
  * @returns {void}
  */
-function init() {
-    const table = document.querySelector('.societes-list');
+export function initSocietesList(root = document) {
+    const table = root.querySelector('.societes-list');
     if (!table) return;
+    if (table.dataset.ctsInit === '1') return;
+    table.dataset.ctsInit = '1';
 
     const headers = table.querySelectorAll('th');
 
@@ -36,4 +39,7 @@ function init() {
     enableSubmitOnChange(table);
 }
 
-document.addEventListener('turbo:load', init);
+document.addEventListener('turbo:load', () => initSocietesList(document));
+document.addEventListener('cts:list:content-updated', (e) => {
+    initSocietesList(e?.detail?.container ?? document);
+});

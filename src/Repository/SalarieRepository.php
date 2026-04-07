@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Salarie;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -39,6 +40,87 @@ class SalarieRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Counts employees matching the search query.
+     */
+    public function countSearch(?string $q): int
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->select('COUNT(s.id)');
+
+        $this->applySearchFilter($qb, $q);
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * Returns a paginated list of employees ordered by company then identity, filtered by search query.
+     *
+     * @return array<int, Salarie>
+     */
+    public function findPaginatedOrderedBySocieteSearch(int $limit, int $offset, ?string $q): array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->leftJoin('s.societe', 'so')
+            ->addSelect('so')
+            ->orderBy('so.nom', 'DESC')
+            ->addOrderBy('s.nom', 'ASC')
+            ->addOrderBy('s.prenom', 'ASC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+
+        $this->applySearchFilter($qb, $q);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Returns employees ordered by identity, filtered by search query.
+     *
+     * @return array<int, Salarie>
+     */
+    public function findOrderedByNomPrenomSearch(?string $q): array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->leftJoin('s.societe', 'so')
+            ->addSelect('so')
+            ->orderBy('s.nom', 'ASC')
+            ->addOrderBy('s.prenom', 'ASC');
+
+        $this->applySearchFilter($qb, $q);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    private function applySearchFilter(QueryBuilder $qb, ?string $q): void
+    {
+        $q = trim((string) $q);
+        if ($q === '') {
+            return;
+        }
+
+        // Tokenized search: each token must match at least one field.
+        $tokens = preg_split('/\s+/u', $q) ?: [];
+        $tokens = array_values(array_filter(array_map('trim', $tokens), static fn (string $t): bool => $t !== ''));
+        if ($tokens === []) {
+            return;
+        }
+
+        foreach ($tokens as $i => $token) {
+            $param = 'tok_' . $i;
+            $like = '%' . mb_strtolower($token) . '%';
+
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    'LOWER(s.nom) LIKE :' . $param,
+                    'LOWER(s.prenom) LIKE :' . $param,
+                    'LOWER(s.agrControleur) LIKE :' . $param,
+                    'LOWER(s.agrClControleur) LIKE :' . $param,
+                )
+            )->setParameter($param, $like);
+        }
     }
 
     /**

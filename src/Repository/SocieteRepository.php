@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Societe;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -17,6 +18,31 @@ class SocieteRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Societe::class);
+    }
+
+    /**
+     * @return array<int, Societe>
+     */
+    public function findOrderedByNomSearch(?string $q): array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->orderBy('s.nom', 'ASC');
+
+        $this->applySearchFilter($qb, $q);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    private function applySearchFilter(QueryBuilder $qb, ?string $q): void
+    {
+        $q = trim((string) $q);
+        if ($q === '') {
+            return;
+        }
+
+        $qb
+            ->andWhere('LOWER(s.nom) LIKE :q')
+            ->setParameter('q', '%' . mb_strtolower($q) . '%');
     }
 
     //    /**

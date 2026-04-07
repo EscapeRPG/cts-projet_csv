@@ -3,58 +3,22 @@
 {% block title %}Liste des voitures{% endblock %}
 
 {% block body %}
-    <div class="container">
-        <div class="table-wrapper">
-            <table class="voitures-list">
-                <thead>
-                <tr>
-                    <th>Société</th>
-                    <th>Centre</th>
-                    <th>Immatriculation</th>
-                    <th>Marque</th>
-                    <th>Couleur</th>
-                    <th>Modèle</th>
-                    <th>Flocable</th>
-                    <th>Année</th>
-                    <th>Contrôle technique</th>
-                    <th>Kilométrage</th>
-                    <th>Prix</th>
-                    <th>Carte grise</th>
-                    <th>Lieu</th>
-                    <th>Utilisateur</th>
-                    <th>Remarques</th>
-                    <th>Active ?</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for voiture in voitures %}
-                    {% if voiture.centre %}
-                        {% set centre = voiture.centre.reseauNom ~ ' ' ~ voiture.centre.ville %}
-                    {% else %}
-                        {% set centre = '' %}
-                    {% endif %}
+    <div class="search-list">
+        <label for="cts-voitures-search-uneditable">Recherche :</label>
+        <input id="cts-voitures-search-uneditable"
+               type="search"
+               autocomplete="off"
+               placeholder="Immatriculation..."
+               value="{{ app.request.query.get('q') }}"
+               data-list-search-input="1"
+               data-list-search-partial-url="{{ path('app_voitures_list_uneditable_partial') }}"
+               data-list-search-push-url="{{ path('app_voitures_list_uneditable') }}"
+               data-list-search-results="#cts-voitures-uneditable-results">
+    </div>
 
-                    <tr>
-                        <td>{{ voiture.societe.nom }}</td>
-                        <td>{{ centre }}</td>
-                        <td>{{ voiture.immatriculation }}</td>
-                        <td>{{ voiture.marque }}</td>
-                        <td>{{ voiture.couleur }}</td>
-                        <td>{{ voiture.modele }}</td>
-                        <td class="{{ voiture.flocable ? 'increased' : 'decreased' }} right">{{ voiture.flocable ? 'OUI' : 'NON' }}</td>
-                        <td>{{ voiture.annee }}</td>
-                        <td>{{ voiture.controleTechnique|date('d/m/Y') }}</td>
-                        <td class="right">{{ voiture.km }}</td>
-                        <td>{{ voiture.prix }}</td>
-                        <td>{{ voiture.carteGrise }}</td>
-                        <td>{{ voiture.lieu }}</td>
-                        <td>{{ voiture.utilisateur }}</td>
-                        <td>{{ voiture.remarques }}</td>
-                        <td>{{ voiture.active == 1 ? 'OUI' : 'NON' }}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+    <div class="container">
+        <div id="cts-voitures-uneditable-results" data-list-results-container="1">
+            {{ include('cts/voitures/_list_results_uneditable.html.twig') }}
         </div>
     </div>
 

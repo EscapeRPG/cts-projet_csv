@@ -227,3 +227,11 @@ tbody tr:not(.recap):hover {
         filter: none;
     }
 }
+
+.search-list {
+    margin: 20px auto;
+
+    small {
+        color: red;
+    }
+}

@@ -63,6 +63,21 @@ class Voiture
     #[ORM\Column(nullable: true)]
     private ?bool $active = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $certificatCessionPath = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $certificatCessionOriginalName = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $certificatCessionMime = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $certificatCessionSize = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $certificatCessionUploadedAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -256,6 +271,66 @@ class Voiture
     public function setActive(?bool $active): static
     {
         $this->active = $active;
+
+        return $this;
+    }
+
+    public function getCertificatCessionPath(): ?string
+    {
+        return $this->certificatCessionPath;
+    }
+
+    public function setCertificatCessionPath(?string $certificatCessionPath): static
+    {
+        $this->certificatCessionPath = $certificatCessionPath;
+
+        return $this;
+    }
+
+    public function getCertificatCessionOriginalName(): ?string
+    {
+        return $this->certificatCessionOriginalName;
+    }
+
+    public function setCertificatCessionOriginalName(?string $certificatCessionOriginalName): static
+    {
+        $this->certificatCessionOriginalName = $certificatCessionOriginalName;
+
+        return $this;
+    }
+
+    public function getCertificatCessionMime(): ?string
+    {
+        return $this->certificatCessionMime;
+    }
+
+    public function setCertificatCessionMime(?string $certificatCessionMime): static
+    {
+        $this->certificatCessionMime = $certificatCessionMime;
+
+        return $this;
+    }
+
+    public function getCertificatCessionSize(): ?int
+    {
+        return $this->certificatCessionSize;
+    }
+
+    public function setCertificatCessionSize(?int $certificatCessionSize): static
+    {
+        $this->certificatCessionSize = $certificatCessionSize;
+
+        return $this;
+    }
+
+    public function getCertificatCessionUploadedAt(): ?\DateTimeImmutable
+    {
+        return $this->certificatCessionUploadedAt;
+    }
+
+    public function setCertificatCessionUploadedAt(?\DateTimeImmutable $certificatCessionUploadedAt): static
+    {
+        $this->certificatCessionUploadedAt = $certificatCessionUploadedAt;
 
         return $this;
     }
