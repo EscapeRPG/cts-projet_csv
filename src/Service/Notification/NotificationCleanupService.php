@@ -3,6 +3,7 @@
 namespace App\Service\Notification;
 
 use App\Repository\NotificationRepository;
+use App\Repository\UserNotificationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -12,6 +13,7 @@ final readonly class NotificationCleanupService
 {
     public function __construct(
         private NotificationRepository $notificationRepository,
+        private UserNotificationRepository $userNotificationRepository,
         private EntityManagerInterface $entityManager,
     ) {
     }
@@ -36,6 +38,7 @@ final readonly class NotificationCleanupService
         }
 
         return $this->entityManager->wrapInTransaction(function () use ($expiredIds): array {
+            $this->userNotificationRepository->deleteByNotificationIds($expiredIds);
             $deletedNotifications = $this->notificationRepository->deleteByIds($expiredIds);
 
             return [
