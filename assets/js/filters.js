@@ -1,3 +1,5 @@
+import {applyActivityTableColumnVisibility} from "./activity_table.js";
+
 /**
  * Toggles a dropdown filter and closes others.
  *
@@ -402,19 +404,7 @@ function applyActivityColumnVisibility(form) {
 
     const selectedTypes = getSelectedActivityTypes(form);
     const selectedVehicles = getSelectedActivityVehicles(form);
-    const hasTypeSelection = selectedTypes.size > 0;
-    const hasVehicleSelection = selectedVehicles.size > 0;
-
-    table.querySelectorAll('[data-activity-column]').forEach((cell) => {
-        if (!(cell instanceof HTMLElement)) return;
-
-        const typeFamily = cell.dataset.typeFamily || '';
-        const vehicleFamily = cell.dataset.vehicleFamily || '';
-        const matchesType = !hasTypeSelection || selectedTypes.has(typeFamily);
-        const matchesVehicle = !hasVehicleSelection || selectedVehicles.has(vehicleFamily);
-
-        cell.hidden = !(matchesType && matchesVehicle);
-    });
+    applyActivityTableColumnVisibility(table, selectedTypes, selectedVehicles);
 }
 
 /**

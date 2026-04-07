@@ -214,18 +214,6 @@
             background: #94e594;
         }
     }
-
-    .decreased, .increased {
-        font-weight: bold;
-    }
-
-    .decreased {
-        color: red;
-    }
-
-    .increased {
-        color: #12ba12;
-    }
 }
 
 .stats-wrapper {

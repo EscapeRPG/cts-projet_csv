@@ -32,13 +32,13 @@
                         <td class="right">{{ client.ca_now|number_format(2, ',', ' ') }} €</td>
                         <td class="right">{{ client.ca_n1|number_format(2, ',', ' ') }} €</td>
                         <td class="right">{{ client.ca_n2|number_format(2, ',', ' ') }} €</td>
-                        <td>{{ client.per_ca_n1|number_format(2, ',', ' ') }}%</td>
-                        <td>{{ client.per_ca_n2|number_format(2, ',', ' ') }}%</td>
-                        <td>{{ client.nb_ctrl_now }}</td>
-                        <td>{{ client.nb_ctrl_n1 }}</td>
-                        <td>{{ client.nb_ctrl_n2 }}</td>
-                        <td>{{ client.per_n1|number_format(2, ',', ' ') }}%</td>
-                        <td>{{ client.per_n2|number_format(2, ',', ' ') }}%</td>
+                        <td class="{{ client.per_ca_n1 < 0 ? 'decreased' : 'increased' }} right">{{ client.per_ca_n1|number_format(2, ',', ' ') }}%</td>
+                        <td class="{{ client.per_ca_n2 < 0 ? 'decreased' : 'increased' }} right">{{ client.per_ca_n2|number_format(2, ',', ' ') }}%</td>
+                        <td class="right">{{ client.nb_ctrl_now }}</td>
+                        <td class="right">{{ client.nb_ctrl_n1 }}</td>
+                        <td class="right">{{ client.nb_ctrl_n2 }}</td>
+                        <td class="{{ client.per_n1 < 0 ? 'decreased' : 'increased' }} right">{{ client.per_n1|number_format(2, ',', ' ') }}%</td>
+                        <td class="{{ client.per_n2 < 0 ? 'decreased' : 'increased' }} right">{{ client.per_n2|number_format(2, ',', ' ') }}%</td>
                     </tr>
                 {% endfor %}
                 </tbody>

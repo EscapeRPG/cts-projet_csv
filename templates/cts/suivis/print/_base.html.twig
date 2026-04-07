@@ -6,7 +6,8 @@
     <title>Ker-Milo - {{ printTitle|default('Impression') }}</title>
     <link rel="icon" href="{{ asset('favicon.png') }}">
 
-    {{ importmap('app') }}
+    {# Only include the importmap itself; do not auto-import the main app entrypoint on print pages. #}
+    {{ importmap() }}
 
     {# Reuse existing styles for tables/panels, then override with print rules. #}
     {{ include('partials/stylesheets.html.twig') }}
@@ -29,7 +30,9 @@
 </div>
 
 {# Needed for rendering the charts (canvas) before we convert them to images. #}
-<script src="{{ asset('js/clients_pros.js') }}" type="module"></script>
+{% if printVariant|default('') in ['centres-recap', 'pros-recap'] %}
+    <script src="{{ asset('js/clients_pros.js') }}" type="module"></script>
+{% endif %}
 <script src="{{ asset('js/print_suivi.js') }}" type="module"></script>
 </body>
 </html>

@@ -41,10 +41,10 @@
                         <td>{{ voiture.marque }}</td>
                         <td>{{ voiture.couleur }}</td>
                         <td>{{ voiture.modele }}</td>
-                        <td>{{ voiture.flocable ? 'OUI' : 'NON' }}</td>
+                        <td class="{{ voiture.flocable ? 'increased' : 'decreased' }} right">{{ voiture.flocable ? 'OUI' : 'NON' }}</td>
                         <td>{{ voiture.annee }}</td>
                         <td>{{ voiture.controleTechnique|date('d/m/Y') }}</td>
-                        <td>{{ voiture.km }}</td>
+                        <td class="right">{{ voiture.km }}</td>
                         <td>{{ voiture.prix }}</td>
                         <td>{{ voiture.carteGrise }}</td>
                         <td>{{ voiture.lieu }}</td>

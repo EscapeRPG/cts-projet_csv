@@ -95,6 +95,19 @@ table {
                 margin: 0 5px;
             }
         }
+
+        &.decreased,
+        &.increased {
+            font-weight: bold;
+        }
+
+        &.decreased {
+            color: red;
+        }
+
+        &.increased {
+            color: #12ba12;
+        }
     }
 
     .int-row {
@@ -121,6 +134,10 @@ table {
             color: var(--blocks);
             position: sticky;
             bottom: 0;
+
+            td {
+                border-bottom: none;
+            }
         }
 
         &.total {

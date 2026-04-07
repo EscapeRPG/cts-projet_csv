@@ -16,6 +16,11 @@ body {
     line-height: 1.25;
 }
 
+/* Prevent a flash of unfiltered content on print routes (e.g. activite columns before JS hides them). */
+html:not(.print-ready) body.print-page .print-content {
+    visibility: hidden;
+}
+
 .print-shell {
     min-height: 100%;
 }
@@ -94,9 +99,22 @@ body {
 
 .print-content th,
 .print-content td {
-    border: 1px solid #cfcfcf;
+    border: 1px solid #cfcfcf !important;
     padding: 2px 4px;
     vertical-align: top;
+}
+
+td.decreased,
+td.increased {
+    font-weight: bold;
+}
+
+td.decreased {
+    color: red;
+}
+
+td.increased {
+    color: #12ba12;
 }
 
 .print-content th {
@@ -124,6 +142,24 @@ body {
     padding: 1px 2px;
 }
 
+.print-variant-activite .print-content table {
+    /* Override tables.css (nowrap + ellipsis) for print readability. */
+    white-space: normal !important;
+    table-layout: auto !important;
+}
+
+.print-variant-activite .print-content table th,
+.print-variant-activite .print-content table td {
+    max-width: none !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+}
+
+.print-variant-activite .print-content table td.int-row,
+.print-variant-activite .print-content table th.int-row {
+    white-space: nowrap !important;
+}
+
 .print-variant-activite .print-content .table-wrapper {
     border: none !important;
     border-radius: 0 !important;
@@ -131,10 +167,6 @@ body {
     background: transparent !important;
     page-break-inside: auto !important;
     break-inside: auto !important;
-}
-
-.print-variant-activite .print-content [data-print-fit="1"] {
-    display: inline-block;
 }
 
 .print-variant-activite .print-content [data-print-fit="1"] table {
@@ -154,6 +186,12 @@ body {
 .print-variant-activite .print-content .table-wrapper {
     overflow: visible !important;
     max-height: none !important;
+}
+
+.print-variant-activite .print-content .print-overflow-fallback th,
+.print-variant-activite .print-content .print-overflow-fallback td {
+    white-space: normal !important;
+    word-break: break-word !important;
 }
 
 /* Variant: Centres recap and Pros recap need the pro-stats styles but without the blue container background. */
