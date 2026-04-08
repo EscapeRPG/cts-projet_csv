@@ -26,7 +26,7 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[IsGranted('ROLE_CTS')]
+#[IsGranted('ROLE_USER')]
 /**
  * Provides list pages for CTS entities (employees, companies, centers, cars).
  *
@@ -39,6 +39,7 @@ final class ListsController extends AbstractController
     /**
      * Displays employees with one inline edit form per row.
      */
+    #[IsGranted('ROLE_LIST_SALARIES_VIEW')]
     #[Route("/cts/salaries/list", name: 'app_salaries_list')]
     public function listSalaries(
         Request              $request,
@@ -58,6 +59,7 @@ final class ListsController extends AbstractController
         return $this->renderSalariesList($salaries, $forms, $paginationData['view']);
     }
 
+    #[IsGranted('ROLE_LIST_SALARIES_VIEW')]
     #[Route("/cts/salaries/list/partial", name: 'app_salaries_list_partial')]
     public function listSalariesPartial(
         Request              $request,
@@ -80,6 +82,7 @@ final class ListsController extends AbstractController
     /**
      * Displays employees (non editable).
      */
+    #[IsGranted('ROLE_LIST_SALARIES_VIEW')]
     #[Route("/cts/salaries/list-salaries", name: 'app_salaries_list_uneditable')]
     public function listSalariesNonEditable(Request $request, SalarieRepository $salarieRepository): Response
     {
@@ -91,6 +94,7 @@ final class ListsController extends AbstractController
         ]);
     }
 
+    #[IsGranted('ROLE_LIST_SALARIES_VIEW')]
     #[Route("/cts/salaries/list-salaries/partial", name: 'app_salaries_list_uneditable_partial')]
     public function listSalariesNonEditablePartial(Request $request, SalarieRepository $salarieRepository): Response
     {
@@ -102,7 +106,7 @@ final class ListsController extends AbstractController
         ]);
     }
 
-    #[IsGranted('ROLE_ADMIN')]
+    #[IsGranted('ROLE_LIST_SALARIES_ADD')]
     #[Route("/admin/cts/salaries/add", name: 'app_salaries_add')]
     public function addSalarie(Request $request, EntityManagerInterface $em): Response
     {
@@ -181,6 +185,7 @@ final class ListsController extends AbstractController
     /**
      * Displays companies with one inline edit form per row.
      */
+    #[IsGranted('ROLE_LIST_SOCIETES_VIEW')]
     #[Route('/cts/societes/list', name: 'app_societes_list')]
     public function listSocietes(Request $request, SocieteRepository $societeRepository, FormFactoryInterface $formFactory): Response
     {
@@ -194,6 +199,7 @@ final class ListsController extends AbstractController
         ]);
     }
 
+    #[IsGranted('ROLE_LIST_SOCIETES_VIEW')]
     #[Route('/cts/societes/list/partial', name: 'app_societes_list_partial')]
     public function listSocietesPartial(Request $request, SocieteRepository $societeRepository, FormFactoryInterface $formFactory): Response
     {
@@ -207,7 +213,7 @@ final class ListsController extends AbstractController
         ]);
     }
 
-    #[IsGranted('ROLE_ADMIN')]
+    #[IsGranted('ROLE_LIST_SOCIETES_ADD')]
     #[Route('/admin/cts/societes/add', name: 'app_societes_add')]
     public function addSociete(Request $request, EntityManagerInterface $em): Response
     {
@@ -285,6 +291,7 @@ final class ListsController extends AbstractController
     /**
      * Displays centers with one inline edit form per row.
      */
+    #[IsGranted('ROLE_LIST_CENTRES_VIEW')]
     #[Route("/cts/centres/list", name: 'app_centres_list')]
     public function listCentres(Request $request, CentreRepository $centreRepository, FormFactoryInterface $formFactory): Response
     {
@@ -299,6 +306,7 @@ final class ListsController extends AbstractController
         ]);
     }
 
+    #[IsGranted('ROLE_LIST_CENTRES_VIEW')]
     #[Route("/cts/centres/list/partial", name: 'app_centres_list_partial')]
     public function listCentresPartial(Request $request, CentreRepository $centreRepository, FormFactoryInterface $formFactory): Response
     {
@@ -312,7 +320,7 @@ final class ListsController extends AbstractController
         ]);
     }
 
-    #[IsGranted('ROLE_ADMIN')]
+    #[IsGranted('ROLE_LIST_CENTRES_ADD')]
     #[Route("/admin/cts/centres/add", name: 'app_centres_add')]
     public function addCentre(Request $request, EntityManagerInterface $em): Response
     {
@@ -398,6 +406,7 @@ final class ListsController extends AbstractController
     /**
      * Displays vehicles (uneditable).
      */
+    #[IsGranted('ROLE_LIST_VOITURES_VIEW')]
     #[Route("/cts/voitures/list-voitures", name: 'app_voitures_list_uneditable')]
     public function listVoituresNonEditable(Request $request, VoitureRepository $voitureRepository): Response
     {
@@ -409,6 +418,7 @@ final class ListsController extends AbstractController
         ]);
     }
 
+    #[IsGranted('ROLE_LIST_VOITURES_VIEW')]
     #[Route("/cts/voitures/list-voitures/partial", name: 'app_voitures_list_uneditable_partial')]
     public function listVoituresNonEditablePartial(Request $request, VoitureRepository $voitureRepository): Response
     {
@@ -423,6 +433,7 @@ final class ListsController extends AbstractController
     /**
      * Displays vehicles with one inline edit form per row.
      */
+    #[IsGranted('ROLE_LIST_VOITURES_VIEW')]
     #[Route("/cts/voitures/list", name: 'app_voitures_list')]
     public function listVoitures(
         Request              $request,
@@ -444,6 +455,7 @@ final class ListsController extends AbstractController
         ]);
     }
 
+    #[IsGranted('ROLE_LIST_VOITURES_VIEW')]
     #[Route("/cts/voitures/list/partial", name: 'app_voitures_list_partial')]
     public function listVoituresPartial(
         Request              $request,
@@ -463,7 +475,7 @@ final class ListsController extends AbstractController
         ]);
     }
 
-    #[IsGranted('ROLE_ADMIN')]
+    #[IsGranted('ROLE_LIST_VOITURES_ADD')]
     #[Route("/admin/cts/voitures/add", name: 'app_voitures_add')]
     public function addVoiture(
         Request $request,
@@ -826,6 +838,116 @@ final class ListsController extends AbstractController
         return $this->redirectToRoute('app_voitures_list', [
             'page' => $request->query->getInt('page', 1),
             'q' => $request->query->get('q'),
+        ]);
+    }
+
+    #[IsGranted('ROLE_LIST_SALARIES_VIEW')]
+    #[Route('/cts/salaries/list/print', name: 'app_salaries_list_print')]
+    public function listSalariesPrint(Request $request, SalarieRepository $salarieRepository): Response
+    {
+        $q = trim((string) $request->query->get('q', ''));
+        $perPage = 30;
+        $paginationData = $this->computePagination($request, $perPage, $salarieRepository->countSearch($q));
+        $salaries = $salarieRepository->findPaginatedOrderedBySocieteSearch($perPage, $paginationData['offset'], $q);
+
+        return $this->render('cts/lists/print/salaries.html.twig', [
+            'salaries' => $salaries,
+            'pagination' => $paginationData['view'],
+            'q' => $q,
+            'printTitle' => 'Liste des salariés',
+            'printVariant' => 'lists',
+            'printOrientation' => 'landscape',
+            'autoPrint' => true,
+        ]);
+    }
+
+    #[IsGranted('ROLE_LIST_SALARIES_VIEW')]
+    #[Route('/cts/salaries/list-salaries/print', name: 'app_salaries_list_uneditable_print')]
+    public function listSalariesNonEditablePrint(Request $request, SalarieRepository $salarieRepository): Response
+    {
+        $q = trim((string) $request->query->get('q', ''));
+        $salaries = $salarieRepository->findOrderedByNomPrenomSearch($q);
+
+        return $this->render('cts/lists/print/salaries.html.twig', [
+            'salaries' => $salaries,
+            'pagination' => null,
+            'q' => $q,
+            'printTitle' => 'Liste des salariés',
+            'printVariant' => 'lists',
+            'printOrientation' => 'landscape',
+            'autoPrint' => true,
+        ]);
+    }
+
+    #[IsGranted('ROLE_LIST_SOCIETES_VIEW')]
+    #[Route('/cts/societes/list/print', name: 'app_societes_list_print')]
+    public function listSocietesPrint(Request $request, SocieteRepository $societeRepository): Response
+    {
+        $q = trim((string) $request->query->get('q', ''));
+        $societes = $societeRepository->findOrderedByNomSearch($q);
+
+        return $this->render('cts/lists/print/societes.html.twig', [
+            'societes' => $societes,
+            'q' => $q,
+            'printTitle' => 'Liste des sociétés',
+            'printVariant' => 'lists',
+            'printOrientation' => 'portrait',
+            'autoPrint' => true,
+        ]);
+    }
+
+    #[IsGranted('ROLE_LIST_CENTRES_VIEW')]
+    #[Route('/cts/centres/list/print', name: 'app_centres_list_print')]
+    public function listCentresPrint(Request $request, CentreRepository $centreRepository): Response
+    {
+        $q = trim((string) $request->query->get('q', ''));
+        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch($q);
+
+        return $this->render('cts/lists/print/centres.html.twig', [
+            'centres' => $centres,
+            'q' => $q,
+            'printTitle' => 'Liste des centres',
+            'printVariant' => 'lists',
+            'printOrientation' => 'landscape',
+            'autoPrint' => true,
+        ]);
+    }
+
+    #[IsGranted('ROLE_LIST_VOITURES_VIEW')]
+    #[Route('/cts/voitures/list/print', name: 'app_voitures_list_print')]
+    public function listVoituresPrint(Request $request, VoitureRepository $voitureRepository): Response
+    {
+        $q = trim((string) $request->query->get('q', ''));
+        $perPage = 20;
+        $paginationData = $this->computePagination($request, $perPage, $voitureRepository->countSearch($q));
+        $voitures = $voitureRepository->findPaginatedOrderedBySocieteSearch($perPage, $paginationData['offset'], $q);
+
+        return $this->render('cts/lists/print/voitures.html.twig', [
+            'voitures' => $voitures,
+            'pagination' => $paginationData['view'],
+            'q' => $q,
+            'printTitle' => 'Liste des voitures',
+            'printVariant' => 'lists',
+            'printOrientation' => 'landscape',
+            'autoPrint' => true,
+        ]);
+    }
+
+    #[IsGranted('ROLE_LIST_VOITURES_VIEW')]
+    #[Route('/cts/voitures/list-voitures/print', name: 'app_voitures_list_uneditable_print')]
+    public function listVoituresNonEditablePrint(Request $request, VoitureRepository $voitureRepository): Response
+    {
+        $q = trim((string) $request->query->get('q', ''));
+        $voitures = $voitureRepository->findOrderedBySocieteSearch($q);
+
+        return $this->render('cts/lists/print/voitures.html.twig', [
+            'voitures' => $voitures,
+            'pagination' => null,
+            'q' => $q,
+            'printTitle' => 'Liste des voitures',
+            'printVariant' => 'lists',
+            'printOrientation' => 'landscape',
+            'autoPrint' => true,
         ]);
     }
 

@@ -13,10 +13,14 @@
                 <h3>
                     {% if 'ROLE_ADMIN' in user.roles %}
                         Administrateur
+                    {% elseif ('ROLE_CTS' in user.roles) and ('ROLE_ASTIKOTO' in user.roles) %}
+                        CTS + Astikoto
                     {% elseif 'ROLE_ASTIKOTO' in user.roles %}
                         Gérant Astikoto
+                    {% elseif 'ROLE_CTS' in user.roles %}
+                        CTS
                     {% else %}
-                        Salarié
+                        Utilisateur
                     {% endif %}
                 </h3>
 
@@ -61,97 +65,113 @@
             {% if is_granted('ROLE_CTS') %}
                 <h2>CTS</h2>
 
-                <h3 class="toggle">
+                {% if is_granted('ROLE_LIST_SOCIETES_VIEW') or is_granted('ROLE_LIST_SOCIETES_ADD') %}
+                    <h3 class="toggle">
                     <span class="toggle-title">
                         {{ include('partials/svg/societes.html.twig') }}
                         Sociétés
                     </span>
-                    <span class="open-btn">></span>
-                </h3>
-                <ul class="menu">
-                    <li>
-                        <a href="{{ path('app_societes_list') }}">
-                            → Liste des sociétés
-                        </a>
-                    </li>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        {% if is_granted('ROLE_LIST_SOCIETES_VIEW') %}
+                            <li>
+                                <a href="{{ path('app_societes_list') }}">
+                                    → Liste des sociétés
+                                </a>
+                            </li>
+                        {% endif %}
 
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <li>
-                            <a href="{{ path('app_societes_add') }}">
-                                → Ajouter une société
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
+                        {% if is_granted('ROLE_LIST_SOCIETES_ADD') %}
+                            <li>
+                                <a href="{{ path('app_societes_add') }}">
+                                    → Ajouter une société
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                {% endif %}
 
-                <h3 class="toggle">
+                {% if is_granted('ROLE_LIST_CENTRES_VIEW') or is_granted('ROLE_LIST_CENTRES_ADD') %}
+                    <h3 class="toggle">
                     <span class="toggle-title">
                         {{ include('partials/svg/centres.html.twig') }}
                         Centres
                     </span>
-                    <span class="open-btn">></span>
-                </h3>
-                <ul class="menu">
-                    <li>
-                        <a href="{{ path('app_centres_list') }}">
-                            → Liste des centres
-                        </a>
-                    </li>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        {% if is_granted('ROLE_LIST_CENTRES_VIEW') %}
+                            <li>
+                                <a href="{{ path('app_centres_list') }}">
+                                    → Liste des centres
+                                </a>
+                            </li>
+                        {% endif %}
 
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <li>
-                            <a href="{{ path('app_centres_add') }}">
-                                → Ajouter un centre
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
+                        {% if is_granted('ROLE_LIST_CENTRES_ADD') %}
+                            <li>
+                                <a href="{{ path('app_centres_add') }}">
+                                    → Ajouter un centre
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                {% endif %}
 
-                <h3 class="toggle">
+                {% if is_granted('ROLE_LIST_VOITURES_VIEW') or is_granted('ROLE_LIST_VOITURES_ADD') %}
+                    <h3 class="toggle">
                     <span class="toggle-title">
                         {{ include('partials/svg/voitures.html.twig') }}
                         Voitures
                     </span>
-                    <span class="open-btn">></span>
-                </h3>
-                <ul class="menu">
-                    <li>
-                        <a href="{{ path('app_voitures_list_uneditable') }}">
-                            → Liste des voitures
-                        </a>
-                    </li>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        {% if is_granted('ROLE_LIST_VOITURES_VIEW') %}
+                            <li>
+                                <a href="{{ path('app_voitures_list_uneditable') }}">
+                                    → Liste des voitures
+                                </a>
+                            </li>
+                        {% endif %}
 
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <li>
-                            <a href="{{ path('app_voitures_add') }}">
-                                → Ajouter une voiture
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
+                        {% if is_granted('ROLE_LIST_VOITURES_ADD') %}
+                            <li>
+                                <a href="{{ path('app_voitures_add') }}">
+                                    → Ajouter une voiture
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                {% endif %}
 
-                <h3 class="toggle">
+                {% if is_granted('ROLE_LIST_SALARIES_VIEW') or is_granted('ROLE_LIST_SALARIES_ADD') %}
+                    <h3 class="toggle">
                     <span class="toggle-title">
                         {{ include('partials/svg/salaries.html.twig') }}
                         Salariés
                     </span>
-                    <span class="open-btn">></span>
-                </h3>
-                <ul class="menu">
-                    <li>
-                        <a href="{{ path('app_salaries_list_uneditable') }}">
-                            → Liste des salariés
-                        </a>
-                    </li>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        {% if is_granted('ROLE_LIST_SALARIES_VIEW') %}
+                            <li>
+                                <a href="{{ path('app_salaries_list_uneditable') }}">
+                                    → Liste des salariés
+                                </a>
+                            </li>
+                        {% endif %}
 
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <li>
-                            <a href="{{ path('app_salaries_add') }}">
-                                → Ajouter un salarié
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
+                        {% if is_granted('ROLE_LIST_SALARIES_ADD') %}
+                            <li>
+                                <a href="{{ path('app_salaries_add') }}">
+                                    → Ajouter un salarié
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                {% endif %}
 
                 <h3 class="toggle">
                     <span class="toggle-title">

@@ -26,14 +26,11 @@ body {
 }
 
 header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px 20px;
     position: fixed;
-    width: calc(100% - 40px);
     top: 0;
     left: 0;
+    width: fit-content;
+    padding: 15px 20px 0;
     z-index: 98;
 
     nav {
@@ -126,7 +123,7 @@ header {
             background: linear-gradient(var(--cts-main), var(--cts-alt));
             margin: 0;
             white-space: nowrap;
-            padding: 50px 0;
+            padding: 15px 0;
 
             &.open {
                 transform: translateX(0);
@@ -164,10 +161,12 @@ header {
                         display: flex;
                         align-items: center;
                         gap: 10px;
+                        width: 100%;
+                        height: 30px;
                     }
 
                     svg {
-                        height: 40px;
+                        height: 30px;
                     }
 
                     &:hover,
@@ -192,22 +191,75 @@ header {
 
             ul {
                 margin: 0 auto;
-                padding: 0 40px;
+                padding: 0 33px;
                 list-style-type: none;
                 border-bottom: 1px solid var(--bg-main-color);
 
                 li {
-                    margin: 0 auto;
+                    width: fit-content;
+                    margin: 0;
                     padding: 5px 10px;
                     border-left: 2px solid var(--nav-a-color-hover);
+                    overflow: hidden;
+                    position: relative;
+
+                    &::before,
+                    &::after {
+                        content: '';
+                        position: absolute;
+                        box-sizing: border-box;
+                    }
+
+                    &::before {
+                        left: 0;
+                        bottom: 0;
+                        width: calc(100% + 20px);
+                        height: 2px;
+                        background: var(--nav-a-color-hover);
+                        transform: translateX(calc(-100% - 10px));
+                        transition: all .3s ease;
+                        transition-delay: .1s;
+                    }
+
+                    &::after {
+                        right: 0;
+                        bottom: 0;
+                        border-left: 7px solid transparent;
+                        border-bottom: 7px solid var(--nav-a-color-hover);
+                        transform: translateY(100%);
+                        transition: all .1s ease;
+                        transition-delay: 0s;
+                    }
+
+                    &:hover {
+                        &::before {
+                            transform: translateX(-10px);
+                        }
+
+                        &::after {
+                            transform: translateY(0);
+                            transition-delay: .3s;
+                        }
+
+                        a {
+                            color: var(--nav-a-color-hover);
+                        }
+                    }
                 }
 
                 &.profil {
-                    margin-top: 20px;
+                    display: flex;
+                    margin: 10px auto;
 
                     li {
                         text-align: center;
+                        margin: auto;
+                        padding: 5px;
                         border: none;
+
+                        &::after {
+                            border: none;
+                        }
                     }
                 }
 
@@ -227,11 +279,6 @@ header {
                 svg {
                     width: 20px;
                 }
-
-                &:hover {
-                    color: var(--nav-a-color-hover);
-                    text-decoration: underline;
-                }
             }
 
             .meta-info {
@@ -245,6 +292,9 @@ header {
         display: flex;
         align-items: center;
         gap: 20px;
+        position: fixed;
+        top: 15px;
+        right: 20px;
 
         .notifications {
             position: relative;
@@ -356,7 +406,20 @@ main {
     background: var(--blocks);
     box-shadow: var(--box-shadow);
     border-radius: 10px;
-    overflow: hidden;
+    overflow: auto;
+}
+
+.decreased,
+.increased {
+    font-weight: bold;
+}
+
+.decreased {
+    color: red;
+}
+
+.increased {
+    color: #12ba12;
 }
 
 .btn-link {

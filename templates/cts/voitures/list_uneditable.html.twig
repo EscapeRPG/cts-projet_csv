@@ -66,5 +66,14 @@
         </div>
     {% endif %}
 
-    <a href="{{ path('app_voitures_list') }}" class="btn-link">Éditer</a>
+    <div class="edit-print">
+        <a href="{{ path('app_voitures_list') }}" class="btn-link">Éditer</a>
+
+        <a class="btn-link"
+           href="{{ path('app_voitures_list_uneditable_print') }}"
+           data-print-keep-filters="1"
+           data-print-base-href="{{ path('app_voitures_list_uneditable_print') }}"
+           target="_blank"
+           rel="noopener">Imprimer</a>
+    </div>
 {% endblock %}

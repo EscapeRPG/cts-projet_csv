@@ -11,7 +11,8 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
  * Enforces "centres" visibility constraints for monitoring ("suivi") pages.
  *
  * ROLE_ADMIN: unrestricted.
- * ROLE_CTS: restricted to centres linked to the authenticated user's Salarie.
+ * ROLE_CTS: restricted to centres linked to the authenticated user (or, as a fallback, the user's Salarie).
+ * If no centres are configured for the CTS account, the scope is considered unrestricted.
  */
 final readonly class SuiviCentresScope
 {
@@ -72,9 +73,31 @@ final readonly class SuiviCentresScope
             throw new AccessDeniedException('Utilisateur non authentifié.');
         }
 
+        // Preferred scope: centres explicitly assigned to the user.
+        $allowed = $this->connection->fetchFirstColumn(
+            "
+                SELECT c.agr_centre
+                FROM centre c
+                INNER JOIN user_centre uc ON uc.centre_id = c.id
+                WHERE uc.user_id = :user_id
+                ORDER BY c.agr_centre
+            ",
+            ['user_id' => $user->getId()]
+        );
+
+        $allowed = array_values(array_filter(array_map(
+            static fn ($value): string => trim((string) $value),
+            $allowed
+        )));
+
+        if ($allowed !== []) {
+            return $allowed;
+        }
+
+        // Fallback scope: centres linked to the user's salarie (legacy behaviour).
         $salarie = $user->getSalarie();
         if ($salarie === null) {
-            throw new AccessDeniedException('Compte CTS non lié à un salarié. Veuillez contacter un administrateur.');
+            return null;
         }
 
         $allowed = $this->connection->fetchFirstColumn(
@@ -93,11 +116,6 @@ final readonly class SuiviCentresScope
             $allowed
         )));
 
-        if ($allowed === []) {
-            throw new AccessDeniedException('Aucun centre n\'est rattaché à ce salarié.');
-        }
-
-        return $allowed;
+        return $allowed !== [] ? $allowed : null;
     }
 }
-

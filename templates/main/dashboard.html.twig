@@ -12,25 +12,33 @@
             <div class="app-container">
                 <fieldset class="app-category">
                     <legend>Listes</legend>
-                    <a href="{{ path('app_societes_list') }}" class="app">
-                        <img src="{{ asset('img/liste-societes.png') }}" alt="liste des sociétés">
-                        <div class="inner-div">Sociétés</div>
-                    </a>
+                    {% if is_granted('ROLE_LIST_SOCIETES_VIEW') %}
+                        <a href="{{ path('app_societes_list') }}" class="app">
+                            <img src="{{ asset('img/liste-societes.png') }}" alt="liste des sociétés">
+                            <div class="inner-div">Sociétés</div>
+                        </a>
+                    {% endif %}
 
-                    <a href="{{ path('app_centres_list') }}" class="app">
-                        <img src="{{ asset('img/liste-centres.png') }}" alt="liste des centres">
-                        <div class="inner-div">Centres</div>
-                    </a>
+                    {% if is_granted('ROLE_LIST_CENTRES_VIEW') %}
+                        <a href="{{ path('app_centres_list') }}" class="app">
+                            <img src="{{ asset('img/liste-centres.png') }}" alt="liste des centres">
+                            <div class="inner-div">Centres</div>
+                        </a>
+                    {% endif %}
 
-                    <a href="{{ path('app_voitures_list_uneditable') }}" class="app">
-                        <img src="{{ asset('img/liste-voitures.png') }}" alt="liste des voitures">
-                        <div class="inner-div">Voitures</div>
-                    </a>
+                    {% if is_granted('ROLE_LIST_VOITURES_VIEW') %}
+                        <a href="{{ path('app_voitures_list_uneditable') }}" class="app">
+                            <img src="{{ asset('img/liste-voitures.png') }}" alt="liste des voitures">
+                            <div class="inner-div">Voitures</div>
+                        </a>
+                    {% endif %}
 
-                    <a href="{{ path('app_salaries_list_uneditable') }}" class="app">
-                        <img src="{{ asset('img/liste-controleurs.png') }}" alt="liste des salariés">
-                        <div class="inner-div">Salariés</div>
-                    </a>
+                    {% if is_granted('ROLE_LIST_SALARIES_VIEW') %}
+                        <a href="{{ path('app_salaries_list_uneditable') }}" class="app">
+                            <img src="{{ asset('img/liste-controleurs.png') }}" alt="liste des salariés">
+                            <div class="inner-div">Salariés</div>
+                        </a>
+                    {% endif %}
                 </fieldset>
 
                 <fieldset class="app-category">

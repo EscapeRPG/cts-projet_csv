@@ -95,19 +95,6 @@ table {
                 margin: 0 5px;
             }
         }
-
-        &.decreased,
-        &.increased {
-            font-weight: bold;
-        }
-
-        &.decreased {
-            color: red;
-        }
-
-        &.increased {
-            color: #12ba12;
-        }
     }
 
     .int-row {
@@ -161,6 +148,7 @@ table {
     background: var(--blocks);
     color: black;
     padding: 5px 0;
+    font-size: .8em;
 
     a {
         color: var(--cts-main);
@@ -234,4 +222,8 @@ tbody tr:not(.recap):hover {
     small {
         color: red;
     }
+}
+
+.edit-print {
+    margin-top: 20px;
 }

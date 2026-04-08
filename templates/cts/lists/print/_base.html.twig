@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Ker-Milo - {{ printTitle|default('Impression') }}</title>
+    <link rel="icon" href="{{ asset('favicon.png') }}">
+
+    {# Only include the importmap itself; do not auto-import the main app entrypoint on print pages. #}
+    {{ importmap() }}
+
+    {# Reuse existing styles for tables, then override with print rules. #}
+    {{ include('partials/stylesheets.html.twig') }}
+    <link rel="stylesheet" href="{{ asset('styles/print/print-base.css') }}">
+    {% if printOrientation is defined and printOrientation == 'landscape' %}
+        <link rel="stylesheet" href="{{ asset('styles/print/print-landscape.css') }}">
+    {% else %}
+        <link rel="stylesheet" href="{{ asset('styles/print/print-portrait.css') }}">
+    {% endif %}
+    <link rel="stylesheet" href="{{ asset('styles/print/print-lists.css') }}">
+</head>
+
+<body class="print-page print-variant-{{ printVariant|default('lists') }}"
+      data-auto-print="{{ autoPrint is defined and autoPrint ? '1' : '0' }}">
+<div class="print-shell">
+    <header class="print-header">
+        <h1 class="print-title">{{ printTitle|default('Impression') }}</h1>
+
+        <div class="print-meta">
+            {% if q is defined and q is not empty %}
+                <div class="item"><span class="k">Recherche</span>{{ q }}</div>
+            {% endif %}
+            {% if pagination is defined and pagination %}
+                <div class="item"><span class="k">Page</span>{{ pagination.page }}/{{ pagination.total_pages }}</div>
+                <div class="item"><span class="k">Total</span>{{ pagination.total_items }}</div>
+            {% endif %}
+            <div class="item"><span class="k">Généré</span>{{ "now"|date('d/m/Y H:i') }}</div>
+        </div>
+    </header>
+
+    <div class="print-content">
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+<script>
+    // Mark the document as ready so print pages don't flash unfiltered content.
+    document.documentElement.classList.add('print-ready');
+    if (document.body.dataset.autoPrint === '1') {
+        window.addEventListener('load', () => setTimeout(() => window.print(), 50));
+    }
+</script>
+</body>
+</html>
+

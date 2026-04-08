@@ -71,4 +71,11 @@
             </div>
         </div>
     {% endif %}
+
+    <a class="btn-link"
+       href="{{ path('app_salaries_list_uneditable_print') }}"
+       data-print-keep-filters="1"
+       data-print-base-href="{{ path('app_salaries_list_uneditable_print') }}"
+       target="_blank"
+       rel="noopener">Imprimer</a>
 {% endblock %}

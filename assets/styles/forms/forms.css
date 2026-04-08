@@ -241,3 +241,20 @@ button {
     justify-content: flex-start;
     gap: 5px !important;
 }
+
+.form-row {
+    text-wrap: nowrap;
+
+    .form-choice-group {
+        display: flex;
+        flex-direction: row;
+        justify-content: end;
+
+        .form-choice-item {
+            display: flex;
+            flex-direction: row;
+            gap: 5px;
+            width: fit-content;
+        }
+    }
+}

@@ -47,6 +47,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?Salarie $salarie = null;
 
     /**
+     * Restricts access to specific centres when defined.
+     *
+     * @var Collection<int, Centre>
+     */
+    #[ORM\ManyToMany(targetEntity: Centre::class)]
+    #[ORM\JoinTable(name: 'user_centre')]
+    private Collection $centres;
+
+    /**
      * @var Collection<int, UserNotification>
      */
     #[ORM\OneToMany(targetEntity: UserNotification::class, mappedBy: 'user')]
@@ -55,6 +64,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->userNotifications = new ArrayCollection();
+        $this->centres = new ArrayCollection();
     }
 
 
@@ -183,6 +193,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setSalarie(?Salarie $salarie): static
     {
         $this->salarie = $salarie;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Centre>
+     */
+    public function getCentres(): Collection
+    {
+        return $this->centres;
+    }
+
+    public function addCentre(Centre $centre): static
+    {
+        if (!$this->centres->contains($centre)) {
+            $this->centres->add($centre);
+        }
+
+        return $this;
+    }
+
+    public function removeCentre(Centre $centre): static
+    {
+        $this->centres->removeElement($centre);
 
         return $this;
     }

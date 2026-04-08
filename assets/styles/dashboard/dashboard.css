@@ -5,6 +5,7 @@
     justify-content: space-between;
     gap: 50px;
     min-width: 60%;
+    max-width: 80%;
     margin: 5px auto;
     padding: 10px 50px;
     background: var(--blocks);
@@ -47,8 +48,8 @@
     display: flex;
     align-items: start;
     justify-content: center;
-    width: 150px;
-    height: 150px;
+    width: 120px;
+    height: 120px;
     margin: 10px;
     border-radius: 10px;
     box-shadow: var(--box-shadow);
@@ -66,6 +67,7 @@
 
         .inner-div {
             max-height: 100%;
+            background: linear-gradient(var(--cts-main), var(--cts-alt));
             border: none;
         }
     }
@@ -88,6 +90,6 @@
         background: var(--cts-main);
         color: var(--blocks);
         transition: all .25s ease;
-        border-top: 2px solid var(--blocks);
+        border-top: 1px solid var(--blocks);
     }
 }

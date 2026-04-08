@@ -4,8 +4,8 @@
     position: relative;
     display: flex;
     /* Keep row heights stable across columns (prevents drift on browser zoom). */
-    --cts-row-h: 2.2rem;
-    --cts-row-gap: 6px;
+    --cts-row-h: 1.1rem;
+    --cts-row-gap: 3px;
     --cts-cell-pad-x: 10px;
     --cts-bar-h: 0.65rem;
 
@@ -19,7 +19,7 @@
     .bar-container,
     .salarie-row {
         white-space: nowrap;
-        font-size: 1em;
+        font-size: .8em;
         padding: 0 var(--cts-cell-pad-x);
         margin: 0;
         box-sizing: border-box;
@@ -134,7 +134,7 @@
             justify-content: center;
             color: white;
             font-weight: bold;
-            font-size: .8em;
+            font-size: .7em;
         }
 
         .bar-container,
@@ -162,6 +162,6 @@
 /* First 4 panels (nb_controles, prix_moyen, temps_moyen, taux_refus): thinner rows/bars. */
 .stats-container > .stats-wrapper:nth-child(-n+4) .salaries-chart {
     --cts-row-h: 1.1rem;
-    --cts-row-gap: 6px;
+    --cts-row-gap: 3px;
     --cts-bar-h: 0.45rem;
 }

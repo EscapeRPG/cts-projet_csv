@@ -1,0 +1,39 @@
+{% extends 'cts/lists/print/_base.html.twig' %}
+
+{% block content %}
+    <div class="table-wrapper" data-print-fit="1">
+        <table class="print-list-table centres-print">
+            <thead>
+            <tr>
+                <th>Société</th>
+                <th>Réseau</th>
+                <th>Enseigne</th>
+                <th>Agrément</th>
+                <th>Agrément CL</th>
+                <th>CP</th>
+                <th>Ville</th>
+                <th>Téléphone</th>
+                <th>Email</th>
+                <th>SIRET</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for centre in centres %}
+                <tr>
+                    <td>{{ centre.societe ? centre.societe.nom : '' }}</td>
+                    <td>{{ centre.reseauNom }}</td>
+                    <td>{{ centre.coordonnees }}</td>
+                    <td class="centered">{{ centre.agrCentre }}</td>
+                    <td class="centered">{{ centre.agrClCentre }}</td>
+                    <td class="centered">{{ centre.cp }}</td>
+                    <td>{{ centre.ville }}</td>
+                    <td>{{ centre.telephone }}</td>
+                    <td>{{ centre.email }}</td>
+                    <td>{{ centre.numSiret }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+

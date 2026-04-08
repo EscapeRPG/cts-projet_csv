@@ -4,7 +4,7 @@
     flex-direction: row;
     align-items: stretch;
     width: 95%;
-    height: 75vh;
+    height: 70vh;
     margin: 0 auto;
 }
 
@@ -60,23 +60,22 @@
 
         h2 {
             text-align: center;
-            font-size: 1.5em;
+            font-size: 1.1em;
         }
 
         .ca-summary {
             display: flex;
             width: 100%;
-            height: 100%;
             box-sizing: border-box;
             flex-direction: column;
             border-radius: 5px;
-            padding: 10px;
+            padding: 0 10px;
             background: var(--blocks);
             box-shadow: var(--box-shadow);
 
             strong {
                 text-align: center;
-                font-size: 2em;
+                font-size: 1.5em;
             }
 
             .previous {
@@ -88,6 +87,7 @@
                 text-align: right;
                 width: 100%;
                 box-sizing: border-box;
+                font-size: .8em;
 
                 .row {
                     display: grid;
@@ -196,6 +196,8 @@
     }
 
     .table-pros {
+        font-size: .7em;
+
         td {
             background: var(--blocks);
             text-align: center;
@@ -295,4 +297,10 @@
 
 .filters-print-actions {
     margin-top: 20px;
+}
+
+#cts-centres-results,
+#cts-voitures-uneditable-results,
+#cts-salaries-uneditable-results {
+    min-width: max-content;
 }

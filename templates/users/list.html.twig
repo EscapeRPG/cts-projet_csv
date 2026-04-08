@@ -27,10 +27,11 @@
                         <td>
                             {% if ('ROLE_ADMIN' in user.roles) %}
                                 Administrateur
-                            {% elseif ('ROLE_ASTIKOTO' in user.roles) %}
-                                Gérant Astikoto
                             {% else %}
-                                Salarié
+                                {% set labels = [] %}
+                                {% if 'ROLE_CTS' in user.roles %}{% set labels = labels|merge(['CTS']) %}{% endif %}
+                                {% if 'ROLE_ASTIKOTO' in user.roles %}{% set labels = labels|merge(['Astikoto']) %}{% endif %}
+                                {{ labels is empty ? 'Utilisateur' : labels|join(' + ') }}
                             {% endif %}
                         </td>
                         {% if is_granted('ROLE_ADMIN') %}

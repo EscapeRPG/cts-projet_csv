@@ -1,0 +1,23 @@
+{% extends 'cts/lists/print/_base.html.twig' %}
+
+{% block content %}
+    <div class="table-wrapper" data-print-fit="1">
+        <table class="print-list-table societes-print">
+            <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Numéro de TVA</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for societe in societes %}
+                <tr>
+                    <td>{{ societe.nom }}</td>
+                    <td>{{ societe.numTva }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+

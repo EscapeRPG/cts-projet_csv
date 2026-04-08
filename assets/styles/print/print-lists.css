@@ -1,0 +1,28 @@
+/* List print pages: compact, single-page-friendly tables without edit chrome. */
+.print-variant-lists .print-content {
+    padding-left: 6mm;
+    padding-right: 6mm;
+}
+
+.print-variant-lists .print-content .table-wrapper {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+.print-variant-lists .print-content table {
+    font-size: 8px;
+    line-height: 1.15;
+    white-space: normal !important;
+    table-layout: auto !important;
+}
+
+.print-variant-lists .print-content th,
+.print-variant-lists .print-content td {
+    padding: 1px 2px;
+    max-width: none !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    word-break: break-word;
+}

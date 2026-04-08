@@ -84,16 +84,60 @@ final class AdminController extends AbstractController
             $user->setIsActive(false);
             $user->setPassword('!');
 
-            $role = $form->get('roles')->getData();
-            $user->setRoles([$role]);
+            $isAdmin = (bool) $form->get('isAdmin')->getData();
+            /** @var array<int, string> $entreprises */
+            $entreprises = $form->get('entreprises')->getData() ?? [];
+            /** @var array<int, string> $societePerms */
+            $societePerms = $form->get('societe')->getData() ?? [];
+            /** @var array<int, string> $centrePerms */
+            $centrePerms = $form->get('centre')->getData() ?? [];
+            /** @var array<int, string> $voiturePerms */
+            $voiturePerms = $form->get('voiture')->getData() ?? [];
+            /** @var array<int, string> $salariesPerms */
+            $salariesPerms = $form->get('salaries')->getData() ?? [];
 
-            if ($role === 'ROLE_CTS' && $user->getSalarie() === null) {
-                $form->get('salarie')->addError(new FormError('Pour un compte CTS, veuillez sélectionner le salarié associé.'));
+            $roles = [];
+            if ($isAdmin) {
+                $roles[] = 'ROLE_ADMIN';
+            } else {
+                $listPerms = array_merge($societePerms, $centrePerms, $voiturePerms, $salariesPerms);
+                $roles = array_merge($roles, $entreprises, $listPerms);
 
-                return $this->render('users/add.html.twig', [
-                    'form' => $form->createView(),
-                ]);
+                // If add permission is granted, ensure the corresponding view permission is also present.
+                $addToView = [
+                    'ROLE_LIST_SOCIETES_ADD' => 'ROLE_LIST_SOCIETES_VIEW',
+                    'ROLE_LIST_CENTRES_ADD' => 'ROLE_LIST_CENTRES_VIEW',
+                    'ROLE_LIST_VOITURES_ADD' => 'ROLE_LIST_VOITURES_VIEW',
+                    'ROLE_LIST_SALARIES_ADD' => 'ROLE_LIST_SALARIES_VIEW',
+                ];
+                foreach ($roles as $role) {
+                    $addRole = (string) $role;
+                    $viewRole = $addToView[$addRole] ?? null;
+                    if (is_string($viewRole)) {
+                        $roles[] = $viewRole;
+                    }
+                }
+
+                $roles = array_values(array_unique(array_filter($roles, static fn (string $r): bool => $r !== 'ROLE_USER')));
+
+                if ($entreprises === []) {
+                    $form->get('entreprises')->addError(new FormError('Veuillez sélectionner au moins une entreprise (CTS et/ou Astikoto).'));
+
+                    return $this->render('users/add.html.twig', [
+                        'form' => $form->createView(),
+                    ]);
+                }
+
+                if ($listPerms === []) {
+                    $form->addError(new FormError('Veuillez sélectionner au moins un accès (lister et/ou ajouter) sur une ou plusieurs listes.'));
+
+                    return $this->render('users/add.html.twig', [
+                        'form' => $form->createView(),
+                    ]);
+                }
             }
+
+            $user->setRoles($roles);
 
             try {
                 $em->persist($user);
