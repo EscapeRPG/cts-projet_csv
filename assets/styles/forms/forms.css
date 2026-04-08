@@ -253,8 +253,17 @@ button {
         .form-choice-item {
             display: flex;
             flex-direction: row;
+            justify-content: end;
             gap: 5px;
             width: fit-content;
+
+            label {
+                width: 60%;
+
+                img {
+                    width: 100%;
+                }
+            }
         }
     }
 }

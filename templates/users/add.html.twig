@@ -30,9 +30,14 @@
 
             <div class="form-choice-group" data-choice-group="entreprises">
                 {% for choice in form.entreprises %}
+                    {% set v = choice.vars.value %}
+                    {% set logo = v == 'ROLE_CTS' ? asset('img/logo-cts.png') : asset('img/logo-astikoto.png') %}
+
                     <div class="form-choice-item">
                         {{ form_widget(choice) }}
-                        {{ form_label(choice) }}
+                        <label for="{{ choice.vars.id }}">
+                            <img src="{{ logo }}" alt="{{ choice.vars.label }}">
+                        </label>
                     </div>
                 {% endfor %}
             </div>
