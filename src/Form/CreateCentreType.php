@@ -28,7 +28,7 @@ class CreateCentreType extends AbstractType
             ])
             ->add('reseau', EntityType::class, [
                 'class' => Reseau::class,
-                'label' => '*Reseau : ',
+                'label' => '*Réseau : ',
                 'placeholder' => '- Choisir -',
                 'choice_label' => 'nom',
                 'required' => true,
@@ -38,7 +38,7 @@ class CreateCentreType extends AbstractType
                 'required' => true,
             ])
             ->add('agrCentre', TextType::class, [
-                'label' => '*Agrément : ',
+                'label' => '*Agrément VL : ',
                 'required' => true,
             ])
             ->add('agrClCentre', TextType::class, [

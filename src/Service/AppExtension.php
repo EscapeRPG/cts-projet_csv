@@ -72,10 +72,8 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
         };
 
         return sprintf(
-            'Anniversaire de %s %s le %s%s.',
-            $notification->getSalarie()->getPrenom(),
-            $notification->getSalarie()->getNom(),
-            $targetDate->format('d/m/Y'),
+            '%s%s.',
+            $notification->getMessage(),
             $suffix
         );
     }

@@ -197,6 +197,8 @@ abstract class AbstractCsvImportService implements CsvImportInterface
             if ($value !== null && in_array($column, $dateColumns, true)) {
                 if ($column === 'deb_ctrl' || $column === 'fin_ctrl') {
                     $value = DateParser::parseDate($value)?->format('H:i:s');
+                } elseif ($column === 'annee_circulation') {
+                    $value = (int) DateParser::parseDate($value)?->format('Y');
                 } else {
                     $value = DateParser::parseDate($value)?->format('Y-m-d H:i:s');
                 }

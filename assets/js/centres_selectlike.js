@@ -26,10 +26,70 @@ function enhanceCentresSelect(select) {
         const group = document.createElement('div');
         group.className = 'selectlike-multi__group';
 
-        const title = document.createElement('div');
-        title.className = 'selectlike-multi__group-title';
-        title.textContent = label;
-        group.appendChild(title);
+        let groupToggle = null;
+        const updateGroupToggleState = () => {
+            if (!(groupToggle instanceof HTMLInputElement)) return;
+
+            const enabled = options.filter((o) => !o.disabled);
+            if (enabled.length === 0) {
+                groupToggle.disabled = true;
+                groupToggle.checked = false;
+                groupToggle.indeterminate = false;
+                return;
+            }
+
+            groupToggle.disabled = false;
+            const selectedCount = enabled.filter((o) => o.selected).length;
+            groupToggle.checked = selectedCount === enabled.length;
+            groupToggle.indeterminate = selectedCount > 0 && selectedCount < enabled.length;
+        };
+
+        const setGroupSelected = (checked) => {
+            options.forEach((option) => {
+                if (option.disabled) return;
+                option.selected = checked;
+                const checkbox = optionToCheckbox.get(option);
+                if (checkbox) checkbox.checked = checked;
+            });
+
+            updateGroupToggleState();
+            updateControlLabel();
+            // Keep any listeners in sync.
+            select.dispatchEvent(new Event('change', {bubbles: true}));
+        };
+
+        if (label) {
+            const title = document.createElement('div');
+            title.className = 'selectlike-multi__group-title';
+
+            groupToggle = document.createElement('input');
+            groupToggle.type = 'checkbox';
+            groupToggle.className = 'selectlike-multi__group-toggle';
+
+            const titleLabel = document.createElement('span');
+            titleLabel.className = 'selectlike-multi__group-title-label';
+            titleLabel.textContent = label;
+
+            title.appendChild(groupToggle);
+            title.appendChild(titleLabel);
+            group.appendChild(title);
+
+            // Clicking the group name selects all centres in that company (does not toggle off).
+            title.addEventListener('click', (event) => {
+                if (event.target === groupToggle) return;
+                const enabled = options.filter((o) => !o.disabled);
+                if (enabled.length === 0) return;
+                const allSelected = enabled.every((o) => o.selected);
+                if (!allSelected) {
+                    setGroupSelected(true);
+                }
+            });
+
+            // Toggling the group checkbox selects/deselects all centres in that company.
+            groupToggle.addEventListener('change', () => {
+                setGroupSelected(groupToggle.checked);
+            });
+        }
 
         options.forEach((option) => {
             const item = document.createElement('label');
@@ -53,11 +113,13 @@ function enhanceCentresSelect(select) {
             checkbox.addEventListener('change', () => {
                 option.selected = checkbox.checked;
                 updateControlLabel();
+                updateGroupToggleState();
                 // Keep any listeners in sync.
                 select.dispatchEvent(new Event('change', {bubbles: true}));
             });
         });
 
+        updateGroupToggleState();
         list.appendChild(group);
     };
 

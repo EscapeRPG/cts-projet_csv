@@ -62,6 +62,16 @@ final class RunDailyCommand extends Command
             'command' => 'app:notifications:birthdays',
             'args' => [],
         ],
+        [
+            'command' => 'cache:clear',
+            'args' => [],
+        ],
+        [
+            'command' => 'cache:pool:clear',
+            'args' => [
+                '--all' => true,
+            ],
+        ],
     ];
 
     /**

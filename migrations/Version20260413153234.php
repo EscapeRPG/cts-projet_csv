@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260407091011 extends AbstractMigration
+final class Version20260413153234 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -51,9 +51,13 @@ final class Version20260407091011 extends AbstractMigration
         $this->addSql('DROP INDEX idx_perf_salarie_agr_cl_controleur ON salarie');
         $this->addSql('ALTER TABLE salarie_centre ADD CONSTRAINT FK_105A9AFE5859934A FOREIGN KEY (salarie_id) REFERENCES salarie (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE salarie_centre ADD CONSTRAINT FK_105A9AFE463CD7C3 FOREIGN KEY (centre_id) REFERENCES centre (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE user DROP FOREIGN KEY `FK_8D93D6495859934A`');
+        $this->addSql('DROP INDEX UNIQ_8D93D6495859934A ON user');
+        $this->addSql('ALTER TABLE user DROP salarie_id');
+        $this->addSql('ALTER TABLE user_centre ADD CONSTRAINT FK_A3F2F148A76ED395 FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE user_centre ADD CONSTRAINT FK_A3F2F148463CD7C3 FOREIGN KEY (centre_id) REFERENCES centre (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE user_notification ADD CONSTRAINT FK_3F980AC8EF1A9D84 FOREIGN KEY (notification_id) REFERENCES notification (id)');
         $this->addSql('ALTER TABLE user_notification ADD CONSTRAINT FK_3F980AC8A76ED395 FOREIGN KEY (user_id) REFERENCES user (id)');
-        $this->addSql('ALTER TABLE voiture ADD certificat_cession_path VARCHAR(255) DEFAULT NULL, ADD certificat_cession_original_name VARCHAR(255) DEFAULT NULL, ADD certificat_cession_mime VARCHAR(100) DEFAULT NULL, ADD certificat_cession_size INT DEFAULT NULL, ADD certificat_cession_uploaded_at DATETIME DEFAULT NULL');
         $this->addSql('ALTER TABLE voiture ADD CONSTRAINT FK_E9E2810FFCF77503 FOREIGN KEY (societe_id) REFERENCES societe (id)');
         $this->addSql('ALTER TABLE voiture ADD CONSTRAINT FK_E9E2810F463CD7C3 FOREIGN KEY (centre_id) REFERENCES centre (id)');
     }
@@ -92,10 +96,14 @@ final class Version20260407091011 extends AbstractMigration
         $this->addSql('CREATE INDEX idx_perf_salarie_agr_cl_controleur ON salarie (agr_cl_controleur)');
         $this->addSql('ALTER TABLE salarie_centre DROP FOREIGN KEY FK_105A9AFE5859934A');
         $this->addSql('ALTER TABLE salarie_centre DROP FOREIGN KEY FK_105A9AFE463CD7C3');
+        $this->addSql('ALTER TABLE user ADD salarie_id INT DEFAULT NULL');
+        $this->addSql('ALTER TABLE user ADD CONSTRAINT `FK_8D93D6495859934A` FOREIGN KEY (salarie_id) REFERENCES salarie (id) ON UPDATE NO ACTION ON DELETE SET NULL');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_8D93D6495859934A ON user (salarie_id)');
+        $this->addSql('ALTER TABLE user_centre DROP FOREIGN KEY FK_A3F2F148A76ED395');
+        $this->addSql('ALTER TABLE user_centre DROP FOREIGN KEY FK_A3F2F148463CD7C3');
         $this->addSql('ALTER TABLE user_notification DROP FOREIGN KEY FK_3F980AC8EF1A9D84');
         $this->addSql('ALTER TABLE user_notification DROP FOREIGN KEY FK_3F980AC8A76ED395');
         $this->addSql('ALTER TABLE voiture DROP FOREIGN KEY FK_E9E2810FFCF77503');
         $this->addSql('ALTER TABLE voiture DROP FOREIGN KEY FK_E9E2810F463CD7C3');
-        $this->addSql('ALTER TABLE voiture DROP certificat_cession_path, DROP certificat_cession_original_name, DROP certificat_cession_mime, DROP certificat_cession_size, DROP certificat_cession_uploaded_at');
     }
 }

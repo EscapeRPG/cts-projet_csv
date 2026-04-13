@@ -42,10 +42,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?bool $isActive = null;
 
-    #[ORM\OneToOne(targetEntity: Salarie::class)]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    private ?Salarie $salarie = null;
-
     /**
      * Restricts access to specific centres when defined.
      *
@@ -181,18 +177,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
-
-        return $this;
-    }
-
-    public function getSalarie(): ?Salarie
-    {
-        return $this->salarie;
-    }
-
-    public function setSalarie(?Salarie $salarie): static
-    {
-        $this->salarie = $salarie;
 
         return $this;
     }

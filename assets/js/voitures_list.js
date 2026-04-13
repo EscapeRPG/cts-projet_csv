@@ -26,7 +26,7 @@ export function initVoituresList(root = document) {
 
     // Enable sorting only for selected columns.
     headers.forEach((th, index) => {
-        const sortableColumns = ['Société', 'Centre', 'Flocable', 'Active ?'];
+        const sortableColumns = ['Société', 'Centre', 'Flocable', 'Active'];
         if (sortableColumns.includes(th.textContent.trim())) {
             th.style.cursor = 'pointer';
             th.addEventListener('click', () => {

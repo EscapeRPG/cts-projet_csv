@@ -3,6 +3,8 @@
         <thead>
         <tr>
             <th>Nom</th>
+            <th>Siège social</th>
+            <th>SIREN</th>
             <th>Numéro de TVA</th>
             <th>Action</th>
         </tr>
@@ -13,6 +15,8 @@
 
             <tr>
                 <td>{{ form_widget(forms[societe.id].nom, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[societe.id].siegeSocial, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[societe.id].siren, {'attr': {'form': formId}}) }}</td>
                 <td>{{ form_widget(forms[societe.id].numTva, {'attr': {'form': formId}}) }}</td>
                 <td>
                     {{ form_start(forms[societe.id], {

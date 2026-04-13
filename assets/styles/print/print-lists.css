@@ -12,10 +12,13 @@
 }
 
 .print-variant-lists .print-content table {
-    font-size: 8px;
     line-height: 1.15;
     white-space: normal !important;
     table-layout: auto !important;
+
+    * {
+        font-size: 8px !important;
+    }
 }
 
 .print-variant-lists .print-content th,

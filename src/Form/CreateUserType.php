@@ -3,9 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Centre;
-use App\Entity\Salarie;
 use App\Entity\User;
-use App\Repository\SalarieRepository;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -90,17 +88,6 @@ class CreateUserType extends AbstractType
                     'Ajouter' => 'ROLE_LIST_SALARIES_ADD',
                 ],
             ])
-            ->add('salarie', EntityType::class, [
-                'label' => 'Salarié associé :',
-                'class' => Salarie::class,
-                'required' => false,
-                'placeholder' => 'Aucun',
-                'choice_label' => static fn (Salarie $salarie): string => trim($salarie->getNom() . ' ' . $salarie->getPrenom()),
-                'query_builder' => static fn (SalarieRepository $repo) => $repo
-                    ->createQueryBuilder('s')
-                    ->orderBy('s.nom', 'ASC')
-                    ->addOrderBy('s.prenom', 'ASC'),
-            ])
             ->add('centres', EntityType::class, [
                 'class' => Centre::class,
                 'label' => 'Centre(s) :',
@@ -108,19 +95,26 @@ class CreateUserType extends AbstractType
                 'multiple' => true,
                 'expanded' => false,
                 'choice_label' => static function (Centre $centre): string {
-                    $ville = (string) ($centre->getVille() ?? '');
-                    $agr = (string) ($centre->getAgrCentre() ?? '');
+                    $reseau = (string)($centre->getReseauNom() ?? '');
+                    $ville = (string)($centre->getVille() ?? '');
+                    $agr = (string)($centre->getAgrCentre() ?? '');
+                    $agrCl = (string)($centre->getAgrClCentre() ?? '');
 
-                    return trim($agr === '' ? $ville : "{$ville} ({$agr})");
+                    return trim($agr === '' ? "{$reseau} {$ville} ({$agrCl})" : "{$reseau} {$ville} ({$agr})");
                 },
-                'group_by' => static fn (Centre $centre): string => (string) ($centre->getReseauNom() ?? ''),
+                'group_by' => static function (Centre $centre): string {
+                    $name = trim((string)($centre->getSociete()?->getNom() ?? ''));
+                    return $name !== '' ? $name : '(Sans societe)';
+                },
                 'attr' => [
                     'data-centres-selectlike' => '1',
                     'size' => 1,
                 ],
                 'query_builder' => static function (EntityRepository $er) {
                     return $er->createQueryBuilder('c')
-                        ->orderBy('c.reseauNom', 'ASC')
+                        ->leftJoin('c.societe', 's')
+                        ->addSelect('s')
+                        ->orderBy('s.nom', 'ASC')
                         ->addOrderBy('c.ville', 'ASC');
                 },
             ])

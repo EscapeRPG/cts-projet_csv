@@ -17,6 +17,14 @@ class CreateSocieteType extends AbstractType
                 'label' => '*Nom : ',
                 'required' => true,
             ])
+            ->add('siegeSocial', TextType::class, [
+                'label' => 'Siège social : ',
+                'required' => true,
+            ])
+            ->add('siren', TextType::class, [
+                'label' => 'SIREN : ',
+                'required' => true,
+            ])
             ->add('numTva', TextType::class, [
                 'label' => 'Numéro de TVA : ',
                 'required' => false,

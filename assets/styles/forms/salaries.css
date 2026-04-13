@@ -39,3 +39,8 @@
 .voitures-list td {
     padding: 15px 5px;
 }
+
+/* Display-only: keeps stored values intact while making the UI easier to scan. */
+.centres-list .reseau-uppercase {
+    text-transform: uppercase;
+}

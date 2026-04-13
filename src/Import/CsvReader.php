@@ -31,6 +31,13 @@ final class CsvReader
         $headers = null;
 
         try {
+            // If the file starts with an UTF-8 BOM, consume it so fgetcsv() can properly
+            // recognize the enclosure (") on the first column.
+            $prefix = fread($handle, 3);
+            if ($prefix !== "\xEF\xBB\xBF") {
+                rewind($handle);
+            }
+
             while (($row = fgetcsv($handle, 0, $delimiter, '"', '')) !== false) {
                 if ($headers === null) {
                     $headers = array_map(
@@ -67,8 +74,34 @@ final class CsvReader
      */
     private function normalizeHeader(string $header): string
     {
-        $header = preg_replace('/^\x{FEFF}/u', '', $header);
-        return trim(mb_strtolower($header));
+        // Remove UTF-8 BOM when present (common on first column headers).
+        $header = preg_replace('/^\x{FEFF}/u', '', $header) ?? $header;
+
+        // Normalize whitespace (including NBSP) early.
+        $header = str_replace("\u{00A0}", ' ', $header);
+        $header = trim($header);
+
+        // Lowercase for stable matching.
+        $header = mb_strtolower($header);
+
+        // Try to make headers resilient to accents/punctuation differences.
+        if (function_exists('iconv')) {
+            $converted = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $header);
+            if ($converted !== false) {
+                $header = $converted;
+            }
+        }
+
+        // Convert to a simple "snake-ish" identifier.
+        // This makes headers like "Date export" or "NUM TVA INTRA" match "date_export"/"num_tva_intra".
+        $header = preg_replace('/[^a-z0-9]+/', '_', $header) ?? $header;
+        $header = preg_replace('/_+/', '_', $header) ?? $header;
+        $header = trim($header, '_');
+
+        // Special-case common CSV variations where IDs are exported with a separator ("id client" => "idclient").
+        $header = preg_replace('/^id_/', 'id', $header) ?? $header;
+
+        return $header;
     }
 
     /**

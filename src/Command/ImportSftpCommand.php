@@ -248,7 +248,6 @@ class ImportSftpCommand extends Command
         }
 
         $value = strtolower($value);
-        // Canonicalise pour faire correspondre "Auto Sur", "autosur", "auto-sur", etc.
         return preg_replace('/[^a-z0-9]+/', '', $value) ?? $value;
     }
 }

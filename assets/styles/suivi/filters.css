@@ -1,4 +1,6 @@
-.annees-filter, .sidenav {
+.annees-filter,
+.sidenav {
+    font-size: .8em;
     z-index: 3;
 
     a {
@@ -34,8 +36,10 @@
 .annees-filter {
     display: flex;
     align-items: flex-end;
-    width: calc(100% - 250px);
-    margin: 20px auto 0 210px;
+    width: calc(100% - 160px);
+    box-sizing: border-box;
+    margin-top: 20px;
+    margin-left: 160px;
     gap: 10px;
 
     a {

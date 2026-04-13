@@ -14,7 +14,7 @@
             <div class="pro-stats-panel">
                 <div class="summary">
                     <div class="ca-summary">
-                        <h2>CA {{ "now"|date('Y') }}</h2>
+                        <span class="panel-tools-title">CA {{ "now"|date('Y') }}</span>
                         <strong>{{ summary.ca_now|number_format(2, ',', ' ') }} €</strong>
 
                         <div class="previous">
@@ -39,7 +39,7 @@
                     </div>
 
                     <div class="ca-summary">
-                        <h2>Contrôles {{ "now"|date('Y') }}</h2>
+                        <span class="panel-tools-title">Contrôles {{ "now"|date('Y') }}</span>
                         <strong>{{ summary.vol_now|number_format(0, ',', ' ') }}</strong>
 
                         <div class="previous">

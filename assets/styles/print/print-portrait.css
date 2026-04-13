@@ -1,5 +1,5 @@
 @page {
-    size: A4 portrait;
+    /* Let the user pick the paper size (A4/A3/...) in the print dialog; only force orientation. */
+    size: portrait;
     margin: 10mm;
 }
-

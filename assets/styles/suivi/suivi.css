@@ -3,9 +3,10 @@
     display: flex;
     flex-direction: row;
     align-items: stretch;
-    width: 95%;
+    width: 100%;
     height: 70vh;
     margin: 0 auto;
+    box-sizing: border-box;
 }
 
 .activite-infos {
@@ -19,7 +20,8 @@
     }
 }
 
-.pro-stats-container, .stats-container {
+.pro-stats-container,
+.stats-container {
     gap: 10px;
     width: calc(100% - 40px);
     max-height: 80vh;
@@ -60,11 +62,13 @@
 
         h2 {
             text-align: center;
-            font-size: 1.1em;
         }
 
         .ca-summary {
             display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
             width: 100%;
             box-sizing: border-box;
             flex-direction: column;
@@ -72,6 +76,10 @@
             padding: 0 10px;
             background: var(--blocks);
             box-shadow: var(--box-shadow);
+
+            .panel-tools-title {
+                margin: 10px auto;
+            }
 
             strong {
                 text-align: center;
@@ -196,8 +204,6 @@
     }
 
     .table-pros {
-        font-size: .7em;
-
         td {
             background: var(--blocks);
             text-align: center;
@@ -297,10 +303,4 @@
 
 .filters-print-actions {
     margin-top: 20px;
-}
-
-#cts-centres-results,
-#cts-voitures-uneditable-results,
-#cts-salaries-uneditable-results {
-    min-width: max-content;
 }

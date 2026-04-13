@@ -26,7 +26,7 @@ class Factures
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $dateExport = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
+    #[ORM\Column(length: 50)]
     private ?string $numFacture = null;
 
     #[ORM\Column(length: 1)]
@@ -35,7 +35,7 @@ class Factures
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $dateFacture = null;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $dateEcheance = null;
 
     #[ORM\Column(length: 255)]

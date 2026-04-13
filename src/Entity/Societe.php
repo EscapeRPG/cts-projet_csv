@@ -18,6 +18,12 @@ class Societe
     #[ORM\Column(length: 100, unique: true)]
     private ?string $nom = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $siegeSocial = null;
+
+    #[ORM\Column(length: 20)]
+    private ?string $siren = null;
+
     /**
      * @var Collection<int, Centre>
      */
@@ -59,6 +65,30 @@ class Societe
     public function setNom(string $nom): static
     {
         $this->nom = $nom;
+
+        return $this;
+    }
+
+    public function getSiegeSocial(): ?string
+    {
+        return $this->siegeSocial;
+    }
+
+    public function setSiegeSocial(string $siegeSocial): static
+    {
+        $this->siegeSocial = $siegeSocial;
+
+        return $this;
+    }
+
+    public function getSiren(): ?string
+    {
+        return $this->siren;
+    }
+
+    public function setSiren(string $siren): static
+    {
+        $this->siren = $siren;
 
         return $this;
     }

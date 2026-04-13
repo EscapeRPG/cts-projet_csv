@@ -20,11 +20,12 @@ final class BirthdayNotificationGenerator
     public const int DEFAULT_DAYS_AHEAD = 3;
 
     public function __construct(
-        private readonly SalarieRepository $salarieRepository,
-        private readonly UserRepository $userRepository,
+        private readonly SalarieRepository      $salarieRepository,
+        private readonly UserRepository         $userRepository,
         private readonly NotificationRepository $notificationRepository,
         private readonly EntityManagerInterface $entityManager,
-    ) {
+    )
+    {
     }
 
     /**
@@ -38,9 +39,10 @@ final class BirthdayNotificationGenerator
      */
     public function generate(
         ?\DateTimeImmutable $referenceDate = null,
-        int $daysAhead = self::DEFAULT_DAYS_AHEAD,
-        bool $dryRun = false,
-    ): array {
+        int                 $daysAhead = self::DEFAULT_DAYS_AHEAD,
+        bool                $dryRun = false,
+    ): array
+    {
         $today = ($referenceDate ?? new \DateTimeImmutable('today'))->setTime(0, 0);
         $users = $this->userRepository->findActiveUsers();
 
@@ -66,7 +68,7 @@ final class BirthdayNotificationGenerator
             }
 
             $targetDate = $this->computeNextBirthdayDate($birthDate, $today);
-            $daysUntilBirthday = (int) $today->diff($targetDate)->format('%r%a');
+            $daysUntilBirthday = (int)$today->diff($targetDate)->format('%r%a');
 
             if ($daysUntilBirthday < 0 || $daysUntilBirthday > $daysAhead) {
                 continue;
@@ -121,17 +123,24 @@ final class BirthdayNotificationGenerator
     }
 
     private function buildNotification(
-        Salarie $employee,
+        Salarie            $employee,
         \DateTimeImmutable $targetDate,
-    ): Notification {
-        $fullName = trim(sprintf('%s %s', $employee->getPrenom(), $employee->getNom()));
+    ): Notification
+    {
+        $fullName = trim(sprintf('%s %s', (string)$employee->getPrenom(), (string)$employee->getNom()));
+
+        $fullNameWithDeterminant = $fullName;
+        if ($fullNameWithDeterminant !== '') {
+            $startsWithVowel = preg_match('/\A[aeiouyàâäæéèêëîïôöùûüœ]/iu', $fullNameWithDeterminant) === 1;
+            $fullNameWithDeterminant = ($startsWithVowel ? "d'" : 'de ') . $fullNameWithDeterminant;
+        }
 
         return new Notification()
             ->setType(self::TYPE)
             ->setSalarie($employee)
             ->setMessage(sprintf(
-                'Anniversaire de %s le %s.',
-                $fullName,
+                'Anniversaire %s le %s',
+                $fullNameWithDeterminant,
                 $targetDate->format('d/m/Y'),
             ))
             ->setTargetDate($targetDate)
@@ -145,11 +154,12 @@ final class BirthdayNotificationGenerator
     private function computeNextBirthdayDate(
         \DateTimeImmutable $birthDate,
         \DateTimeImmutable $referenceDate,
-    ): \DateTimeImmutable {
-        $candidate = $this->buildBirthdayOccurrence((int) $referenceDate->format('Y'), $birthDate);
+    ): \DateTimeImmutable
+    {
+        $candidate = $this->buildBirthdayOccurrence((int)$referenceDate->format('Y'), $birthDate);
 
         if ($candidate < $referenceDate) {
-            return $this->buildBirthdayOccurrence(((int) $referenceDate->format('Y')) + 1, $birthDate);
+            return $this->buildBirthdayOccurrence(((int)$referenceDate->format('Y')) + 1, $birthDate);
         }
 
         return $candidate;
@@ -160,8 +170,8 @@ final class BirthdayNotificationGenerator
      */
     private function buildBirthdayOccurrence(int $year, \DateTimeImmutable $birthDate): \DateTimeImmutable
     {
-        $month = (int) $birthDate->format('m');
-        $day = (int) $birthDate->format('d');
+        $month = (int)$birthDate->format('m');
+        $day = (int)$birthDate->format('d');
 
         if ($month === 2 && $day === 29 && !checkdate($month, $day, $year)) {
             return new \DateTimeImmutable(sprintf('%04d-02-28', $year));

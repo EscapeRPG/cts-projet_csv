@@ -4,7 +4,7 @@
     overflow-y: auto;
     border-radius: 20px;
     box-shadow: var(--box-shadow);
-    padding: 40px 20px;
+    padding: 20px 10px;
     margin: 20px auto;
     background: var(--blocks);
     text-align: center;
@@ -215,8 +215,18 @@ button {
 }
 
 .selectlike-multi__group-title {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
     font-weight: bold;
     padding: 2px 6px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.selectlike-multi__group-toggle {
+    margin: 0;
 }
 
 .selectlike-multi__item {
@@ -236,6 +246,7 @@ button {
 }
 
 .selectlike-multi__group {
+    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;

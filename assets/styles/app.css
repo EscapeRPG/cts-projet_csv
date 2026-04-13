@@ -18,6 +18,7 @@
 * {
     scrollbar-color: var(--cts-main) white;
     scrollbar-width: thin;
+    font-size: 18px;
 }
 
 body {
@@ -337,7 +338,7 @@ header {
             right: 30px;
             background: var(--blocks);
             padding: 10px 30px;
-            min-width: 200px;
+            min-width: 350px;
             border-radius: 10px;
             box-shadow: var(--box-shadow);
             transform: translateY(-150%);
