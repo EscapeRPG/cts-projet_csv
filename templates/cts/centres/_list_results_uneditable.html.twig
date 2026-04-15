@@ -1,0 +1,38 @@
+<div class="table-wrapper">
+    <table class="centres-list">
+        <thead>
+        <tr>
+            <th>Société</th>
+            <th>Réseau</th>
+            <th>Enseigne</th>
+            <th>Agrément VL</th>
+            <th>Agrément CL</th>
+            <th>Coordonnées</th>
+            <th>CP</th>
+            <th>Ville</th>
+            <th>Téléphone</th>
+            <th>Email</th>
+            <th>Site web</th>
+            <th>SIRET</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for centre in centres %}
+            <tr>
+                <td>{{ centre.societe.nom }}</td>
+                <td>{{ centre.reseau.nom|upper }}</td>
+                <td>{{ centre.reseauNom }}</td>
+                <td>{{ centre.agrCentre|upper }}</td>
+                <td>{{ centre.agrClCentre|upper }}</td>
+                <td>{{ centre.coordonnees }}</td>
+                <td>{{ centre.cp }}</td>
+                <td>{{ centre.ville }}</td>
+                <td>{{ centre.telephone }}</td>
+                <td>{{ centre.email }}</td>
+                <td>{{ centre.siteWeb }}</td>
+                <td>{{ centre.numSiret }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

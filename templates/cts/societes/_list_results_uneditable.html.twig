@@ -1,0 +1,22 @@
+<div class="table-wrapper">
+    <table class="societes-list">
+        <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Siège social</th>
+            <th>SIREN</th>
+            <th>Numéro de TVA</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for societe in societes %}
+            <tr>
+                <td>{{ societe.nom }}</td>
+                <td>{{ societe.siegeSocial }}</td>
+                <td>{{ societe.siren }}</td>
+                <td>{{ societe.numTva }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

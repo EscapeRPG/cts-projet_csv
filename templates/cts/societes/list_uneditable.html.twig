@@ -1,24 +1,24 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Liste des salariés{% endblock %}
+{% block title %}Liste des sociétés{% endblock %}
 
 {% block body %}
     <div class="search-list">
-        <label for="cts-salaries-search-uneditable">Recherche :</label>
-        <input id="cts-salaries-search-uneditable"
+        <label for="cts-societes-search-uneditable">Recherche :</label>
+        <input id="cts-societes-search-uneditable"
                type="search"
                autocomplete="off"
-               placeholder="Nom, prénom, agr..."
+               placeholder="Nom..."
                value="{{ app.request.query.get('q') }}"
                data-list-search-input="1"
-               data-list-search-partial-url="{{ path('app_salaries_list_uneditable_partial') }}"
-               data-list-search-push-url="{{ path('app_salaries_list_uneditable') }}"
-               data-list-search-results="#cts-salaries-uneditable-results">
+               data-list-search-partial-url="{{ path('app_societes_list_uneditable_partial') }}"
+               data-list-search-push-url="{{ path('app_societes_list_uneditable') }}"
+               data-list-search-results="#cts-societes-uneditable-results">
     </div>
 
     <div class="container">
-        <div id="cts-salaries-uneditable-results" data-list-results-container="1">
-            {{ include('cts/salaries/_list_results_uneditable.html.twig') }}
+        <div id="cts-societes-uneditable-results" data-list-results-container="1">
+            {{ include('cts/societes/_list_results_uneditable.html.twig') }}
         </div>
     </div>
 
@@ -67,12 +67,12 @@
     {% endif %}
 
     <div class="edit-print">
-        <a href="{{ path('app_salaries_list') }}" class="btn-link">Modifier</a>
+        <a href="{{ path('app_societes_list') }}" class="btn-link">Modifier</a>
 
         <a class="btn-link"
-           href="{{ path('app_salaries_list_uneditable_print') }}"
+           href="{{ path('app_societes_list_print') }}"
            data-print-keep-filters="1"
-           data-print-base-href="{{ path('app_salaries_list_uneditable_print') }}"
+           data-print-base-href="{{ path('app_societes_list_print') }}"
            target="_blank"
            rel="noopener">Imprimer</a>
     </div>

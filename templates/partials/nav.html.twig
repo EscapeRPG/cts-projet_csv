@@ -76,7 +76,7 @@
                     <ul class="menu">
                         {% if is_granted('ROLE_LIST_SOCIETES_VIEW') %}
                             <li>
-                                <a href="{{ path('app_societes_list') }}">
+                                <a href="{{ path('app_societes_list_uneditable') }}">
                                     → Liste des sociétés
                                 </a>
                             </li>
@@ -103,7 +103,7 @@
                     <ul class="menu">
                         {% if is_granted('ROLE_LIST_CENTRES_VIEW') %}
                             <li>
-                                <a href="{{ path('app_centres_list') }}">
+                                <a href="{{ path('app_centres_list_uneditable') }}">
                                     → Liste des centres
                                 </a>
                             </li>

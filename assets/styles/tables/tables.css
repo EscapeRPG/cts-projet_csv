@@ -236,8 +236,10 @@ tbody tr:not(.recap):hover {
 #cts-salaries-results,
 #cts-societes-results,
 #cts-centres-results,
+#cts-voitures-uneditable-results,
 #cts-salaries-uneditable-results,
-#cts-voitures-uneditable-results {
+#cts-societes-uneditable-results,
+#cts-centres-uneditable-results {
     width: 100%;
     height: 100%;
 }

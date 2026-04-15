@@ -80,7 +80,7 @@ final class ListsController extends AbstractController
     }
 
     /**
-     * Displays employees (non editable).
+     * Displays employees (uneditable).
      */
     #[IsGranted('ROLE_LIST_SALARIES_VIEW')]
     #[Route("/cts/salaries/list-salaries", name: 'app_salaries_list_uneditable')]
@@ -213,6 +213,33 @@ final class ListsController extends AbstractController
         ]);
     }
 
+    /**
+     * Displays companies (uneditable).
+     */
+    #[IsGranted('ROLE_LIST_SOCIETES_VIEW')]
+    #[Route("/cts/societes/list-societes", name: 'app_societes_list_uneditable')]
+    public function listSocietesNonEditable(Request $request, SocieteRepository $societeRepository): Response
+    {
+        $q = trim((string) $request->query->get('q', ''));
+        $societes = $societeRepository->findOrderedByNomSearch($q);
+
+        return $this->render('cts/societes/list_uneditable.html.twig', [
+            'societes' => $societes,
+        ]);
+    }
+
+    #[IsGranted('ROLE_LIST_SOCIETES_VIEW')]
+    #[Route("/cts/societes/list-societes/partial", name: 'app_societes_list_uneditable_partial')]
+    public function listSocietesNonEditablePartial(Request $request, SocieteRepository $societeRepository): Response
+    {
+        $q = trim((string) $request->query->get('q', ''));
+        $societes = $societeRepository->findOrderedByNomSearch($q);
+
+        return $this->render('cts/societes/_list_results_uneditable.html.twig', [
+            'societes' => $societes,
+        ]);
+    }
+
     #[IsGranted('ROLE_LIST_SOCIETES_ADD')]
     #[Route('/admin/cts/societes/add', name: 'app_societes_add')]
     public function addSociete(Request $request, EntityManagerInterface $em): Response
@@ -317,6 +344,33 @@ final class ListsController extends AbstractController
         return $this->render('cts/centres/_list_results.html.twig', [
             'centres' => $centres,
             'forms' => $forms,
+        ]);
+    }
+
+    /**
+     * Displays centers (uneditable).
+     */
+    #[IsGranted('ROLE_LIST_CENTRES_VIEW')]
+    #[Route("/cts/centres/list-centres", name: 'app_centres_list_uneditable')]
+    public function listCentresNonEditable(Request $request, CentreRepository $centreRepository): Response
+    {
+        $q = trim((string) $request->query->get('q', ''));
+        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch($q);
+
+        return $this->render('cts/centres/list_uneditable.html.twig', [
+            'centres' => $centres,
+        ]);
+    }
+
+    #[IsGranted('ROLE_LIST_CENTRES_VIEW')]
+    #[Route("/cts/centres/list-centres/partial", name: 'app_centres_list_uneditable_partial')]
+    public function listCentresNonEditablePartial(Request $request, CentreRepository $centreRepository): Response
+    {
+        $q = trim((string) $request->query->get('q', ''));
+        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch($q);
+
+        return $this->render('cts/centres/_list_results_uneditable.html.twig', [
+            'centres' => $centres,
         ]);
     }
 
