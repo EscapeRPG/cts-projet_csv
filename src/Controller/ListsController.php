@@ -121,7 +121,7 @@ final class ListsController extends AbstractController
 
             $this->addFlash('success', 'Salarié créé.');
 
-            return $this->redirectToRoute('app_salaries_list');
+            return $this->redirectToRoute('app_salaries_list_uneditable');
         }
 
         return $this->render('cts/salaries/add.html.twig', [
@@ -155,7 +155,7 @@ final class ListsController extends AbstractController
 
             $this->addFlash('success', "Salarié {$salarie->getNom()} mis à jour.");
 
-            return $this->redirectToRoute('app_salaries_list', [
+            return $this->redirectToRoute('app_salaries_list_uneditable', [
                 'page' => max(1, $request->query->getInt('page', 1)),
                 'q' => $request->query->get('q'),
             ]);
@@ -255,7 +255,7 @@ final class ListsController extends AbstractController
 
             $this->addFlash('success', 'Société créée.');
 
-            return $this->redirectToRoute('app_societes_list');
+            return $this->redirectToRoute('app_societes_list_uneditable');
         }
 
         return $this->render('cts/societes/add.html.twig', [
@@ -289,7 +289,7 @@ final class ListsController extends AbstractController
 
             $this->addFlash('success', "Société {$societe->getNom()} mise à jour.");
 
-            return $this->redirectToRoute('app_societes_list', [
+            return $this->redirectToRoute('app_societes_list_uneditable', [
                 'q' => $request->query->get('q'),
             ]);
         }
@@ -393,7 +393,7 @@ final class ListsController extends AbstractController
 
             $this->addFlash('success', 'Centre créé.');
 
-            return $this->redirectToRoute('app_centres_list');
+            return $this->redirectToRoute('app_centres_list_uneditable');
         }
 
         return $this->render('cts/centres/add.html.twig', [
@@ -431,7 +431,7 @@ final class ListsController extends AbstractController
 
             $this->addFlash('success', "Centre {$centre->getVille()} mis à jour.");
 
-            return $this->redirectToRoute('app_centres_list', [
+            return $this->redirectToRoute('app_centres_list_uneditable', [
                 'q' => $request->query->get('q'),
             ]);
         }
@@ -561,7 +561,7 @@ final class ListsController extends AbstractController
             if ($uploaded instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
                 if (!$uploaded->isValid()) {
                     $this->addFlash('error', self::formatUploadErrorMessage($uploaded->getError()));
-                    return $this->redirectToRoute('app_voitures_list');
+                    return $this->redirectToRoute('app_voitures_list_uneditable');
                 }
 
                 // Read metadata before move(): after moving, the tmp file no longer exists.
@@ -580,7 +580,7 @@ final class ListsController extends AbstractController
 
             $this->addFlash('success', 'Voiture créée.');
 
-            return $this->redirectToRoute('app_voitures_list');
+            return $this->redirectToRoute('app_voitures_list_uneditable');
         }
 
         return $this->render('cts/voitures/add.html.twig', [
@@ -617,7 +617,7 @@ final class ListsController extends AbstractController
                 }
             } catch (\Symfony\Component\HttpFoundation\File\Exception\FileException $e) {
                 $this->addFlash('error', self::formatUploadRuntimeException($e));
-                return $this->redirectToRoute('app_voitures_list', [
+                return $this->redirectToRoute('app_voitures_list_uneditable', [
                     'page' => $request->query->getInt('page', 1),
                     'q' => $request->query->get('q'),
                 ]);
@@ -632,7 +632,7 @@ final class ListsController extends AbstractController
             if ($uploaded instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
                 if (!$uploaded->isValid()) {
                     $this->addFlash('error', self::formatUploadErrorMessage($uploaded->getError()));
-                    return $this->redirectToRoute('app_voitures_list', [
+                    return $this->redirectToRoute('app_voitures_list_uneditable', [
                         'page' => $request->query->getInt('page', 1),
                         'q' => $request->query->get('q'),
                     ]);
@@ -660,7 +660,7 @@ final class ListsController extends AbstractController
 
             $this->addFlash('success', "Voiture {$voiture->getImmatriculation()} mise à jour.");
 
-            return $this->redirectToRoute('app_voitures_list', [
+            return $this->redirectToRoute('app_voitures_list_uneditable', [
                 'page' => $request->query->getInt('page', 1),
                 'q' => $request->query->get('q'),
             ]);

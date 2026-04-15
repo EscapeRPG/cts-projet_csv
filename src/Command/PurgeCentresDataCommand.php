@@ -175,6 +175,23 @@ final class PurgeCentresDataCommand extends Command
     }
 
     /**
+     * In synthese tables, unknown centres are stored as "Centre inconnu (<AGR>)" (built in PopulateSyntheseCommand).
+     *
+     * We upper-case these labels because purge queries use UPPER(TRIM(...)).
+     *
+     * @param array<int, string> $agrs Normalized centre approvals (already uppercased).
+     *
+     * @return array<int, string> Upper-cased synthetic labels matching the "Centre inconnu (...)" format.
+     */
+    private function buildUnknownCentreLabels(array $agrs): array
+    {
+        return array_map(
+            static fn(string $agr) => 'CENTRE INCONNU (' . $agr . ')',
+            $agrs
+        );
+    }
+
+    /**
      * Builds temporary table of impacted controls.
      *
      * @param array<int, string> $agrs Normalized target approvals.
@@ -213,6 +230,8 @@ final class PurgeCentresDataCommand extends Command
      */
     private function collectStats(array $agrs): array
     {
+        $unknownCentreLabels = $this->buildUnknownCentreLabels($agrs);
+
         return [
             'target_controls' => (int)$this->connection->fetchOne(
                 'SELECT COUNT(*) FROM tmp_purge_centres_controls'
@@ -231,18 +250,32 @@ final class PurgeCentresDataCommand extends Command
                     SELECT COUNT(*)
                     FROM synthese_controles sc
                     WHERE UPPER(TRIM(sc.agr_centre)) IN (:agrs)
+                       OR UPPER(TRIM(sc.agr_centre)) IN (:unknown_centre_labels)
                 ",
-                ['agrs' => $agrs],
-                ['agrs' => ArrayParameterType::STRING]
+                [
+                    'agrs' => $agrs,
+                    'unknown_centre_labels' => $unknownCentreLabels,
+                ],
+                [
+                    'agrs' => ArrayParameterType::STRING,
+                    'unknown_centre_labels' => ArrayParameterType::STRING,
+                ]
             ),
             'target_synthese_pros' => (int)$this->connection->fetchOne(
                 "
                     SELECT COUNT(*)
                     FROM synthese_pros sp
                     WHERE UPPER(TRIM(sp.agr_centre)) IN (:agrs)
+                       OR UPPER(TRIM(sp.agr_centre)) IN (:unknown_centre_labels)
                 ",
-                ['agrs' => $agrs],
-                ['agrs' => ArrayParameterType::STRING]
+                [
+                    'agrs' => $agrs,
+                    'unknown_centre_labels' => $unknownCentreLabels,
+                ],
+                [
+                    'agrs' => ArrayParameterType::STRING,
+                    'unknown_centre_labels' => ArrayParameterType::STRING,
+                ]
             ),
         ];
     }
@@ -362,14 +395,23 @@ final class PurgeCentresDataCommand extends Command
      */
     private function deleteSyntheseControles(array $agrs): int
     {
+        $unknownCentreLabels = $this->buildUnknownCentreLabels($agrs);
+
         return $this->connection->executeStatement(
             "
                 DELETE sc
                 FROM synthese_controles sc
                 WHERE UPPER(TRIM(sc.agr_centre)) IN (:agrs)
+                   OR UPPER(TRIM(sc.agr_centre)) IN (:unknown_centre_labels)
             ",
-            ['agrs' => $agrs],
-            ['agrs' => ArrayParameterType::STRING]
+            [
+                'agrs' => $agrs,
+                'unknown_centre_labels' => $unknownCentreLabels,
+            ],
+            [
+                'agrs' => ArrayParameterType::STRING,
+                'unknown_centre_labels' => ArrayParameterType::STRING,
+            ]
         );
     }
 
@@ -384,14 +426,23 @@ final class PurgeCentresDataCommand extends Command
      */
     private function deleteSynthesePros(array $agrs): int
     {
+        $unknownCentreLabels = $this->buildUnknownCentreLabels($agrs);
+
         return $this->connection->executeStatement(
             "
                 DELETE sp
                 FROM synthese_pros sp
                 WHERE UPPER(TRIM(sp.agr_centre)) IN (:agrs)
+                   OR UPPER(TRIM(sp.agr_centre)) IN (:unknown_centre_labels)
             ",
-            ['agrs' => $agrs],
-            ['agrs' => ArrayParameterType::STRING]
+            [
+                'agrs' => $agrs,
+                'unknown_centre_labels' => $unknownCentreLabels,
+            ],
+            [
+                'agrs' => ArrayParameterType::STRING,
+                'unknown_centre_labels' => ArrayParameterType::STRING,
+            ]
         );
     }
 }
