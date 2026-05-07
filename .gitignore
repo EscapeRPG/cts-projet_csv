@@ -26,3 +26,4 @@
 ###< symfony/asset-mapper ###
 
 .idea
+.sql

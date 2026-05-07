@@ -52,6 +52,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $centres;
 
     /**
+     * Restricts access to specific societes when defined (used for encours + centre scoping).
+     *
+     * @var Collection<int, Societe>
+     */
+    #[ORM\ManyToMany(targetEntity: Societe::class)]
+    #[ORM\JoinTable(name: 'user_societe')]
+    private Collection $societes;
+
+    /**
      * @var Collection<int, UserNotification>
      */
     #[ORM\OneToMany(targetEntity: UserNotification::class, mappedBy: 'user')]
@@ -61,6 +70,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->userNotifications = new ArrayCollection();
         $this->centres = new ArrayCollection();
+        $this->societes = new ArrayCollection();
     }
 
 
@@ -201,6 +211,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeCentre(Centre $centre): static
     {
         $this->centres->removeElement($centre);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Societe>
+     */
+    public function getSocietes(): Collection
+    {
+        return $this->societes;
+    }
+
+    public function addSociete(Societe $societe): static
+    {
+        if (!$this->societes->contains($societe)) {
+            $this->societes->add($societe);
+        }
+
+        return $this;
+    }
+
+    public function removeSociete(Societe $societe): static
+    {
+        $this->societes->removeElement($societe);
 
         return $this;
     }

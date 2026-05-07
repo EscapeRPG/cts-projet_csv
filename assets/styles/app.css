@@ -30,7 +30,6 @@ header {
     position: fixed;
     top: 0;
     left: 0;
-    width: fit-content;
     padding: 15px 20px 0;
     z-index: 98;
 
@@ -402,6 +401,7 @@ main {
 }
 
 .container {
+    display: flex;
     width: 95%;
     max-height: 80vh;
     background: var(--blocks);

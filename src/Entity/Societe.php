@@ -45,11 +45,18 @@ class Societe
     #[ORM\OneToMany(targetEntity: Voiture::class, mappedBy: 'societe')]
     private Collection $voitures;
 
+    /**
+     * @var Collection<int, EncoursBancaire>
+     */
+    #[ORM\OneToMany(targetEntity: EncoursBancaire::class, mappedBy: 'societe')]
+    private Collection $encoursBancaires;
+
     public function __construct()
     {
         $this->centre = new ArrayCollection();
         $this->salaries = new ArrayCollection();
         $this->voitures = new ArrayCollection();
+        $this->encoursBancaires = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -189,6 +196,36 @@ class Societe
             // set the owning side to null (unless already changed)
             if ($voiture->getSociete() === $this) {
                 $voiture->setSociete(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, EncoursBancaire>
+     */
+    public function getEncoursBancaires(): Collection
+    {
+        return $this->encoursBancaires;
+    }
+
+    public function addEncoursBancaire(EncoursBancaire $encoursBancaire): static
+    {
+        if (!$this->encoursBancaires->contains($encoursBancaire)) {
+            $this->encoursBancaires->add($encoursBancaire);
+            $encoursBancaire->setSociete($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEncoursBancaire(EncoursBancaire $encoursBancaire): static
+    {
+        if ($this->encoursBancaires->removeElement($encoursBancaire)) {
+            // set the owning side to null (unless already changed)
+            if ($encoursBancaire->getSociete() === $this) {
+                $encoursBancaire->setSociete(null);
             }
         }
 

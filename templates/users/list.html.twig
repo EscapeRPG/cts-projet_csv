@@ -3,63 +3,193 @@
 {% block title %}Liste des utilisateurs{% endblock %}
 
 {% block body %}
-    <h1>Liste des utilisateurs</h1>
-
     <div class="container">
         <div class="table-wrapper">
-            <table>
+            <table class="users-list">
                 <thead>
                 <tr>
-                    <th>Nom</th>
-                    <th>Email</th>
-                    <th>Rôle</th>
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <th>Actions</th>
-                    {% endif %}
+                    <th rowspan="2">Nom<br>d'utilisateur</th>
+                    <th rowspan="2">Email</th>
+                    <th rowspan="2">Rôle</th>
+                    <th colspan="3">Organigrammes</th>
+                    <th colspan="3">Encours bancaires</th>
+                    <th class="td-centres-selectlike" rowspan="2">Rattachement</th>
+                    <th colspan="3">Sociétés</th>
+                    <th colspan="3">Centres</th>
+                    <th colspan="3">Voitures</th>
+                    <th colspan="3">Salariés</th>
+                    <th rowspan="2">Actions</th>
+                    <th rowspan="2">Supprimer</th>
+                </tr>
+
+                <tr>
+                    <th>Consulter</th>
+                    <th>Éditer</th>
+                    <th>Ajouter</th>
+                    <th>Consulter</th>
+                    <th>Éditer</th>
+                    <th>Ajouter</th>
+                    <th>Consulter</th>
+                    <th>Éditer</th>
+                    <th>Ajouter</th>
+                    <th>Consulter</th>
+                    <th>Éditer</th>
+                    <th>Ajouter</th>
+                    <th>Consulter</th>
+                    <th>Éditer</th>
+                    <th>Ajouter</th>
+                    <th>Consulter</th>
+                    <th>Éditer</th>
+                    <th>Ajouter</th>
                 </tr>
                 </thead>
 
                 <tbody>
-                {% for user in users %}
+                {% for userList in users %}
+                    {% set canViewOrganigrams = ('ROLE_ADMIN' in userList.roles) or ('ROLE_ORGANIGRAM_VIEW' in userList.roles) %}
+                    {% set canEditOrganigrams = ('ROLE_ADMIN' in userList.roles) or ('ROLE_ORGANIGRAM_EDIT' in userList.roles) %}
+                    {% set canAddOrganigrams = ('ROLE_ADMIN' in userList.roles) or ('ROLE_ORGANIGRAM_ADD' in userList.roles) %}
+                    {% set canViewEncours = ('ROLE_ADMIN' in userList.roles) or ('ROLE_ENCOURS_VIEW' in userList.roles) %}
+                    {% set canEditEncours = ('ROLE_ADMIN' in userList.roles) or ('ROLE_ENCOURS_EDIT' in userList.roles) %}
+                    {% set canAddEncours = ('ROLE_ADMIN' in userList.roles) or ('ROLE_ENCOURS_ADD' in userList.roles) %}
+                    {% set canViewSocietes = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_SOCIETES_VIEW' in userList.roles) %}
+                    {% set canEditSocietes = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_SOCIETES_EDIT' in userList.roles) %}
+                    {% set canAddSocietes = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_SOCIETES_ADD' in userList.roles) %}
+                    {% set canViewCentres = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_CENTRES_VIEW' in userList.roles) %}
+                    {% set canEditCentres = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_CENTRES_EDIT' in userList.roles) %}
+                    {% set canAddCentres = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_CENTRES_ADD' in userList.roles) %}
+                    {% set canViewVoitures = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_VOITURES_VIEW' in userList.roles) %}
+                    {% set canEditVoitures = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_VOITURES_EDIT' in userList.roles) %}
+                    {% set canAddVoitures = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_VOITURES_ADD' in userList.roles) %}
+                    {% set canViewSalaries = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_SALARIES_VIEW' in userList.roles) %}
+                    {% set canEditSalaries = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_SALARIES_EDIT' in userList.roles) %}
+                    {% set canAddSalaries = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_SALARIES_ADD' in userList.roles) %}
+
                     <tr>
-                        <td>{{ user.username }}</td>
-                        <td>{{ user.email }}</td>
+                        <td>{{ userList.username }}</td>
+                        <td>{{ userList.email }}</td>
                         <td>
-                            {% if ('ROLE_ADMIN' in user.roles) %}
+                            {% if ('ROLE_ADMIN' in userList.roles) %}
                                 Administrateur
                             {% else %}
                                 {% set labels = [] %}
-                                {% if 'ROLE_CTS' in user.roles %}{% set labels = labels|merge(['CTS']) %}{% endif %}
-                                {% if 'ROLE_ASTIKOTO' in user.roles %}{% set labels = labels|merge(['Astikoto']) %}{% endif %}
+                                {% if 'ROLE_CTS' in userList.roles %}{% set labels = labels|merge(['CTS']) %}{% endif %}
+                                {% if 'ROLE_ASTIKOTO' in userList.roles %}{% set labels = labels|merge(['Astikoto']) %}{% endif %}
                                 {{ labels is empty ? 'Utilisateur' : labels|join(' + ') }}
                             {% endif %}
                         </td>
-                        {% if is_granted('ROLE_ADMIN') %}
-                            <td class="table-action">
-                                <form action="{{ path('app_users_promote', { id: user.id }) }}" method="post">
-                                    {% if ('ROLE_ADMIN' in user.roles) %}
-                                        <button class="degrade">Rétrograder</button>
-                                    {% else %}
-                                        <button class="promote">Promouvoir</button>
-                                    {% endif %}
-                                </form>
+                        <td class="{{ canViewOrganigrams ? 'increased' : 'decreased' }} centered">
+                            {{ canViewOrganigrams ? '✓' : '✕' }}
+                        </td>
+                        <td class="{{ canEditOrganigrams ? 'increased' : 'decreased' }} centered">
+                            {{ canEditOrganigrams ? '✓' : '✕' }}
+                        </td>
+                        <td class="{{ canAddOrganigrams ? 'increased' : 'decreased' }} centered">
+                            {{ canAddOrganigrams ? '✓' : '✕' }}
+                        </td>
+                        <td class="{{ canViewEncours ? 'increased' : 'decreased' }} centered">
+                            {{ canViewEncours ? '✓' : '✕' }}
+                        </td>
+                        <td class="{{ canEditEncours ? 'increased' : 'decreased' }} centered">
+                            {{ canEditEncours ? '✓' : '✕' }}
+                        </td>
+                        <td class="{{ canAddEncours ? 'increased' : 'decreased' }} centered">
+                            {{ canAddEncours ? '✓' : '✕' }}
+                        </td>
+                        <td class="td-centres-selectlike">
+                            {% if 'ROLE_ADMIN' in userList.roles %}
+                                Toutes
+                            {% else %}
+                                {# Build an optgroup-friendly structure: company -> list of centres. #}
+                                {% set centresBySociete = {} %}
+                                {% set societeNames = [] %}
 
-                                {% if user.id not in [1, 2] %}
-                                    <form action="{{ path('app_users_delete', { id: user.id }) }}"
-                                          method="post"
-                                          data-controller="confirm-modal-trigger"
-                                          data-confirm-modal-trigger-message-value=""
-                                    >
-                                        <input type="hidden" name="_token"
-                                               value="{{ csrf_token('delete-user-' ~ user.id) }}">
-                                        <button type="button" class="delete"
-                                                data-action="click->confirm-modal-trigger#open">
-                                            X
-                                        </button>
-                                    </form>
-                                {% endif %}
-                            </td>
-                        {% endif %}
+                                {% for centre in userList.centres %}
+                                    {% set societeName = centre.societe ? centre.societe.nom : '(Sans societe)' %}
+                                    {% if societeName not in societeNames %}
+                                        {% set societeNames = societeNames|merge([societeName]) %}
+                                    {% endif %}
+
+                                    {% set current = centresBySociete[societeName]|default([]) %}
+                                    {% set centresBySociete = centresBySociete|merge({ (societeName): current|merge([centre]) }) %}
+                                {% endfor %}
+
+                                <div class="centres-selectlike">
+                                    <select multiple
+                                            data-centres-selectlike="1"
+                                            data-centres-selectlike-readonly="1"
+                                            aria-label="Centres rattachés">
+                                        {% for societeName in societeNames|sort %}
+                                            <optgroup label="{{ societeName }}">
+                                                {% for centre in centresBySociete[societeName] %}
+                                                    {% set reseau = centre.reseauNom|default('') %}
+                                                    {% set ville = centre.ville|default('') %}
+                                                    {% set agr = centre.agrCentre|default('') %}
+                                                    {% set label = (reseau ~ ' ' ~ ville ~ (agr != '' ? ' (' ~ agr ~ ')' : ''))|trim %}
+                                                    <option value="{{ centre.id }}" selected>{{ label }}</option>
+                                                {% endfor %}
+                                            </optgroup>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td class="{{ canViewSocietes ? 'increased' : 'decreased' }} centered">
+                            {{ canViewSocietes ? '✓' : '✕' }}
+                        </td>
+                        <td class="{{ canEditSocietes ? 'increased' : 'decreased' }} centered">
+                            {{ canEditSocietes ? '✓' : '✕' }}
+                        </td>
+                        <td class="{{ canAddSocietes ? 'increased' : 'decreased' }} centered">
+                            {{ canAddSocietes ? '✓' : '✕' }}
+                        </td>
+                        <td class="{{ canViewCentres ? 'increased' : 'decreased' }} centered">
+                            {{ canViewCentres ? '✓' : '✕' }}
+                        </td>
+                        <td class="{{ canEditCentres ? 'increased' : 'decreased' }} centered">
+                            {{ canEditCentres ? '✓' : '✕' }}
+                        </td>
+                        <td class="{{ canAddCentres ? 'increased' : 'decreased' }} centered">
+                            {{ canAddCentres ? '✓' : '✕' }}
+                        </td>
+                        <td class="{{ canViewVoitures ? 'increased' : 'decreased' }} centered">
+                            {{ canViewVoitures ? '✓' : '✕' }}
+                        </td>
+                        <td class="{{ canEditVoitures ? 'increased' : 'decreased' }} centered">
+                            {{ canEditVoitures ? '✓' : '✕' }}
+                        </td>
+                        <td class="{{ canAddVoitures ? 'increased' : 'decreased' }} centered">
+                            {{ canAddVoitures ? '✓' : '✕' }}
+                        </td>
+                        <td class="{{ canViewSalaries ? 'increased' : 'decreased' }} centered">
+                            {{ canViewSalaries ? '✓' : '✕' }}
+                        </td>
+                        <td class="{{ canEditSalaries ? 'increased' : 'decreased' }} centered">
+                            {{ canEditSalaries ? '✓' : '✕' }}
+                        </td>
+                        <td class="{{ canAddSalaries ? 'increased' : 'decreased' }} centered">
+                            {{ canAddSalaries ? '✓' : '✕' }}
+                        </td>
+                        <td class="table-action">
+                            <a class="btn-link"
+                               href="{{ path('app_users_edit', { id: userList.id }) }}">Modifier</a>
+                        </td>
+                        <td class="table-action">
+                            {% if userList.id not in [1, 2] %}
+                                <form action="{{ path('app_users_delete', { id: userList.id }) }}"
+                                      method="post"
+                                      data-controller="confirm-modal-trigger"
+                                      data-confirm-modal-trigger-message-value=""
+                                >
+                                    <input type="hidden" name="_token"
+                                           value="{{ csrf_token('delete-user-' ~ userList.id) }}">
+                                    <button type="button" class="delete"
+                                            data-action="click->confirm-modal-trigger#open">
+                                        X
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>

@@ -206,7 +206,9 @@ final readonly class SuiviSyntheseRepository extends AbstractSuiviQueryRepositor
         }
 
         return implode(' + ', array_map(
-            static fn (string $subtype): string => "{$prefix}{$subtype}{$suffix}",
+            // NULL-propagation would turn the whole sum into NULL, then SUM() would ignore it
+            // and totals would be undercounted. Coalesce each term to 0.
+            static fn (string $subtype): string => "COALESCE({$prefix}{$subtype}{$suffix}, 0)",
             $targetSubtypes
         ));
     }
@@ -257,8 +259,26 @@ final readonly class SuiviSyntheseRepository extends AbstractSuiviQueryRepositor
     private function getSyntheseDefaultMetricsSelect(): string
     {
         return "
-            SUM(nb_controles) AS nb_controles,
-            SUM(nb_controles_factures) AS nb_controles_factures,
+            -- Derive totals from subtype columns to avoid relying on precomputed nb_controles
+            -- (which may be stale/mismatched when the ETL changes).
+            SUM(
+                COALESCE(nb_vtp, 0)
+                + COALESCE(nb_clvtp, 0)
+                + COALESCE(nb_cv, 0)
+                + COALESCE(nb_clcv, 0)
+                + COALESCE(nb_vtc, 0)
+                + COALESCE(nb_vol, 0)
+                + COALESCE(nb_clvol, 0)
+            ) AS nb_controles,
+            SUM(
+                COALESCE(nb_vtp_factures, 0)
+                + COALESCE(nb_clvtp_factures, 0)
+                + COALESCE(nb_cv_factures, 0)
+                + COALESCE(nb_clcv_factures, 0)
+                + COALESCE(nb_vtc_factures, 0)
+                + COALESCE(nb_vol_factures, 0)
+                + COALESCE(nb_clvol_factures, 0)
+            ) AS nb_controles_factures,
             SUM(nb_vtp) AS nb_vtp,
             SUM(nb_vtp_factures) AS nb_vtp_factures,
             SUM(nb_clvtp) AS nb_clvtp,

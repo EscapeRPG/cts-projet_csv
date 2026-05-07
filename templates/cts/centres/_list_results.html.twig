@@ -22,11 +22,11 @@
             {% set formId = 'centre-form-' ~ centre.id %}
 
             <tr>
-                <td>{{ form_widget(forms[centre.id].societe, {'attr': {'form': formId}}) }}</td>
+                <td>{{ form_widget(forms[centre.id].societe, {'attr': {'form': formId, 'class': (forms[centre.id].societe.vars.attr.class|default('') ~ ' reseau-uppercase')|trim}}) }}</td>
                 <td>{{ form_widget(forms[centre.id].reseau, {'attr': {'form': formId, 'class': (forms[centre.id].reseau.vars.attr.class|default('') ~ ' reseau-uppercase')|trim}}) }}</td>
                 <td>{{ form_widget(forms[centre.id].reseauNom, {'attr': {'form': formId}}) }}</td>
-                <td>{{ form_widget(forms[centre.id].agrCentre, {'attr': {'form': formId, 'class': (forms[centre.id].reseau.vars.attr.class|default('') ~ ' reseau-uppercase')|trim}}) }}</td>
-                <td>{{ form_widget(forms[centre.id].agrClCentre, {'attr': {'form': formId, 'class': (forms[centre.id].reseau.vars.attr.class|default('') ~ ' reseau-uppercase')|trim}}) }}</td>
+                <td>{{ form_widget(forms[centre.id].agrCentre, {'attr': {'form': formId, 'class': (forms[centre.id].agrCentre.vars.attr.class|default('') ~ ' reseau-uppercase')|trim}}) }}</td>
+                <td>{{ form_widget(forms[centre.id].agrClCentre, {'attr': {'form': formId, 'class': (forms[centre.id].agrClCentre.vars.attr.class|default('') ~ ' reseau-uppercase')|trim}}) }}</td>
                 <td>{{ form_widget(forms[centre.id].coordonnees, {'attr': {'form': formId}}) }}</td>
                 <td>{{ form_widget(forms[centre.id].cp, {'attr': {'form': formId}}) }}</td>
                 <td>{{ form_widget(forms[centre.id].ville, {'attr': {'form': formId}}) }}</td>

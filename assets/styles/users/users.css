@@ -43,3 +43,42 @@
         color: var(--cts-alt);
     }
 }
+
+/* The "td-centres-selectlike" column is 100% width on CTS list pages.
+   On the users list it must remain compact, otherwise it starves other columns. */
+table.users-list {
+    .td-centres-selectlike {
+        width: fit-content !important;
+        max-width: 260px;
+    }
+
+    td.td-centres-selectlike,
+    th.td-centres-selectlike {
+        max-width: 260px;
+        overflow: clip;
+        text-overflow: ellipsis;
+    }
+
+    .td-centres-selectlike .centres-selectlike {
+        width: 100% !important;
+        max-width: 260px;
+    }
+
+    .td-centres-selectlike .selectlike-multi {
+        width: 100% !important;
+        max-width: 260px;
+    }
+
+    .td-centres-selectlike .selectlike-multi__control {
+        width: 100%;
+        max-width: 260px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: block;
+    }
+
+    thead tr:first-child {
+        box-shadow: none;
+    }
+}

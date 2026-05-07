@@ -3,8 +3,16 @@ function enhanceCentresSelect(select) {
     if (select.dataset.centresSelectlikeInit === '1') return;
     select.dataset.centresSelectlikeInit = '1';
 
+    const itemLabelSingular = (select.dataset.selectlikeItemSingular || 'centre').trim() || 'centre';
+    const itemLabelPlural = (select.dataset.selectlikeItemPlural || 'centres').trim() || 'centres';
+
+    const isReadonly = select.hasAttribute('data-centres-selectlike-readonly')
+        && select.dataset.centresSelectlikeReadonly !== '0'
+        && select.dataset.centresSelectlikeReadonly !== 'false';
+
     const wrapper = document.createElement('div');
     wrapper.className = 'selectlike-multi';
+    if (isReadonly) wrapper.classList.add('is-readonly');
 
     const control = document.createElement('button');
     control.type = 'button';
@@ -25,6 +33,37 @@ function enhanceCentresSelect(select) {
     const addGroup = (label, options) => {
         const group = document.createElement('div');
         group.className = 'selectlike-multi__group';
+
+        if (isReadonly) {
+            if (label) {
+                const title = document.createElement('div');
+                title.className = 'selectlike-multi__group-title';
+
+                const titleLabel = document.createElement('span');
+                titleLabel.className = 'selectlike-multi__group-title-label';
+                titleLabel.textContent = label;
+
+                title.appendChild(titleLabel);
+                group.appendChild(title);
+            }
+
+            options.forEach((option) => {
+                if (!option.selected) return;
+
+                const item = document.createElement('div');
+                item.className = 'selectlike-multi__item';
+
+                const text = document.createElement('span');
+                text.className = 'selectlike-multi__item-label';
+                text.textContent = option.textContent ?? '';
+
+                item.appendChild(text);
+                group.appendChild(item);
+            });
+
+            list.appendChild(group);
+            return;
+        }
 
         let groupToggle = null;
         const updateGroupToggleState = () => {
@@ -92,13 +131,34 @@ function enhanceCentresSelect(select) {
         }
 
         options.forEach((option) => {
+            if (!(option instanceof HTMLOptionElement)) return;
+
+            // Some option rows are only used to store values (e.g. group-toggle value) and should not be shown.
+            if (option.dataset.selectlikeHidden === '1') {
+                return;
+            }
+
+            // Disabled options are informational (e.g. centres listed under a societe scope).
+            // Render them without a checkbox so it doesn't look broken.
+            if (option.disabled) {
+                const item = document.createElement('div');
+                item.className = 'selectlike-multi__item is-disabled';
+
+                const text = document.createElement('span');
+                text.className = 'selectlike-multi__item-label';
+                text.textContent = option.textContent ?? '';
+
+                item.appendChild(text);
+                group.appendChild(item);
+                return;
+            }
+
             const item = document.createElement('label');
             item.className = 'selectlike-multi__item';
 
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.checked = option.selected;
-            checkbox.disabled = option.disabled;
 
             const text = document.createElement('span');
             text.className = 'selectlike-multi__item-label';
@@ -112,6 +172,26 @@ function enhanceCentresSelect(select) {
 
             checkbox.addEventListener('change', () => {
                 option.selected = checkbox.checked;
+
+                // If a centre is selected, ensure its societe option is selected too.
+                // If all centres are unselected, clear the societe option.
+                const value = String(option.value || '');
+                if (value.startsWith('centre:')) {
+                    const groupEl = option.parentElement instanceof HTMLOptGroupElement ? option.parentElement : null;
+                    if (groupEl) {
+                        const groupOptions = Array.from(groupEl.querySelectorAll('option'));
+                        const societeOption = groupOptions.find((o) => String(o.value || '').startsWith('societe:'));
+                        const anyCentreSelected = groupOptions.some((o) => String(o.value || '').startsWith('centre:') && o.selected);
+                        if (societeOption) {
+                            societeOption.selected = anyCentreSelected;
+                            const societeCheckbox = optionToCheckbox.get(societeOption);
+                            if (societeCheckbox) {
+                                societeCheckbox.checked = societeOption.selected;
+                            }
+                        }
+                    }
+                }
+
                 updateControlLabel();
                 updateGroupToggleState();
                 // Keep any listeners in sync.
@@ -148,14 +228,17 @@ function enhanceCentresSelect(select) {
     const updateControlLabel = () => {
         const selected = Array.from(select.selectedOptions || []);
         if (!selected.length) {
-            control.textContent = '- Choisir -';
+            control.textContent = isReadonly ? 'Aucun' : '- CHOISIR -';
             return;
         }
         if (selected.length === 1) {
-            control.textContent = selected[0].textContent || '- Choisir -';
+            control.textContent = selected[0].textContent || '- CHOISIR -';
             return;
         }
-        control.textContent = `${selected.length} centres sélectionnés`;
+        const noun = selected.length > 1 ? itemLabelPlural : itemLabelSingular;
+        control.textContent = isReadonly
+            ? `${selected.length} ${noun}`
+            : `${selected.length} ${noun} sélectionnés`;
     };
 
     const open = () => {

@@ -56,7 +56,7 @@
                                rel="noopener">Télécharger</a>
 
                             <form method="post"
-                                  action="{{ path('app_voitures_certificat_delete', {'id': voiture.id, 'page': pagination.page|default(1), 'q': app.request.query.get('q')}) }}"
+                                  action="{{ path('app_voitures_certificat_delete', {'id': voiture.id, 'page': pagination.page|default(1), 'q': app.request.query.get('q'), 'active': app.request.query.get('active'), 'inactive': app.request.query.get('inactive')}) }}"
                                   data-turbo="false"
                                   style="display:inline-block;">
                                 <input type="hidden" name="_token"
@@ -76,7 +76,7 @@
                 <td>{{ form_widget(forms[voiture.id].active, {'attr': {'form': formId}}) }}</td>
                 <td>
                     {{ form_start(forms[voiture.id], {
-                        'action': path('app_voitures_update', {'id': voiture.id, 'page': pagination.page|default(1), 'q': app.request.query.get('q')}),
+                        'action': path('app_voitures_update', {'id': voiture.id, 'page': pagination.page|default(1), 'q': app.request.query.get('q'), 'active': app.request.query.get('active'), 'inactive': app.request.query.get('inactive')}),
                         'method': 'POST',
                         'attr': {'data-turbo': 'false', 'id': formId}
                     }) }}

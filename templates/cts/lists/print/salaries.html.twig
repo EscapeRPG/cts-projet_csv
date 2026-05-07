@@ -22,6 +22,7 @@
                 <th>Tee-shirt</th>
                 <th>Polo</th>
                 <th>Chaussures</th>
+                <th>Actif</th>
             </tr>
             </thead>
             <tbody>
@@ -44,6 +45,7 @@
                     <td class="centered">{{ salarie.teeShirts }}</td>
                     <td class="centered">{{ salarie.polo }}</td>
                     <td class="centered">{{ salarie.chaussures }}</td>
+                    <td class="{{ salarie.isActive ? 'increased' : 'decreased' }} centered">{{ salarie.isActive == 1 ? '✓' : '✕' }}</td>
                 </tr>
             {% endfor %}
             </tbody>

@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Organigrammes structurels{% endblock %}
+
+{% block body %}
+    <div class="organigram-filters">
+        <button class="organigram-filters__button active" data-filter="controles">EXPLOITATIONS</button>
+        <button class="organigram-filters__button" data-filter="immobilier">IMMOBILIER</button>
+    </div>
+
+    <img src="{{ asset('img/organigramme/organigramme-structurel.jpg') }}"
+         alt="organigramme structurel"
+         title="Organigramme structurel"
+         class="organigram">
+{% endblock %}

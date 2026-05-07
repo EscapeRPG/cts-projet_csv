@@ -161,7 +161,7 @@ class Salarie
         return $this->dateNaissance;
     }
 
-    public function setDateNaissance(\DateTimeImmutable $dateNaissance): static
+    public function setDateNaissance(?\DateTimeImmutable $dateNaissance): static
     {
         $this->dateNaissance = $dateNaissance;
 

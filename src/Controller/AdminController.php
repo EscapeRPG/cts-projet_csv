@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\CreateUserType;
+use App\Repository\CentreRepository;
+use App\Repository\SocieteRepository;
 use App\Repository\UserRepository;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
@@ -49,7 +51,7 @@ final class AdminController extends AbstractController
     #[Route("/admin/users/list", name: 'app_users_list')]
     public function list(UserRepository $userRepository): Response
     {
-        $users = $userRepository->findAll();
+        $users = $userRepository->findAllWithCentres();
 
         return $this->render('users/list.html.twig', [
             'users' => $users,
@@ -69,10 +71,15 @@ final class AdminController extends AbstractController
     public function addUser(
         Request                $request,
         EntityManagerInterface $em,
-        MailerInterface        $mailer
+        MailerInterface        $mailer,
+        SocieteRepository      $societeRepository,
+        CentreRepository       $centreRepository,
     ): Response
     {
-        $form = $this->createForm(CreateUserType::class);
+        $form = $this->createForm(CreateUserType::class, null, [
+            'societe_repository' => $societeRepository,
+            'centre_repository' => $centreRepository,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -197,30 +204,120 @@ final class AdminController extends AbstractController
     }
 
     /**
-     * Toggles user role between import and administrator privileges.
-     *
-     * @param User $user User entity resolved from route parameter.
-     * @param EntityManagerInterface $em Doctrine entity manager.
-     *
-     * @return Response Redirect response to the users list.
+     * Updates an existing user (roles + scope).
      */
-    #[Route('/admin/users/promote/{id}', name: 'app_users_promote', requirements: ['id' => '\d+'])]
-    public function promoteUser(User $user, EntityManagerInterface $em): Response
+    #[Route('/admin/users/edit/{id}', name: 'app_users_edit', requirements: ['id' => '\d+'])]
+    public function editUser(
+        Request $request,
+        User $user,
+        EntityManagerInterface $em,
+        SocieteRepository $societeRepository,
+        CentreRepository $centreRepository
+    ): Response
     {
-        $roles = $user->getRoles();
+        $form = $this->createForm(CreateUserType::class, $user, [
+            'societe_repository' => $societeRepository,
+            'centre_repository' => $centreRepository,
+        ]);
 
-        if (in_array('ROLE_ADMIN', $roles)) {
-            $roles = array_diff($roles, ['ROLE_ADMIN']);
-            $roles[] = 'ROLE_USER';
-        } else {
-            $roles = array_diff($roles, ['ROLE_USER']);
-            $roles[] = 'ROLE_ADMIN';
+        // Pre-fill unmapped fields based on the current persisted roles.
+        $currentRoles = $user->getRoles();
+        $form->get('isAdmin')->setData(in_array('ROLE_ADMIN', $currentRoles, true));
+        $form->get('entreprises')->setData(array_values(array_intersect($currentRoles, ['ROLE_CTS', 'ROLE_ASTIKOTO'])));
+        $form->get('societe')->setData(array_values(array_intersect($currentRoles, ['ROLE_LIST_SOCIETES_VIEW', 'ROLE_LIST_SOCIETES_EDIT', 'ROLE_LIST_SOCIETES_ADD'])));
+        $form->get('centre')->setData(array_values(array_intersect($currentRoles, ['ROLE_LIST_CENTRES_VIEW', 'ROLE_LIST_CENTRES_EDIT', 'ROLE_LIST_CENTRES_ADD'])));
+        $form->get('voiture')->setData(array_values(array_intersect($currentRoles, ['ROLE_LIST_VOITURES_VIEW', 'ROLE_LIST_VOITURES_EDIT', 'ROLE_LIST_VOITURES_ADD'])));
+        $form->get('salaries')->setData(array_values(array_intersect($currentRoles, ['ROLE_LIST_SALARIES_VIEW', 'ROLE_LIST_SALARIES_EDIT', 'ROLE_LIST_SALARIES_ADD'])));
+        $form->get('organigrammes')->setData(array_values(array_intersect($currentRoles, ['ROLE_ORGANIGRAM_VIEW', 'ROLE_ORGANIGRAM_EDIT', 'ROLE_ORGANIGRAM_ADD'])));
+        $form->get('encours')->setData(array_values(array_intersect($currentRoles, ['ROLE_ENCOURS_VIEW', 'ROLE_ENCOURS_EDIT', 'ROLE_ENCOURS_ADD'])));
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $isAdmin = (bool) $form->get('isAdmin')->getData();
+            /** @var array<int, string> $entreprises */
+            $entreprises = $form->get('entreprises')->getData() ?? [];
+            /** @var array<int, string> $societePerms */
+            $societePerms = $form->get('societe')->getData() ?? [];
+            /** @var array<int, string> $centrePerms */
+            $centrePerms = $form->get('centre')->getData() ?? [];
+            /** @var array<int, string> $voiturePerms */
+            $voiturePerms = $form->get('voiture')->getData() ?? [];
+            /** @var array<int, string> $salariesPerms */
+            $salariesPerms = $form->get('salaries')->getData() ?? [];
+            /** @var array<int, string> $organigrammesPerms */
+            $organigrammesPerms = $form->get('organigrammes')->getData() ?? [];
+            /** @var array<int, string> $encoursPerms */
+            $encoursPerms = $form->get('encours')->getData() ?? [];
+
+            $roles = [];
+            if ($isAdmin) {
+                $roles[] = 'ROLE_ADMIN';
+            } else {
+                $listPerms = array_merge($societePerms, $centrePerms, $voiturePerms, $salariesPerms, $organigrammesPerms, $encoursPerms);
+                $roles = array_merge($roles, $entreprises, $listPerms);
+
+                // If add permission is granted, ensure the corresponding view permission is also present.
+                $addToView = [
+                    'ROLE_LIST_SOCIETES_ADD' => 'ROLE_LIST_SOCIETES_VIEW',
+                    'ROLE_LIST_CENTRES_ADD' => 'ROLE_LIST_CENTRES_VIEW',
+                    'ROLE_LIST_VOITURES_ADD' => 'ROLE_LIST_VOITURES_VIEW',
+                    'ROLE_LIST_SALARIES_ADD' => 'ROLE_LIST_SALARIES_VIEW',
+                ];
+                foreach ($roles as $role) {
+                    $addRole = (string) $role;
+                    $viewRole = $addToView[$addRole] ?? null;
+                    if (is_string($viewRole)) {
+                        $roles[] = $viewRole;
+                    }
+                }
+
+                $roles = array_values(array_unique(array_filter($roles, static fn (string $r): bool => $r !== 'ROLE_USER')));
+
+                if ($entreprises === []) {
+                    $form->get('entreprises')->addError(new FormError('Veuillez sélectionner au moins une entreprise (CTS et/ou Astikoto).'));
+
+                    return $this->render('users/edit.html.twig', [
+                        'form' => $form->createView(),
+                        'user' => $user,
+                    ]);
+                }
+
+                if ($listPerms === []) {
+                    $form->addError(new FormError('Veuillez sélectionner au moins un accès (lister et/ou ajouter) sur une ou plusieurs listes.'));
+
+                    return $this->render('users/edit.html.twig', [
+                        'form' => $form->createView(),
+                        'user' => $user,
+                    ]);
+                }
+            }
+
+            $user->setRoles($roles);
+
+            try {
+                $em->flush();
+            } catch (UniqueConstraintViolationException $e) {
+                $this->logger->warning('Tentative de mise a jour utilisateur avec username deja existant', [
+                    'username' => $user->getUsername(),
+                    'email' => $user->getEmail(),
+                ]);
+                $form->get('username')->addError(new FormError('Ce nom d\'utilisateur existe déjà.'));
+
+                return $this->render('users/edit.html.twig', [
+                    'form' => $form->createView(),
+                    'user' => $user,
+                ]);
+            }
+
+            $this->addFlash('success', 'Utilisateur mis à jour.');
+            return $this->redirectToRoute('app_users_list');
         }
 
-        $user->setRoles(array_values($roles));
-        $em->flush();
-
-        return $this->redirectToRoute('app_users_list');
+        return $this->render('users/edit.html.twig', [
+            'form' => $form->createView(),
+            'user' => $user,
+        ]);
     }
 
     /**

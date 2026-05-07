@@ -149,8 +149,9 @@ class SuiviSyntheseBuilder
                 'prenom' => $this->safeUcfirst((string)$row['salarie_prenom']),
                 'agr' => $row['salarie_agr'],
                 'agr_cl' => $row['salarie_agr_cl'] ?? '',
-                'nb_controles' => (int)$row['nb_controles'],
-                'nb_controles_factures' => (int)($row['nb_controles_factures'] ?? 0),
+                // Recomputed below from per-type metrics to avoid relying on precomputed / stale / mismatched totals.
+                'nb_controles' => 0,
+                'nb_controles_factures' => 0,
                 'nb_auto' => (int)($row['nb_auto'] ?? 0),
                 'nb_auto_factures' => (int)($row['nb_auto_factures'] ?? 0),
                 'nb_moto' => (int)($row['nb_moto'] ?? 0),
@@ -177,8 +178,18 @@ class SuiviSyntheseBuilder
                 $salarieData[$nbCol] = $nb;
                 $salarieData[$nbFacturesCol] = (int)($row[$nbFacturesCol] ?? 0);
                 $salarieData[$caCol] = $ca;
-                $salarieData['prix_moyen_' . $type] = $salarieData[$nbFacturesCol] ? $ca / $salarieData[$nbFacturesCol] : 0;
+                $salarieData['prix_moyen_' . $type] = $nb ? $ca / $nb : 0;
             }
+
+            // Keep "Total" columns consistent with the per-type columns displayed in the activity table.
+            $salarieData['nb_controles'] = array_sum(array_map(
+                fn (string $type): int => (int)($salarieData['nb_' . $type] ?? 0),
+                $this->types
+            ));
+            $salarieData['nb_controles_factures'] = array_sum(array_map(
+                fn (string $type): int => (int)($salarieData['nb_' . $type . '_factures'] ?? 0),
+                $this->types
+            ));
 
             $data[$societe][$centre]['salaries'][] = $salarieData;
 
@@ -215,8 +226,8 @@ class SuiviSyntheseBuilder
             foreach ($centres as &$centre) {
                 $totaux = $centre['totaux'];
                 foreach ($this->types as $type) {
-                    $totaux['prix_moyen_' . $type] = $totaux['nb_' . $type . '_factures']
-                        ? $totaux['ca_total_ht_' . $type] / $totaux['nb_' . $type . '_factures']
+                    $totaux['prix_moyen_' . $type] = $totaux['nb_' . $type]
+                        ? $totaux['ca_total_ht_' . $type] / $totaux['nb_' . $type]
                         : 0;
                 }
                 $centre['totaux'] = $totaux;
@@ -319,8 +330,8 @@ class SuiviSyntheseBuilder
     private function computeActivityAverages(array &$totals): void
     {
         foreach ($this->types as $type) {
-            $totals['prix_moyen_' . $type] = $totals['nb_' . $type . '_factures'] > 0
-                ? $totals['ca_total_ht_' . $type] / $totals['nb_' . $type . '_factures']
+            $totals['prix_moyen_' . $type] = $totals['nb_' . $type] > 0
+                ? $totals['ca_total_ht_' . $type] / $totals['nb_' . $type]
                 : 0.0;
         }
     }

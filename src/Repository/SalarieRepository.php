@@ -45,12 +45,18 @@ class SalarieRepository extends ServiceEntityRepository
     /**
      * Counts employees matching the search query.
      */
-    public function countSearch(?string $q): int
+    public function countSearch(?string $q, ?array $centreIds = null, bool $includeActive = true, bool $includeInactive = false): int
     {
-        $qb = $this->createQueryBuilder('s')
-            ->select('COUNT(s.id)');
+        if ($centreIds !== null && $centreIds === []) {
+            return 0;
+        }
 
+        $qb = $this->createQueryBuilder('s')
+            ->select('COUNT(DISTINCT s.id)');
+
+        $this->applyCentreScopeFilter($qb, $centreIds);
         $this->applySearchFilter($qb, $q);
+        $this->applyIsActiveFilter($qb, $includeActive, $includeInactive);
 
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
@@ -60,9 +66,14 @@ class SalarieRepository extends ServiceEntityRepository
      *
      * @return array<int, Salarie>
      */
-    public function findPaginatedOrderedBySocieteSearch(int $limit, int $offset, ?string $q): array
+    public function findPaginatedOrderedBySocieteSearch(int $limit, int $offset, ?string $q, ?array $centreIds = null, bool $includeActive = true, bool $includeInactive = false): array
     {
+        if ($centreIds !== null && $centreIds === []) {
+            return [];
+        }
+
         $qb = $this->createQueryBuilder('s')
+            ->distinct()
             ->leftJoin('s.societe', 'so')
             ->addSelect('so')
             ->orderBy('so.nom', 'DESC')
@@ -71,7 +82,9 @@ class SalarieRepository extends ServiceEntityRepository
             ->setFirstResult($offset)
             ->setMaxResults($limit);
 
+        $this->applyCentreScopeFilter($qb, $centreIds);
         $this->applySearchFilter($qb, $q);
+        $this->applyIsActiveFilter($qb, $includeActive, $includeInactive);
 
         return $qb->getQuery()->getResult();
     }
@@ -81,17 +94,53 @@ class SalarieRepository extends ServiceEntityRepository
      *
      * @return array<int, Salarie>
      */
-    public function findOrderedByNomPrenomSearch(?string $q): array
+    public function findOrderedByNomPrenomSearch(?string $q, ?array $centreIds = null, bool $includeActive = true, bool $includeInactive = false): array
     {
+        if ($centreIds !== null && $centreIds === []) {
+            return [];
+        }
+
         $qb = $this->createQueryBuilder('s')
+            ->distinct()
             ->leftJoin('s.societe', 'so')
             ->addSelect('so')
             ->orderBy('s.nom', 'ASC')
             ->addOrderBy('s.prenom', 'ASC');
 
+        $this->applyCentreScopeFilter($qb, $centreIds);
         $this->applySearchFilter($qb, $q);
+        $this->applyIsActiveFilter($qb, $includeActive, $includeInactive);
 
         return $qb->getQuery()->getResult();
+    }
+
+    private function applyIsActiveFilter(QueryBuilder $qb, bool $includeActive, bool $includeInactive): void
+    {
+        if ($includeActive && $includeInactive) {
+            return;
+        }
+
+        if (!$includeActive && !$includeInactive) {
+            return;
+        }
+
+        // "isActive" is nullable in DB: keep only rows explicitly marked as active/inactive.
+        $qb
+            ->andWhere('s.isActive = :isActive')
+            ->setParameter('isActive', $includeActive);
+    }
+
+    private function applyCentreScopeFilter(QueryBuilder $qb, ?array $centreIds): void
+    {
+        if ($centreIds === null) {
+            return;
+        }
+
+        // Keep employees that belong to at least one scoped centre.
+        $qb
+            ->innerJoin('s.centres', 'c_scope')
+            ->andWhere('c_scope.id IN (:centreIds)')
+            ->setParameter('centreIds', $centreIds);
     }
 
     private function applySearchFilter(QueryBuilder $qb, ?string $q): void

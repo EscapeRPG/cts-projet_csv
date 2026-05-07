@@ -1,0 +1,34 @@
+{# EncoursBancaire form helper. Expects "form" variable. #}
+
+{{ form_row(form.societe) }}
+{{ form_row(form.type) }}
+{{ form_row(form.centre) }}
+{{ form_row(form.banque) }}
+{{ form_row(form.emprunt) }}
+{{ form_row(form.date) }}
+{{ form_row(form.garanties) }}
+
+<div
+    data-encours-montants
+    data-index="{{ form.montants|length }}"
+    data-prototype="{{ form_widget(form.montants.vars.prototype)|e('html_attr') }}"
+>
+
+    <div class="form-row">
+        <label>Montants par année</label>
+
+        <div class="encours-montant-row">
+            <div data-montants-list>
+                {% for row in form.montants %}
+                    <div data-montant-row class="encours-montant-item">
+                        {{ form_row(row.annee) }}
+                        {{ form_row(row.montant) }}
+                        <button type="button" data-remove-montant aria-label="Supprimer">-</button>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button type="button" data-add-montant aria-label="Ajouter">+</button>
+        </div>
+    </div>
+</div>

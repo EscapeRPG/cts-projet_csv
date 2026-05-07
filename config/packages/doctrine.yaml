@@ -10,6 +10,12 @@ doctrine:
 
         profiling_collect_backtrace: false
         server_version: '8.4'
+        charset: utf8mb4
+        # Force a consistent connection/session collation. Without this, MySQL can compare table
+        # columns (utf8mb4_0900_ai_ci) with parameters/literals (often utf8mb4_general_ci) and throw
+        # "Illegal mix of collations" on '=' / LIKE / LOWER(...) LIKE comparisons.
+        options:
+            1002: "SET NAMES utf8mb4 COLLATE utf8mb4_0900_ai_ci"
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true

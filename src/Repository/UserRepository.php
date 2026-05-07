@@ -68,4 +68,23 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     {
         return $this->findBy(['isActive' => true], ['username' => 'ASC']);
     }
+
+    /**
+     * Returns all users with their scope attachments preloaded (centres + societes).
+     *
+     * @return array<int, User>
+     */
+    public function findAllWithCentres(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->leftJoin('u.centres', 'c')
+            ->addSelect('c')
+            ->leftJoin('c.societe', 'so')
+            ->addSelect('so')
+            ->leftJoin('u.societes', 'uso')
+            ->addSelect('uso')
+            ->orderBy('u.username', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -50,7 +50,7 @@
                 <td>{{ form_widget(forms[salarie.id].isActive, {'attr': {'form': formId}}) }}</td>
                 <td>
                     {{ form_start(forms[salarie.id], {
-                        'action': path('app_salaries_update', {'id': salarie.id, 'page': pagination.page|default(1), 'q': app.request.query.get('q')}),
+                        'action': path('app_salaries_update', {'id': salarie.id, 'page': pagination.page|default(1), 'q': app.request.query.get('q'), 'active': app.request.query.get('active'), 'inactive': app.request.query.get('inactive')}),
                         'method': 'POST',
                         'attr': {'data-turbo': 'false', 'id': formId}
                     }) }}

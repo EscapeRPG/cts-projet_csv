@@ -1,6 +1,7 @@
 <div class="stats-container" data-ajax-results>
     {% set stats = {
         'nb_controles': 'Nombre de contrôles',
+        'ca': 'Chiffre d\'affaire réalisé',
         'prix_moyen': 'Prix moyen',
         'temps_moyen': 'Temps moyen',
         'taux_refus': 'Taux de refus',
@@ -50,7 +51,7 @@
                                     <div class="salarie-value">
                                         {% if key == 'nb_controles' %}
                                             {{ salarie[keyAuto] }}
-                                        {% elseif key == 'prix_moyen' %}
+                                        {% elseif key == 'prix_moyen' or key == 'ca' %}
                                             {{ salarie[keyAuto]|number_format(2, ',', ' ') }} €
                                         {% elseif key == 'temps_moyen' %}
                                             {{ salarie[keyAuto]|number_format(2, '\'', '') }}
@@ -74,11 +75,11 @@
                                 </div>
                             {% endfor %}
 
-                            <div class="avg-line {{ moyennePercentAuto < 50 ? 'avg-line-left' : 'avg-line-right' }}" style="left: {{ moyennePercentAuto }}%">
+                            <div class="avg-line {{ moyennePercentAuto < 50 ? 'avg-line-left' : 'avg-line-right' }}" style="left: calc({{ moyennePercentAuto }}% - 2px)">
                                 <span>
                                     {% if key == 'nb_controles' %}
                                         {{ moyenneAuto|number_format(0, ',', ' ') }}
-                                    {% elseif key == 'prix_moyen' %}
+                                    {% elseif key == 'prix_moyen' or key == 'ca' %}
                                         {{ moyenneAuto|number_format(2, ',', ' ') }} €
                                     {% elseif key == 'temps_moyen' %}
                                         {{ moyenneAuto|number_format(2, '\'', '') }}
@@ -98,7 +99,7 @@
                                     <div class="salarie-value">
                                         {% if key == 'nb_controles' %}
                                             {{ salarie[keyMoto] }}
-                                        {% elseif key == 'prix_moyen' %}
+                                        {% elseif key == 'prix_moyen' or key == 'ca' %}
                                             {{ salarie[keyMoto]|number_format(2, ',', ' ') }} €
                                         {% elseif key == 'temps_moyen' %}
                                             {{ salarie[keyMoto]|number_format(2, '\'', '') }}
@@ -122,11 +123,11 @@
                                 </div>
                             {% endfor %}
 
-                            <div class="avg-line {{ moyennePercentMoto < 50 ? 'avg-line-left' : 'avg-line-right' }}" style="left: {{ moyennePercentMoto }}%">
+                            <div class="avg-line {{ moyennePercentMoto < 50 ? 'avg-line-left' : 'avg-line-right' }}" style="left: calc({{ moyennePercentMoto }}% - 2px)">
                                 <span>
                                     {% if key == 'nb_controles' %}
                                         {{ moyenneMoto|number_format(0, ',', ' ') }}
-                                    {% elseif key == 'prix_moyen' %}
+                                    {% elseif key == 'prix_moyen' or key == 'ca' %}
                                         {{ moyenneMoto|number_format(2, ',', ' ') }} €
                                     {% elseif key == 'temps_moyen' %}
                                         {{ moyenneMoto|number_format(2, '\'', '') }}
@@ -142,7 +143,7 @@
         </div>
     {% endfor %}
 
-    <div class="stats-wrapper">
+    <div class="stats-wrapper controleur">
         <div class="stats-panel">
             <h2>Répartition particuliers / professionnels</h2>
 

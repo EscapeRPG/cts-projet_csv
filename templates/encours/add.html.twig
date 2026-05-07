@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter un encours{% endblock %}
+
+{% block body %}
+    <div class="form-wrapper">
+        <small class="required-inputs">Les champs marqués d'un * sont obligatoires.</small><br><br>
+
+        {{ form_start(form, {'attr': {'data-turbo': 'false'}}) }}
+
+        {% include 'encours/_form.html.twig' with { form: form } %}
+
+        {{ form_rest(form) }}
+        <button type="submit">Enregistrer</button>
+        {{ form_end(form, { render_rest: false }) }}
+    </div>
+{% endblock %}
+

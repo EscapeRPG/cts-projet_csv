@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Centre;
 use App\Entity\Reseau;
 use App\Entity\Societe;
+use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -18,6 +19,9 @@ class CreateCentreType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        /** @var list<int>|null $centreScopeIds */
+        $centreScopeIds = $options['centre_scope_ids'];
+
         $builder
             ->add('societe', EntityType::class, [
                 'class' => Societe::class,
@@ -25,6 +29,25 @@ class CreateCentreType extends AbstractType
                 'placeholder' => '- Choisir -',
                 'choice_label' => 'nom',
                 'required' => true,
+                'query_builder' => static function (EntityRepository $er) use ($centreScopeIds) {
+                    $qb = $er->createQueryBuilder('so')
+                        ->orderBy('so.nom', 'ASC');
+
+                    if ($centreScopeIds !== null) {
+                        $qb->distinct();
+
+                        if ($centreScopeIds === []) {
+                            $qb->andWhere('1=0');
+                        } else {
+                            $qb
+                                ->innerJoin('so.centre', 'c_scope')
+                                ->andWhere('c_scope.id IN (:centreIds)')
+                                ->setParameter('centreIds', $centreScopeIds);
+                        }
+                    }
+
+                    return $qb;
+                },
             ])
             ->add('reseau', EntityType::class, [
                 'class' => Reseau::class,
@@ -32,6 +55,26 @@ class CreateCentreType extends AbstractType
                 'placeholder' => '- Choisir -',
                 'choice_label' => 'nom',
                 'required' => true,
+                'query_builder' => static function (EntityRepository $er) use ($centreScopeIds) {
+                    $qb = $er->createQueryBuilder('r')
+                        ->orderBy('r.nom', 'ASC');
+
+                    if ($centreScopeIds !== null) {
+                        $qb->distinct();
+
+                        if ($centreScopeIds === []) {
+                            $qb->andWhere('1=0');
+                        } else {
+                            // Restrict networks to the ones used by scoped centres.
+                            $qb
+                                ->innerJoin('r.centres', 'c_scope')
+                                ->andWhere('c_scope.id IN (:centreIds)')
+                                ->setParameter('centreIds', $centreScopeIds);
+                        }
+                    }
+
+                    return $qb;
+                },
             ])
             ->add('reseauNom', TextType::class, [
                 'label' => '*Enseigne : ',
@@ -88,6 +131,10 @@ class CreateCentreType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Centre::class,
+            // Null = no restriction (admin). [] = no centres assigned.
+            'centre_scope_ids' => null,
         ]);
+
+        $resolver->setAllowedTypes('centre_scope_ids', ['null', 'array']);
     }
 }

@@ -47,6 +47,12 @@ final class RunDailyCommand extends Command
             ],
         ],
         [
+            'command' => 'app:data:purge-societes',
+            'args' => [
+                '--execute' => true,
+            ],
+        ],
+        [
             'command' => 'app:cts:sync-salarie-centres',
             'args' => [
                 '--execute' => true,

@@ -38,8 +38,42 @@
                 </ul>
             {% endif %}
 
-            {% if is_granted('ROLE_ADMIN') %}
-                <h2>ESPACE ADMIN</h2>
+            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_ORGANIGRAM_VIEW') or is_granted('ROLE_ENCOURS_VIEW') %}
+                <h2>ADMINISTRATION</h2>
+
+                {% if is_granted('ROLE_ORGANIGRAM_VIEW') %}
+                    <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('partials/svg/organigramme.html.twig') }}
+                        Organigrammes
+                    </span>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        <li>
+                            <a href="{{ path('app_organigram') }}">
+                                → Organigrammes structurels
+                            </a>
+                        </li>
+                    </ul>
+                {% endif %}
+
+                {% if is_granted('ROLE_ENCOURS_VIEW') %}
+                    <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('partials/svg/encours.html.twig') }}
+                        Encours
+                    </span>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        <li>
+                            <a href="{{ path('app_encours_bancaires') }}">
+                                → Encours bancaires
+                            </a>
+                        </li>
+                    </ul>
+                {% endif %}
 
                 <h3 class="toggle">
                     <span class="toggle-title">

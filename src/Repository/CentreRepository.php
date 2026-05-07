@@ -23,8 +23,12 @@ class CentreRepository extends ServiceEntityRepository
     /**
      * @return array<int, Centre>
      */
-    public function findOrderedBySocieteVilleAgrSearch(?string $q): array
+    public function findOrderedBySocieteVilleAgrSearch(?string $q, ?array $centreIds = null): array
     {
+        if ($centreIds !== null && $centreIds === []) {
+            return [];
+        }
+
         $qb = $this->createQueryBuilder('c')
             ->leftJoin('c.societe', 'so')
             ->addSelect('so')
@@ -34,9 +38,21 @@ class CentreRepository extends ServiceEntityRepository
             ->addOrderBy('c.ville', 'ASC')
             ->addOrderBy('c.agrCentre', 'ASC');
 
+        $this->applyCentreScopeFilter($qb, $centreIds);
         $this->applySearchFilter($qb, $q);
 
         return $qb->getQuery()->getResult();
+    }
+
+    private function applyCentreScopeFilter(QueryBuilder $qb, ?array $centreIds): void
+    {
+        if ($centreIds === null) {
+            return;
+        }
+
+        $qb
+            ->andWhere('c.id IN (:centreIds)')
+            ->setParameter('centreIds', $centreIds);
     }
 
     private function applySearchFilter(QueryBuilder $qb, ?string $q): void

@@ -1,0 +1,47 @@
+<div class="sidenav">
+    {% set route = app.request.attributes.get('_route') %}
+
+    <div class="onglets">
+        {# Keep href valid even when query contains arrays (societe[]). JS handles the AJAX switch. #}
+        <a href="{{ path(route, { type: 'exploitation' }) }}"
+           class="{{ type == 'exploitation' ? 'active' : '' }}"
+           data-encours-type="exploitation">
+            Exploitations
+        </a>
+        <a href="{{ path(route, { type: 'immobilier' }) }}"
+           class="{{ type == 'immobilier' ? 'active' : '' }}"
+           data-encours-type="immobilier">
+            Immobilier
+        </a>
+    </div>
+
+    <form method="get" class="filter-form" data-current-route="{{ route }}">
+        <div class="filters-container">
+            <div class="filter-dropdown">
+                <button type="button" class="dropdown-toggle">
+                    Sociétés
+                </button>
+
+                <div class="dropdown-menu">
+                    {% for id, nom in societes %}
+                        <label>
+                            <input type="checkbox"
+                                   name="societe[]"
+                                   value="{{ id }}"
+                                   {% if societeIds is defined and id in societeIds %}checked{% endif %}>
+                            {{ nom }}
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if anneeDepuis is not null %}
+                <input type="hidden" name="annee" value="{{ anneeDepuis }}">
+            {% endif %}
+
+            <input type="hidden" name="type" value="{{ type|default('exploitation') }}">
+
+            <button type="button" data-clear-filters>Vider les filtres</button>
+        </div>
+    </form>
+</div>

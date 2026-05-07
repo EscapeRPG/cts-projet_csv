@@ -23,14 +23,33 @@ class SocieteRepository extends ServiceEntityRepository
     /**
      * @return array<int, Societe>
      */
-    public function findOrderedByNomSearch(?string $q): array
+    public function findOrderedByNomSearch(?string $q, ?array $centreIds = null): array
     {
+        if ($centreIds !== null && $centreIds === []) {
+            return [];
+        }
+
         $qb = $this->createQueryBuilder('s')
             ->orderBy('s.nom', 'ASC');
 
+        $this->applyCentreScopeFilter($qb, $centreIds);
         $this->applySearchFilter($qb, $q);
 
         return $qb->getQuery()->getResult();
+    }
+
+    private function applyCentreScopeFilter(QueryBuilder $qb, ?array $centreIds): void
+    {
+        if ($centreIds === null) {
+            return;
+        }
+
+        // A user can only see companies that own at least one of their centres.
+        $qb
+            ->distinct()
+            ->innerJoin('s.centre', 'c_scope')
+            ->andWhere('c_scope.id IN (:centreIds)')
+            ->setParameter('centreIds', $centreIds);
     }
 
     private function applySearchFilter(QueryBuilder $qb, ?string $q): void

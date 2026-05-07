@@ -10,8 +10,7 @@
         <table data-activity-table>
             <thead>
             <tr>
-                <th class="sticky-salarie-name">Contrôleur</th>
-                <th class="sticky-salarie-agr">Agrément</th>
+                <th>Contrôleur</th>
                 <th data-activity-column data-type-family="VTP" data-vehicle-family="VL">VTP</th>
                 <th data-activity-column data-type-family="VTP" data-vehicle-family="CL">CLVTP</th>
                 <th data-activity-column data-type-family="CV" data-vehicle-family="VL">CV</th>
@@ -43,8 +42,8 @@
                 {% for agrCentre, centreData in centres %}
                     {% for salarie in centreData.salaries %}
                         <tr>
-                            <td class="sticky-salarie-name">{{ salarie.nom }} {{ salarie.prenom }}</td>
-                            <td class="sticky-salarie-agr">
+                            <td>
+                                {{ salarie.nom }} {{ salarie.prenom }}
                                 {{ salarie.agr }}
                                 {% if salarie.agr_cl is not empty %}
                                     - {{ salarie.agr_cl }}
@@ -77,7 +76,7 @@
                     {% endfor %}
 
                     <tr class="total-row recap">
-                        <td colspan="2" class="sticky-centre total">
+                        <td class="sticky-centre total">
                             {{ centreData.centre.reseau }} {{ centreData.centre.ville }} {{ agrCentre }}
                             {% if centreData.centre.agr_cl is not empty %}
                                 - {{ centreData.centre.agr_cl }}
@@ -112,7 +111,7 @@
                 {% set societeTotal = societeTotals[societe] ?? null %}
                 {% if societeTotal %}
                     <tr class="total-row recap societe">
-                        <td class="sticky-societe" colspan="2">{{ societe }}</td>
+                        <td class="sticky-societe">{{ societe }}</td>
                         <td data-activity-column data-type-family="VTP" data-vehicle-family="VL">{{ societeTotal.nb_vtp }}</td>
                         <td data-activity-column data-type-family="VTP" data-vehicle-family="CL">{{ societeTotal.nb_clvtp }}</td>
                         <td data-activity-column data-type-family="CV" data-vehicle-family="VL">{{ societeTotal.nb_cv }}</td>
@@ -142,7 +141,7 @@
 
             {% if globalTotals is defined %}
                 <tr class="total-row global recap">
-                    <td class="sticky-total" colspan="2">
+                    <td class="sticky-total">
                         TOUS RESEAUX / SOCIETES
                     </td>
                     <td data-activity-column data-type-family="VTP" data-vehicle-family="VL">{{ globalTotals.nb_vtp }}</td>

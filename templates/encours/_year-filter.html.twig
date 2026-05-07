@@ -1,0 +1,32 @@
+<div class="encours-year-range">
+    <div class="encours-year-field">
+        <label for="encours_year_from">Encours depuis</label>
+        <input
+            id="encours_year_from"
+            type="number"
+            inputmode="numeric"
+            min="2000"
+            max="2100"
+            step="1"
+            value="{{ anneeDepuis is not null ? anneeDepuis : '' }}"
+            placeholder="YYYY"
+            data-encours-year-from
+        >
+    </div>
+
+    <div class="encours-year-field">
+        <label for="encours_year_to">Encours jusqu'à</label>
+        <input
+            id="encours_year_to"
+            type="number"
+            inputmode="numeric"
+            min="2000"
+            max="2100"
+            step="1"
+            value="{{ anneeJusqua is not null ? anneeJusqua : '' }}"
+            placeholder="YYYY"
+            data-encours-year-to
+        >
+    </div>
+</div>
+

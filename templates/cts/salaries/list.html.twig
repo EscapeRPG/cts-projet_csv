@@ -14,6 +14,22 @@
                data-list-search-partial-url="{{ path('app_salaries_list_partial') }}"
                data-list-search-push-url="{{ path('app_salaries_list') }}"
                data-list-search-results="#cts-salaries-results">
+        {% set includeActive = app.request.query.get('active') != '0' %}
+        {% set includeInactive = app.request.query.get('inactive') == '1' %}
+        <label for="cts-salaries-active-only" style="margin-left: 12px;">Actifs</label>
+        <input id="cts-salaries-active-only"
+               type="checkbox"
+               name="active"
+               value="1"
+               data-list-search-param="1"
+               {{ includeActive ? 'checked' : '' }}>
+        <label for="cts-salaries-inactive-only" style="margin-left: 8px;">Inactifs</label>
+        <input id="cts-salaries-inactive-only"
+               type="checkbox"
+               name="inactive"
+               value="1"
+               data-list-search-param="1"
+               {{ includeInactive ? 'checked' : '' }}>
         <small data-list-search-blocked-message hidden>Veuillez enregistrer vos modifications pour effectuer une recherche.</small>
     </div>
 

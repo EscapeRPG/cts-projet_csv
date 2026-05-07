@@ -83,7 +83,7 @@ export function recalculateActivityTotals(table) {
     if (totalCountIdx < 0 || totalCaIdx < 0) return;
 
     const totalCols = headerCells.length;
-    const countStart = 2;
+    const countStart = 1;
     const countEnd = totalCountIdx - 1;
     const caStart = totalCountIdx + 1;
     const caEnd = totalCaIdx - 1;
@@ -147,4 +147,3 @@ export function applyActivityTableColumnVisibility(table, selectedTypes, selecte
 
     recalculateActivityTotals(table);
 }
-

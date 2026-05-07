@@ -1,5 +1,7 @@
 function normalizeBaseHref(a) {
     if (!(a instanceof HTMLAnchorElement)) return null;
+    const keepFiltersBase = a.dataset.keepFiltersBaseHref;
+    if (keepFiltersBase && typeof keepFiltersBase === 'string') return keepFiltersBase;
     const fromData = a.dataset.printBaseHref;
     if (fromData && typeof fromData === 'string') return fromData;
     return a.getAttribute('href');
@@ -32,7 +34,7 @@ document.addEventListener(
         const target = event.target;
         if (!(target instanceof Element)) return;
 
-        const a = target.closest('a[data-print-keep-filters="1"]');
+        const a = target.closest('a[data-print-keep-filters="1"], a[data-keep-filters="1"]');
         if (!(a instanceof HTMLAnchorElement)) return;
 
         const baseHref = normalizeBaseHref(a);
@@ -42,4 +44,3 @@ document.addEventListener(
     },
     true
 );
-

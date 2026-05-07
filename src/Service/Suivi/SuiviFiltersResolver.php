@@ -21,6 +21,7 @@ final class SuiviFiltersResolver
         return [
             'annee' => $request->query->getInt('annee') ?: null,
             'mois' => $this->collectFromVariants($request, 'mois'),
+            'mois_mode' => trim((string) $request->query->get('mois_mode', '')),
             'reseau' => $this->collectFromVariants($request, 'reseau'),
             'societe' => $this->collectFromVariants($request, 'societe'),
             'centre' => $this->collectFromVariants($request, 'centre'),

@@ -72,7 +72,12 @@ readonly class SuiviFiltersProvider
                     12 => 'Décembre',
                 ],
                 'reseaux' => $this->connection->fetchFirstColumn('SELECT DISTINCT reseau_nom FROM centre ORDER BY reseau_nom'),
-                'societes' => $this->connection->fetchFirstColumn("SELECT nom FROM societe WHERE nom != 'CTS' AND nom != 'KERMILO' ORDER BY nom"),
+                'societes' => $this->connection->fetchFirstColumn("
+                        SELECT nom
+                        FROM societe
+                        WHERE nom NOT IN ('CTS', 'KERMILO', 'Concurrent', 'TEMPORAIRE', 'JV LAVE', 'OSTRANTE', 'HAMO', 'SCI ELFF', 'CT IMMO', 'IMMO QEFF', 'MH IMMO')
+                        ORDER BY nom
+                    "),
                 'centres' => array_map(function ($c) {
                     // mapping réseau -> code
                     $codes = [
@@ -99,7 +104,7 @@ readonly class SuiviFiltersProvider
         });
 
         $allowedCentres = array_values(array_filter(array_map(
-            static fn ($value): string => trim((string) $value),
+            static fn($value): string => trim((string)$value),
             $currentFilters['allowed_centres'] ?? []
         )));
         if ($allowedCentres === []) {
@@ -113,17 +118,17 @@ readonly class SuiviFiltersProvider
             $allowedSet = array_flip($allowedCentres);
             $scopedCentresAll = array_values(array_filter(
                 $baseFilters['centres'],
-                static fn (array $centre): bool => isset($allowedSet[$centre['agr_centre'] ?? ''])
+                static fn(array $centre): bool => isset($allowedSet[$centre['agr_centre'] ?? ''])
             ));
 
             $scopedReseaux = array_values(array_unique(array_filter(array_map(
-                static fn (array $centre): string => trim((string) ($centre['reseau_nom'] ?? '')),
+                static fn(array $centre): string => trim((string)($centre['reseau_nom'] ?? '')),
                 $scopedCentresAll
             ))));
             sort($scopedReseaux, SORT_NATURAL | SORT_FLAG_CASE);
 
             $scopedSocietes = array_values(array_unique(array_filter(array_map(
-                static fn (array $centre): string => trim((string) ($centre['societe_nom'] ?? '')),
+                static fn(array $centre): string => trim((string)($centre['societe_nom'] ?? '')),
                 $scopedCentresAll
             ))));
             // Keep existing global exclusions.
@@ -140,30 +145,65 @@ readonly class SuiviFiltersProvider
             $currentFilters['centre'] ?? []
         )));
 
+        $selectedYear = (int)($currentFilters['annee'] ?? 0);
+        $selectedMonths = array_values(array_filter(array_map(
+            static fn($v): int => (int)$v,
+            is_array($currentFilters['mois'] ?? null) ? $currentFilters['mois'] : []
+        ), static fn(int $m): bool => $m >= 1 && $m <= 12));
+        $selectedReseaux = array_values(array_filter(array_map(
+            static fn($v): string => trim((string)$v),
+            is_array($currentFilters['reseau'] ?? null) ? $currentFilters['reseau'] : []
+        ), static fn(string $v): bool => $v !== ''));
+
         if (empty($selectedSocietes) && empty($selectedCentres)) {
             $centres = $baseFilters['centres'];
             if ($allowedCentres !== null) {
                 $allowedSet = array_flip($allowedCentres);
                 $centres = array_values(array_filter(
                     $centres,
-                    static fn (array $centre): bool => isset($allowedSet[$centre['agr_centre'] ?? ''])
+                    static fn(array $centre): bool => isset($allowedSet[$centre['agr_centre'] ?? ''])
                 ));
             }
 
-            $controleurs = $baseFilters['controleurs'];
-            if ($allowedCentres !== null) {
-                $controleurs = $this->connection->executeQuery(
-                    "
-                        SELECT DISTINCT sa.id, sa.nom, sa.prenom
-                        FROM synthese_controles sc
-                        INNER JOIN salarie sa ON sa.id = sc.salarie_id
-                        WHERE sc.agr_centre IN (:allowed_centres)
-                        ORDER BY sa.nom, sa.prenom
-                    ",
-                    ['allowed_centres' => $allowedCentres],
-                    ['allowed_centres' => ArrayParameterType::STRING]
-                )->fetchAllAssociative();
+            // Controllers list should reflect the current page dataset (period + optional reseau + scope).
+            $controleursWhere = [];
+            $controleursParams = [];
+            $controleursTypes = [];
+
+            if ($selectedYear > 0) {
+                $controleursWhere[] = 'sc.annee IN (:annees)';
+                $controleursParams['annees'] = [$selectedYear];
+                $controleursTypes['annees'] = ArrayParameterType::INTEGER;
             }
+            if ($selectedMonths !== []) {
+                $controleursWhere[] = 'sc.mois IN (:mois)';
+                $controleursParams['mois'] = $selectedMonths;
+                $controleursTypes['mois'] = ArrayParameterType::INTEGER;
+            }
+            if ($selectedReseaux !== []) {
+                $controleursWhere[] = 'sc.reseau_nom IN (:reseaux)';
+                $controleursParams['reseaux'] = $selectedReseaux;
+                $controleursTypes['reseaux'] = ArrayParameterType::STRING;
+            }
+            if ($allowedCentres !== null) {
+                $controleursWhere[] = 'sc.agr_centre IN (:allowed_centres)';
+                $controleursParams['allowed_centres'] = $allowedCentres;
+                $controleursTypes['allowed_centres'] = ArrayParameterType::STRING;
+            }
+
+            $controleursSql = "
+                SELECT DISTINCT sa.id, sa.nom, sa.prenom
+                FROM synthese_controles sc
+                INNER JOIN salarie sa ON sa.id = sc.salarie_id
+            ";
+            if ($controleursWhere !== []) {
+                $controleursSql .= ' WHERE ' . implode(' AND ', $controleursWhere);
+            }
+            $controleursSql .= ' ORDER BY sa.nom, sa.prenom';
+
+            $controleurs = $this->connection
+                ->executeQuery($controleursSql, $controleursParams, $controleursTypes)
+                ->fetchAllAssociative();
 
             return [
                 ...$baseFilters,
@@ -221,6 +261,25 @@ readonly class SuiviFiltersProvider
         $controleursWhere = [];
         $controleursParams = [];
         $controleursTypes = [];
+
+        // Limit controllers to those present in the dataset for the currently selected period/dimensions.
+        if ($selectedYear > 0) {
+            $controleursWhere[] = 'sc.annee IN (:annees)';
+            $controleursParams['annees'] = [$selectedYear];
+            $controleursTypes['annees'] = ArrayParameterType::INTEGER;
+        }
+
+        if ($selectedMonths !== []) {
+            $controleursWhere[] = 'sc.mois IN (:mois)';
+            $controleursParams['mois'] = $selectedMonths;
+            $controleursTypes['mois'] = ArrayParameterType::INTEGER;
+        }
+
+        if ($selectedReseaux !== []) {
+            $controleursWhere[] = 'sc.reseau_nom IN (:reseaux)';
+            $controleursParams['reseaux'] = $selectedReseaux;
+            $controleursTypes['reseaux'] = ArrayParameterType::STRING;
+        }
 
         if ($selectedSocietes !== []) {
             $controleursWhere[] = 'sc.societe_nom IN (:societes)';

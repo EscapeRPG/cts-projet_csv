@@ -160,7 +160,8 @@ td.increased {
     white-space: nowrap !important;
 }
 
-.print-variant-activite .print-content .table-wrapper {
+.print-variant-activite .print-content .table-wrapper,
+.print-variant-encours .print-content .table-wrapper {
     border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;

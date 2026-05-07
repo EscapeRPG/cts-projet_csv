@@ -1,4 +1,22 @@
+/* Base (desktop): mobile filters UI should not appear. The DOM exists for Turbo cache, but it's hidden. */
+.mobile-filters-drawer,
+.mobile-filters-backdrop,
+.mobile-filters-toggle {
+    display: none;
+}
+
 @media screen and (max-width: 1280px) {
+    .mobile-filters-toggle {
+        display: block;
+    }
+
+    .mobile-filters-drawer {
+        display: block;
+    }
+
+    .mobile-filters-backdrop {
+        display: none;
+    }
     .loading-content {
         height: auto;
         width: 90%;
@@ -101,6 +119,7 @@
         font-weight: bold;
         padding: 10px 15px;
         cursor: pointer;
+        z-index: 109;
 
         &:hover {
             transform: translateX(-50%) !important;
@@ -125,6 +144,15 @@
 
         &.is-open {
             top: 0;
+        }
+
+        .mobile-filters-header {
+            display: flex;
+            align-items: center;
+            justify-content: end;
+            margin: 10px 0;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .annees-filter {
@@ -155,12 +183,18 @@
     }
 
     .mobile-filters-close {
-        border: 1px solid var(--cts-main);
+        border: 1px solid red;
         border-radius: 10px;
         background: transparent;
-        color: var(--cts-main);
+        color: red;
         padding: 5px 10px;
+        margin: 0;
         cursor: pointer;
+
+        &:hover {
+            background: red !important;
+            color: var(--text);
+        }
     }
 
     .mobile-filters-drawer-footer {

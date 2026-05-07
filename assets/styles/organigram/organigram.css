@@ -1,0 +1,31 @@
+.organigram-filters {
+    display: flex;
+    gap: 50px;
+    margin: 20px auto;
+
+    .organigram-filters__button {
+        background: none;
+        border: 2px solid var(--cts-main);
+        color: var(--cts-main);
+
+        &:hover,
+        &.active:hover {
+            background: var(--cts-alt);
+            color: var(--text);
+            border-color: transparent;
+        }
+
+        &.active {
+            background: var(--cts-main);
+            color: var(--text);
+            border-color: transparent;
+        }
+    }
+}
+
+.organigram {
+    max-width: 100%;
+    max-height: 80vh;
+    border: 5px solid var(--cts-main);
+    border-radius: 20px;
+}

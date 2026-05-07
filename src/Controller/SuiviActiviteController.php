@@ -537,6 +537,17 @@ final class SuiviActiviteController extends AbstractController
      */
     private function applyDefaultMonthsToCurrentMonth(array $filters): array
     {
+        $mode = is_string($filters['mois_mode'] ?? null) ? trim((string) $filters['mois_mode']) : '';
+
+        if ($mode === 'all') {
+            $filters['mois'] = array_map(
+                static fn (int $month): string => (string) $month,
+                range(1, 12)
+            );
+            return $filters;
+        }
+
+        // Default behavior remains YTD when no explicit months are provided (or when mode=ytd).
         if (!isset($filters['mois']) || !is_array($filters['mois']) || $filters['mois'] === []) {
             $filters['mois'] = array_map(
                 static fn (int $month): string => (string) $month,
@@ -577,7 +588,7 @@ final class SuiviActiviteController extends AbstractController
 
         $annee = $filters['annee'] ?? null;
         if (is_int($annee) && $annee > 0) {
-            $items[] = ['label' => 'Annee', 'value' => (string) $annee];
+            $items[] = ['label' => 'Année', 'value' => (string) $annee];
         }
 
         $moisSelected = $filters['mois'] ?? [];
@@ -593,8 +604,8 @@ final class SuiviActiviteController extends AbstractController
         }
         $items[] = ['label' => 'Mois', 'value' => $formatList($moisLabels)];
 
-        $items[] = ['label' => 'Reseaux', 'value' => $formatList(is_array($filters['reseau'] ?? null) ? $filters['reseau'] : [])];
-        $items[] = ['label' => 'Societes', 'value' => $formatList(is_array($filters['societe'] ?? null) ? $filters['societe'] : [])];
+        $items[] = ['label' => 'Réseaux', 'value' => $formatList(is_array($filters['reseau'] ?? null) ? $filters['reseau'] : [])];
+        $items[] = ['label' => 'Sociétés', 'value' => $formatList(is_array($filters['societe'] ?? null) ? $filters['societe'] : [])];
 
         $centresSelected = is_array($filters['centre'] ?? null) ? $filters['centre'] : [];
         $centreMap = [];
@@ -630,10 +641,10 @@ final class SuiviActiviteController extends AbstractController
             if ($id === '') continue;
             $controleursLabels[] = $controleurMap[$id] ?? $id;
         }
-        $items[] = ['label' => 'Controleurs', 'value' => $formatList($controleursLabels)];
+        $items[] = ['label' => 'Contrôleurs', 'value' => $formatList($controleursLabels)];
 
         $items[] = ['label' => 'Types', 'value' => $formatList(is_array($filters['type'] ?? null) ? $filters['type'] : [])];
-        $items[] = ['label' => 'Vehicules', 'value' => $formatList(is_array($filters['vehicule'] ?? null) ? $filters['vehicule'] : [])];
+        $items[] = ['label' => 'Véhicules', 'value' => $formatList(is_array($filters['vehicule'] ?? null) ? $filters['vehicule'] : [])];
 
         return $items;
     }

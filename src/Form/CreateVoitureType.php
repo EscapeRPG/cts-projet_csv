@@ -21,6 +21,9 @@ class CreateVoitureType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        /** @var list<int>|null $centreScopeIds */
+        $centreScopeIds = $options['centre_scope_ids'];
+
         $annees = [];
 
         for ($i = 1970; $i <= date('Y'); $i++) {
@@ -34,6 +37,25 @@ class CreateVoitureType extends AbstractType
                 'placeholder' => '- Choisir -',
                 'choice_label' => 'nom',
                 'required' => true,
+                'query_builder' => static function (EntityRepository $er) use ($centreScopeIds) {
+                    $qb = $er->createQueryBuilder('so')
+                        ->orderBy('so.nom', 'ASC');
+
+                    if ($centreScopeIds !== null) {
+                        $qb->distinct();
+
+                        if ($centreScopeIds === []) {
+                            $qb->andWhere('1=0');
+                        } else {
+                            $qb
+                                ->innerJoin('so.centre', 'c_scope')
+                                ->andWhere('c_scope.id IN (:centreIds)')
+                                ->setParameter('centreIds', $centreScopeIds);
+                        }
+                    }
+
+                    return $qb;
+                },
             ])
             ->add('centre', EntityType::class, [
                 'class' => Centre::class,
@@ -45,10 +67,22 @@ class CreateVoitureType extends AbstractType
                 'group_by' => function ($centre) {
                     return $centre->getReseauNom();
                 },
-                'query_builder' => function (EntityRepository $er) {
-                    return $er->createQueryBuilder('c')
+                'query_builder' => static function (EntityRepository $er) use ($centreScopeIds) {
+                    $qb = $er->createQueryBuilder('c')
                         ->orderBy('c.reseauNom', 'ASC')
                         ->addOrderBy('c.ville', 'ASC');
+
+                    if ($centreScopeIds !== null) {
+                        if ($centreScopeIds === []) {
+                            $qb->andWhere('1=0');
+                        } else {
+                            $qb
+                                ->andWhere('c.id IN (:centreIds)')
+                                ->setParameter('centreIds', $centreScopeIds);
+                        }
+                    }
+
+                    return $qb;
                 },
                 'required' => true,
             ])
@@ -132,6 +166,10 @@ class CreateVoitureType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Voiture::class,
+            // Null = no restriction (admin). [] = no centres assigned.
+            'centre_scope_ids' => null,
         ]);
+
+        $resolver->setAllowedTypes('centre_scope_ids', ['null', 'array']);
     }
 }

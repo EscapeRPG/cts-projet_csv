@@ -37,6 +37,8 @@ function initSearchInput(input) {
     if (!resultsEl) return;
 
     const blockedMsgEl = input.parentElement?.querySelector('[data-list-search-blocked-message]') || null;
+    const scopeEl = input.closest?.('.search-list') || input.parentElement;
+    const extraParamsEls = scopeEl ? Array.from(scopeEl.querySelectorAll('[data-list-search-param="1"]')) : [];
 
     const isDirty = () => {
         // Only consider row save buttons (not delete forms etc).
@@ -95,6 +97,30 @@ function initSearchInput(input) {
         syncDirtyState();
     };
 
+    const applyExtraParams = (params) => {
+        extraParamsEls.forEach((el) => {
+            if (!(el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement)) {
+                return;
+            }
+
+            const name = el.getAttribute('name');
+            if (!name) return;
+
+            if (el instanceof HTMLInputElement && el.type === 'checkbox') {
+                // Always send 1/0 so unchecked state can override server defaults.
+                params.set(name, el.checked ? (el.value || '1') : '0');
+                return;
+            }
+
+            const value = (el.value || '').trim();
+            if (value === '') {
+                params.delete(name);
+            } else {
+                params.set(name, value);
+            }
+        });
+    };
+
     const onInput = debounce(() => {
         const params = new URLSearchParams(window.location.search);
         const q = (input.value || '').trim();
@@ -103,6 +129,7 @@ function initSearchInput(input) {
         } else {
             params.set('q', q);
         }
+        applyExtraParams(params);
         // Reset page each time the query changes (only when pagination is present/used).
         if (params.has('page') || resultsEl.querySelector('.pagination-nav')) {
             params.set('page', '1');
@@ -111,6 +138,23 @@ function initSearchInput(input) {
     }, 500);
 
     input.addEventListener('input', onInput);
+
+    extraParamsEls.forEach((el) => {
+        el.addEventListener('change', () => {
+            const params = new URLSearchParams(window.location.search);
+            const q = (input.value || '').trim();
+            if (q === '') {
+                params.delete('q');
+            } else {
+                params.set('q', q);
+            }
+            applyExtraParams(params);
+            if (params.has('page') || resultsEl.querySelector('.pagination-nav')) {
+                params.set('page', '1');
+            }
+            fetchAndSwap(params);
+        });
+    });
 
     // AJAX pagination.
     resultsEl.addEventListener('click', (ev) => {

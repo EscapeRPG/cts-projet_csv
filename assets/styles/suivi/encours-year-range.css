@@ -1,0 +1,31 @@
+.encours-year-range {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 0 auto 10px;
+}
+
+.encours-year-range .encours-year-field {
+    display: flex;
+    gap: 5px;
+    min-width: 160px;
+}
+
+.encours-year-range label {
+    font-size: .8em;
+    font-weight: 600;
+    color: var(--cts-main);
+}
+
+.encours-year-range input[type="number"] {
+    width: 100%;
+    border: 2px solid var(--cts-main);
+    border-radius: 10px;
+    padding: 6px 10px;
+    background: var(--blocks);
+    color: var(--cts-main);
+    font-size: .9em;
+}
+

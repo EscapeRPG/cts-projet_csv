@@ -190,6 +190,7 @@ button {
         content: 'v';
         float: right;
         font-weight: bold;
+        margin-left: 10px;
     }
 }
 
@@ -207,6 +208,8 @@ button {
 }
 
 .selectlike-multi__list {
+    width: max-content;
+    padding: 5px 10px;
     max-height: 45vh;
     overflow: auto;
     display: flex;
@@ -253,6 +256,21 @@ button {
     gap: 5px !important;
 }
 
+.selectlike-multi.is-readonly {
+    input[type="checkbox"] {
+        display: none !important;
+    }
+
+    .selectlike-multi__group-title {
+        cursor: default;
+    }
+
+    .selectlike-multi__item {
+        margin-left: 0;
+        cursor: default;
+    }
+}
+
 .form-row {
     text-wrap: nowrap;
 
@@ -277,4 +295,46 @@ button {
             }
         }
     }
+}
+
+.encours-montant-row {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Encours: montants list */
+[data-encours-montants] [data-montants-list] {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+[data-encours-montants] .encours-montant-item {
+    padding: 5px 10px;
+    border: 1px solid var(--cts-main-light);
+    border-radius: 10px;
+
+    div {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: 10px;
+        width: 100%;
+
+        div {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+
+            input {
+                flex: 1;
+            }
+        }
+    }
+}
+
+[data-encours-montants] .encours-montant-item > button[data-remove-montant] {
+    align-self: flex-end;
 }

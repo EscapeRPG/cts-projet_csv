@@ -202,7 +202,7 @@ class PopulateClientProSummaryCommand extends Command
                     ) AS ca_vtc,
                     SUM(
                         IF(
-                            c.type_ctrl IN ('VOL','VP','VT'),
+                            c.type_ctrl IN ('VOL','VP','VT','VLVP','VLVT'),
                             COALESCE(fa.montant_presta_ht, fa.total_ht) / t.nb_ctrl_facture,
                             0
                         )
@@ -219,7 +219,7 @@ class PopulateClientProSummaryCommand extends Command
                     COUNT(DISTINCT IF(c.type_ctrl IN ('CV','VLCV','VLCVC'), c.idcontrole, NULL)) AS nb_cv,
                     COUNT(DISTINCT IF(c.type_ctrl IN ('CLCV'), c.idcontrole, NULL)) AS nb_clcv,
                     COUNT(DISTINCT IF(c.type_ctrl IN ('VTC','VLCTC'), c.idcontrole, NULL)) AS nb_vtc,
-                    COUNT(DISTINCT IF(c.type_ctrl IN ('VOL','VP','VT'), c.idcontrole, NULL)) AS nb_vol,
+                    COUNT(DISTINCT IF(c.type_ctrl IN ('VOL','VP','VT','VLVP','VLVT'), c.idcontrole, NULL)) AS nb_vol,
                     COUNT(DISTINCT IF(c.type_ctrl IN ('CLVP','CLVT'), c.idcontrole, NULL)) AS nb_clvol,
                     COALESCE(cc.agr_centre, 'Centre inconnu') AS agr_centre,
                     COALESCE(so.nom, 'Société inconnue') AS societe_nom,

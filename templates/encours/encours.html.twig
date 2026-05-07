@@ -1,0 +1,120 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Suivi encours bancaires{% endblock %}
+
+{% block body %}
+    {% include 'encours/_year-filter.html.twig' %}
+
+    <div class="suivi-container">
+        {% include 'encours/_filters.html.twig' %}
+
+        <div class="container"
+             data-ajax-results
+             data-encours-societes="{{ societes|keys|join(',') }}">
+            <div class="table-wrapper">
+                <table data-activity-table>
+                    <thead>
+                    <tr>
+                        <th class="sticky-salarie-name">Société</th>
+                        <th>Centre</th>
+
+                        {% for annee in anneesAffichees|default(annees) %}
+                            <th>Solde {{ annee }}</th>
+                        {% endfor %}
+
+                        <th>Banque</th>
+                        <th>Emprunt</th>
+                        <th>Date</th>
+                        <th>Garanties</th>
+                        {% if is_granted('ROLE_ENCOURS_EDIT') %}
+                            <th>Action</th>
+                        {% endif %}
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for societeNom, groupe in groupes %}
+                        {% for ligne in groupe.lignes %}
+                            <tr>
+                                {% if loop.first %}
+                                    <td rowspan="{{ groupe.lignes|length }}">
+                                        {{ societeNom }}
+                                    </td>
+                                {% endif %}
+
+                                <td>{{ ligne.centre }}</td>
+
+                                {% for annee in anneesAffichees|default(annees) %}
+                                    {% set montant = ligne.montants[annee]|default(null) %}
+                                    <td class="int-row">
+                                        {% if montant is not null %}
+                                            {{ montant|number_format(2, ',', ' ') }} €
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
+
+                                <td>{{ ligne.banque }}</td>
+
+                                {% set emprunt = ligne.emprunt|default(null) %}
+                                <td class="int-row">
+                                    {% if emprunt is not null %}
+                                        {{ emprunt|number_format(2, ',', ' ') }} €
+                                    {% endif %}
+                                </td>
+
+                                <td>{{ ligne.date }}</td>
+                                <td>{{ ligne.garanties }}</td>
+                                {% if is_granted('ROLE_ENCOURS_EDIT') %}
+                                    <td><a href="{{ path('app_encours_bancaires_update', { 'id': ligne.id }) }}" class="btn-link">Modifier</a></td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+
+                        <tr class="total-row recap societe">
+                            <td class="sticky-societe">{{ societeNom }}</td>
+                            <td>TOTAL ENCOURS</td>
+
+                            {% for annee in anneesAffichees|default(annees) %}
+                                {% set total = groupe.totauxParAnnee[annee]|default(0) %}
+                                <td class="int-row">
+                                    {{ total|number_format(2, ',', ' ') }} €
+                                </td>
+                            {% endfor %}
+
+                            <td colspan="5"></td>
+                        </tr>
+                    {% endfor %}
+
+                    {% if globalTotalsParAnnee is defined %}
+                        <tr class="total-row global recap">
+                            <td class="sticky-total" colspan="2">TOTAL DES ENCOURS</td>
+
+                            {% for annee in anneesAffichees|default(annees) %}
+                                {% set total = globalTotalsParAnnee[annee]|default(0) %}
+                                <td class="int-row">
+                                    {{ total|number_format(2, ',', ' ') }} €
+                                </td>
+                            {% endfor %}
+
+                            <td colspan="4"></td>
+                        </tr>
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="edit-print">
+        {% if is_granted('ROLE_ENCOURS_ADD') %}
+            <a href="{{ path('app_encours_bancaires_add') }}" class="btn-link add">Ajouter</a>
+        {% endif %}
+
+        <a href="{{ path('app_encours_bancaires_print') }}"
+           data-print-keep-filters="1"
+           data-print-base-href="{{ path('app_encours_bancaires_print') }}"
+           target="_blank"
+           rel="noopener"
+           class="btn-link">Imprimer</a>
+    </div>
+{% endblock %}

@@ -10,6 +10,7 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -21,6 +22,9 @@ class CreateSalarieType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        /** @var list<int>|null $centreScopeIds */
+        $centreScopeIds = $options['centre_scope_ids'];
+
         $tailles = [];
         $chaussures = [];
 
@@ -44,6 +48,26 @@ class CreateSalarieType extends AbstractType
                 'placeholder' => '- Choisir -',
                 'choice_label' => 'nom',
                 'required' => true,
+                'query_builder' => static function (EntityRepository $er) use ($centreScopeIds) {
+                    $qb = $er->createQueryBuilder('so')
+                        ->orderBy('so.nom', 'ASC');
+
+                    if ($centreScopeIds !== null) {
+                        $qb->distinct();
+
+                        if ($centreScopeIds === []) {
+                            $qb->andWhere('1=0');
+                        } else {
+                            // Restrict companies to the ones owning at least one scoped centre.
+                            $qb
+                                ->innerJoin('so.centre', 'c_scope')
+                                ->andWhere('c_scope.id IN (:centreIds)')
+                                ->setParameter('centreIds', $centreScopeIds);
+                        }
+                    }
+
+                    return $qb;
+                },
             ])
             ->add('agrControleur', TextType::class, [
                 'label' => 'Agrément : ',
@@ -74,10 +98,22 @@ class CreateSalarieType extends AbstractType
                     // Keep the native widget compact when JS is disabled.
                     'size' => 1,
                 ],
-                'query_builder' => static function (EntityRepository $er) {
-                    return $er->createQueryBuilder('c')
+                'query_builder' => static function (EntityRepository $er) use ($centreScopeIds) {
+                    $qb = $er->createQueryBuilder('c')
                         ->orderBy('c.reseauNom', 'ASC')
                         ->addOrderBy('c.ville', 'ASC');
+
+                    if ($centreScopeIds !== null) {
+                        if ($centreScopeIds === []) {
+                            $qb->andWhere('1=0');
+                        } else {
+                            $qb
+                                ->andWhere('c.id IN (:centreIds)')
+                                ->setParameter('centreIds', $centreScopeIds);
+                        }
+                    }
+
+                    return $qb;
                 },
             ])
             ->add('nom', TextType::class, [
@@ -88,11 +124,12 @@ class CreateSalarieType extends AbstractType
                 'label' => '*Prénom : ',
                 'required' => true,
             ])
-            ->add('dateNaissance', null, [
+            ->add('dateNaissance', DateType::class, [
                 'widget' => 'single_text',
-                'label' => '*Date de naissance : ',
+                'input' => 'datetime_immutable',
+                'html5' => true,
+                'label' => 'Date de naissance : ',
                 'required' => false,
-                'empty_data' => null,
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Email : ',
@@ -152,6 +189,7 @@ class CreateSalarieType extends AbstractType
                     'M' => 'M',
                     'L' => 'L',
                     'XL' => 'XL',
+                    'XXL' => 'XXL',
                     'XXXL' => 'XXXL',
                     'XXXXL' => 'XXXXL',
                 ]
@@ -168,6 +206,7 @@ class CreateSalarieType extends AbstractType
                     'M' => 'M',
                     'L' => 'L',
                     'XL' => 'XL',
+                    'XXL' => 'XXL',
                     'XXXL' => 'XXXL',
                     'XXXXL' => 'XXXXL',
                 ]
@@ -191,6 +230,7 @@ class CreateSalarieType extends AbstractType
                     'M' => 'M',
                     'L' => 'L',
                     'XL' => 'XL',
+                    'XXL' => 'XXL',
                     'XXXL' => 'XXXL',
                     'XXXXL' => 'XXXXL',
                 ]
@@ -207,6 +247,7 @@ class CreateSalarieType extends AbstractType
                     'M' => 'M',
                     'L' => 'L',
                     'XL' => 'XL',
+                    'XXL' => 'XXL',
                     'XXXL' => 'XXXL',
                     'XXXXL' => 'XXXXL',
                 ]
@@ -229,6 +270,10 @@ class CreateSalarieType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Salarie::class,
+            // Null = no restriction (admin). [] = no centres assigned.
+            'centre_scope_ids' => null,
         ]);
+
+        $resolver->setAllowedTypes('centre_scope_ids', ['null', 'array']);
     }
 }

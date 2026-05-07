@@ -67,7 +67,13 @@
     {% endif %}
 
     <div class="edit-print">
-        <a href="{{ path('app_societes_list') }}" class="btn-link">Modifier</a>
+        {% if is_granted('ROLE_LIST_SOCIETES_ADD') %}
+            <a href="{{ path('app_societes_add') }}" class="btn-link add">Ajouter</a>
+        {% endif %}
+
+        {% if is_granted('ROLE_LIST_SOCIETES_EDIT') %}
+            <a href="{{ path('app_societes_list') }}" class="btn-link edit">Modifier</a>
+        {% endif %}
 
         <a class="btn-link"
            href="{{ path('app_societes_list_print') }}"

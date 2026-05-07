@@ -233,7 +233,7 @@
     overflow: hidden;
     height: stretch;
 
-    &:last-child {
+    &:not(.controleur):last-child {
         grid-column: 1 / -1;
     }
 }
@@ -299,8 +299,4 @@
     font-size: .85em;
     font-weight: 600;
     opacity: .7;
-}
-
-.filters-print-actions {
-    margin-top: 20px;
 }

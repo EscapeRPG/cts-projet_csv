@@ -25,6 +25,19 @@ use Throwable;
 class ImportSftpCommand extends Command
 {
     /**
+     * Folder-name aliases for SFTP imports.
+     *
+     * The SFTP folder name is not a stable functional identifier (it may be legacy),
+     * while the DB network name can evolve. Keep imports robust by mapping old folder
+     * names to the current DB network name.
+     *
+     * Keys/values must be normalized with normalizeReseauName().
+     */
+    private const array RESEAU_FOLDER_ALIASES = [
+        // autosur folder -> secta network (DB renamed "autosur" => "secta")
+        'autosur' => 'secta',
+    ];
+    /**
      * @param SftpClient $sftpClient SFTP client abstraction for file operations.
      * @param ImportRouter $importRouter Resolves the importer matching each file.
      * @param ReseauRepository $reseauRepository Repository used to validate network codes.
@@ -128,6 +141,7 @@ class ImportSftpCommand extends Command
 
             // Vérifie que le réseau importé existe bel et bien (matching souple)
             $normalizedCode = $this->normalizeReseauName($reseauCode);
+            $normalizedCode = self::RESEAU_FOLDER_ALIASES[$normalizedCode] ?? $normalizedCode;
             $reseau = $activeReseauxByNormalizedName[$normalizedCode] ?? null;
 
             if (!$reseau) {

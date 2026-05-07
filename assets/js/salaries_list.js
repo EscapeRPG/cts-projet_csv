@@ -26,7 +26,7 @@ export function initSalariesList(root = document) {
 
     // Enable sorting only for selected columns.
     headers.forEach((th, index) => {
-        const sortableColumns = ['Société', 'Nom', 'Nb heures', 'Salaire brut', 'Agr', 'Agr CL'];
+        const sortableColumns = ['Société', 'Nom', 'Nb heures', 'Salaire brut', 'Agr', 'Agr CL', 'Actif', 'Actif ?'];
         if (sortableColumns.includes(th.textContent.trim())) {
             th.style.cursor = 'pointer';
             th.addEventListener('click', () => {

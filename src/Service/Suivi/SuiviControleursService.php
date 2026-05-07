@@ -69,8 +69,8 @@ class SuiviControleursService
         }
 
         foreach ($controleursStats as &$c) {
-            $c['prix_moyen_auto'] = $c['nb_controles_auto_factures'] > 0 ? $c['ca_auto'] / $c['nb_controles_auto_factures'] : 0.0;
-            $c['prix_moyen_moto'] = $c['nb_controles_moto_factures'] > 0 ? $c['ca_moto'] / $c['nb_controles_moto_factures'] : 0.0;
+            $c['prix_moyen_auto'] = $c['nb_controles_auto'] > 0 ? $c['ca_auto'] / $c['nb_controles_auto'] : 0.0;
+            $c['prix_moyen_moto'] = $c['nb_controles_moto'] > 0 ? $c['ca_moto'] / $c['nb_controles_moto'] : 0.0;
             $c['temps_moyen_auto'] = $c['nb_controles_auto'] > 0 ? $c['temps_total_auto'] / $c['nb_controles_auto'] : 0.0;
             $c['temps_moyen_moto'] = $c['nb_controles_moto'] > 0 ? $c['temps_total_moto'] / $c['nb_controles_moto'] : 0.0;
             $c['taux_refus_auto'] = $c['nb_controles_auto'] > 0 ? ($c['refus_auto'] / $c['nb_controles_auto']) * 100 : 0.0;
@@ -99,6 +99,9 @@ class SuiviControleursService
         $moyennesGlobales = [
             'nb_controles_auto' => $nbControleursAutoActifs > 0 ? $sumNbAuto / $nbControleursAutoActifs : 0.0,
             'nb_controles_moto' => $nbControleursMotoActifs > 0 ? $sumNbMoto / $nbControleursMotoActifs : 0.0,
+            // Average revenue per active controller (with at least one control in the filtered dataset).
+            'ca_auto' => $nbControleursAutoActifs > 0 ? $sumCaAuto / $nbControleursAutoActifs : 0.0,
+            'ca_moto' => $nbControleursMotoActifs > 0 ? $sumCaMoto / $nbControleursMotoActifs : 0.0,
             'prix_moyen_auto' => $sumNbAutoFactures > 0 ? $sumCaAuto / $sumNbAutoFactures : 0.0,
             'prix_moyen_moto' => $sumNbMotoFactures > 0 ? $sumCaMoto / $sumNbMotoFactures : 0.0,
             'temps_moyen_auto' => $sumNbAuto > 0 ? $sumTempsAuto / $sumNbAuto : 0.0,

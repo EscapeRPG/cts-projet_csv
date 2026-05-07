@@ -44,12 +44,12 @@
 
         <div>
             {{ form_label(form.societe) }}
-            {{ form_widget(form.societe) }}
+            {{ form_widget(form.societe, {'attr': {'class': 'reseau-uppercase'}}) }}
         </div>
 
         <div>
             {{ form_label(form.centre) }}
-            {{ form_widget(form.centre) }}
+            {{ form_widget(form.centre, {'attr': {'class': 'reseau-uppercase'}}) }}
         </div>
 
         <div>
@@ -79,7 +79,7 @@
 
         <div>
             {{ form_label(form.annee) }}
-            {{ form_widget(form.annee) }}
+            {{ form_widget(form.annee, {'attr': {'class': 'reseau-uppercase'}}) }}
         </div>
 
         <div>
