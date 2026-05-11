@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Configurer organigrammes{% endblock %}
+
+{% block body %}
+    <div class="organigram-config">
+        <div class="organigram-config__header">
+            <h1>Configurer organigrammes</h1>
+            <div class="organigram-config__actions">
+                <a class="btn-link" href="{{ path('app_organigram_edit') }}">Remplacer le PDF</a>
+            </div>
+        </div>
+
+        {% if pdfUrl is empty %}
+            <div class="organigram-config__empty">
+                <p>Aucun PDF uploadé.</p>
+            </div>
+        {% else %}
+            <form method="post"
+                  class="organigram-config__form"
+                  data-organigram-config="1"
+                  data-pdf-url="{{ pdfUrl }}"
+                  data-pdf-worker-url="{{ asset('vendor/pdfjs-dist/build/pdf.worker.mjs.js') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('organigram_configure') }}">
+                <input type="hidden" name="structurel" value="{{ mapping.structurel ?? '' }}" data-organigram-target="structurel">
+                <input type="hidden" name="immobilier" value="{{ mapping.immobilier ?? '' }}" data-organigram-target="immobilier">
+                <input type="hidden" name="hierarchique" value="{{ mapping.hierarchique ?? '' }}" data-organigram-target="hierarchique">
+
+                <div class="organigram-config__selected">
+                    <div>Structurel: <strong data-organigram-selected="structurel"></strong></div>
+                    <div>Immobilier: <strong data-organigram-selected="immobilier"></strong></div>
+                    <div>Hiérarchique: <strong data-organigram-selected="hierarchique"></strong></div>
+                </div>
+
+                <div class="organigram-config__pages" data-organigram-pages="1"></div>
+
+                <div class="organigram-config__footer">
+                    <button type="submit">Enregistrer</button>
+                </div>
+            </form>
+        {% endif %}
+    </div>
+{% endblock %}

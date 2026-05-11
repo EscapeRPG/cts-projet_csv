@@ -16,6 +16,48 @@
     </div>
 
     <form method="get" class="filter-form" data-current-route="{{ route }}">
+        {% set years = annees|default([])|sort %}
+        {% set firstYear = years|first|default(null) %}
+        {% set lastYear = years|last|default(null) %}
+
+        <div class="encours-year-range">
+            <div class="filter-dropdown" data-encours-year-from>
+                <button type="button" class="dropdown-toggle">
+                    Depuis
+                </button>
+
+                <div class="dropdown-menu">
+                    {% for annee in years %}
+                        <label>
+                            <input type="radio"
+                                   name="encours_year_from_ui"
+                                   value="{{ annee }}"
+                                   {% if anneeDepuis is not null and annee == anneeDepuis %}checked{% elseif anneeDepuis is null and loop.first %}checked{% endif %}>
+                            {{ annee }}
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="filter-dropdown" data-encours-year-to>
+                <button type="button" class="dropdown-toggle">
+                    Jusqu'à
+                </button>
+
+                <div class="dropdown-menu">
+                    {% for annee in years %}
+                        <label>
+                            <input type="radio"
+                                   name="encours_year_to_ui"
+                                   value="{{ annee }}"
+                                   {% if anneeJusqua is not null and annee == anneeJusqua %}checked{% elseif anneeJusqua is null and loop.last %}checked{% endif %}>
+                            {{ annee }}
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
         <div class="filters-container">
             <div class="filter-dropdown">
                 <button type="button" class="dropdown-toggle">
@@ -36,7 +78,14 @@
             </div>
 
             {% if anneeDepuis is not null %}
-                <input type="hidden" name="annee" value="{{ anneeDepuis }}">
+                <input type="hidden" name="annee_debut" value="{{ anneeDepuis }}">
+            {% elseif firstYear is not null %}
+                <input type="hidden" name="annee_debut" value="{{ firstYear }}">
+            {% endif %}
+            {% if anneeJusqua is not null %}
+                <input type="hidden" name="annee_fin" value="{{ anneeJusqua }}">
+            {% elseif lastYear is not null %}
+                <input type="hidden" name="annee_fin" value="{{ lastYear }}">
             {% endif %}
 
             <input type="hidden" name="type" value="{{ type|default('exploitation') }}">

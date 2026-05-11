@@ -3,22 +3,41 @@
 {% block title %}Liste des sociétés{% endblock %}
 
 {% block body %}
-    <div class="search-list">
-        <label for="cts-societes-search-uneditable">Recherche :</label>
-        <input id="cts-societes-search-uneditable"
-               type="search"
-               autocomplete="off"
-               placeholder="Nom..."
-               value="{{ app.request.query.get('q') }}"
-               data-list-search-input="1"
-               data-list-search-partial-url="{{ path('app_societes_list_uneditable_partial') }}"
-               data-list-search-push-url="{{ path('app_societes_list_uneditable') }}"
-               data-list-search-results="#cts-societes-uneditable-results">
-    </div>
+    <div class="list-container">
+        <div class="search-list">
+            <div class="form-row">
+                <label for="cts-societes-search-uneditable">Recherche :</label>
+                <input id="cts-societes-search-uneditable"
+                       type="search"
+                       autocomplete="off"
+                       placeholder="Nom..."
+                       value="{{ app.request.query.get('q') }}"
+                       data-list-search-input="1"
+                       data-list-search-partial-url="{{ path('app_societes_list_uneditable_partial') }}"
+                       data-list-search-push-url="{{ path('app_societes_list_uneditable') }}"
+                       data-list-search-results="#cts-societes-uneditable-results">
+            </div>
+        </div>
 
-    <div class="container">
-        <div id="cts-societes-uneditable-results" data-list-results-container="1">
+        <div id="cts-societes-uneditable-results" class="table-wrapper" data-list-results-container="1">
             {{ include('cts/societes/_list_results_uneditable.html.twig') }}
+        </div>
+
+        <div class="filters-print-actions">
+            {% if is_granted('ROLE_LIST_SOCIETES_ADD') %}
+                <a href="{{ path('app_societes_add') }}" class="btn-link add">Ajouter</a>
+            {% endif %}
+
+            {% if is_granted('ROLE_LIST_SOCIETES_EDIT') %}
+                <a href="{{ path('app_societes_list') }}" class="btn-link edit">Modifier</a>
+            {% endif %}
+
+            <a class="btn-link"
+               href="{{ path('app_societes_list_print') }}"
+               data-print-keep-filters="1"
+               data-print-base-href="{{ path('app_societes_list_print') }}"
+               target="_blank"
+               rel="noopener">Imprimer</a>
         </div>
     </div>
 
@@ -65,21 +84,4 @@
             </div>
         </div>
     {% endif %}
-
-    <div class="edit-print">
-        {% if is_granted('ROLE_LIST_SOCIETES_ADD') %}
-            <a href="{{ path('app_societes_add') }}" class="btn-link add">Ajouter</a>
-        {% endif %}
-
-        {% if is_granted('ROLE_LIST_SOCIETES_EDIT') %}
-            <a href="{{ path('app_societes_list') }}" class="btn-link edit">Modifier</a>
-        {% endif %}
-
-        <a class="btn-link"
-           href="{{ path('app_societes_list_print') }}"
-           data-print-keep-filters="1"
-           data-print-base-href="{{ path('app_societes_list_print') }}"
-           target="_blank"
-           rel="noopener">Imprimer</a>
-    </div>
 {% endblock %}

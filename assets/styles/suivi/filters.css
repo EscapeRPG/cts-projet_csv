@@ -38,9 +38,10 @@
     align-items: flex-end;
     width: calc(100% - 160px);
     box-sizing: border-box;
-    margin-top: 20px;
-    margin-left: 160px;
     gap: 10px;
+    position: absolute;
+    bottom: 100%;
+    left: 180px;
 
     a {
         border-radius: 10px 10px 0 0;
@@ -185,6 +186,7 @@
     transition: all .8s ease;
 
     label {
+        font-size: 1.5em !important;
         display: flex;
         align-items: center;
         gap: 6px;
@@ -227,7 +229,7 @@
 
     &.filter-open {
         height: fit-content;
-        max-height: 350px;
+        max-height: 300px;
         overflow-y: auto;
         padding: 5px;
     }

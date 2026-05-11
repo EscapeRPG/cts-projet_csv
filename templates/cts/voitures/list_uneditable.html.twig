@@ -3,38 +3,63 @@
 {% block title %}Liste des voitures{% endblock %}
 
 {% block body %}
-    <div class="search-list">
-        <label for="cts-voitures-search-uneditable">Recherche :</label>
-        <input id="cts-voitures-search-uneditable"
-               type="search"
-               autocomplete="off"
-               placeholder="Immatriculation..."
-               value="{{ app.request.query.get('q') }}"
-               data-list-search-input="1"
-               data-list-search-partial-url="{{ path('app_voitures_list_uneditable_partial') }}"
-               data-list-search-push-url="{{ path('app_voitures_list_uneditable') }}"
-               data-list-search-results="#cts-voitures-uneditable-results">
-        {% set includeActive = app.request.query.get('active') != '0' %}
-        {% set includeInactive = app.request.query.get('inactive') == '1' %}
-        <label for="cts-voitures-active-only-uneditable" style="margin-left: 12px;">Actives</label>
-        <input id="cts-voitures-active-only-uneditable"
-               type="checkbox"
-               name="active"
-               value="1"
-               data-list-search-param="1"
-            {{ includeActive ? 'checked' : '' }}>
-        <label for="cts-voitures-inactive-only-uneditable" style="margin-left: 8px;">Inactives</label>
-        <input id="cts-voitures-inactive-only-uneditable"
-               type="checkbox"
-               name="inactive"
-               value="1"
-               data-list-search-param="1"
-            {{ includeInactive ? 'checked' : '' }}>
-    </div>
+    <div class="list-container">
+        <div class="search-list">
+            <div class="form-row">
+                <label for="cts-voitures-search-uneditable">Recherche :</label>
+                <input id="cts-voitures-search-uneditable"
+                       type="search"
+                       autocomplete="off"
+                       placeholder="Immatriculation..."
+                       value="{{ app.request.query.get('q') }}"
+                       data-list-search-input="1"
+                       data-list-search-partial-url="{{ path('app_voitures_list_uneditable_partial') }}"
+                       data-list-search-push-url="{{ path('app_voitures_list_uneditable') }}"
+                       data-list-search-results="#cts-voitures-uneditable-results">
+            </div>
 
-    <div class="container">
-        <div id="cts-voitures-uneditable-results" data-list-results-container="1">
+            {% set includeActive = app.request.query.get('active') != '0' %}
+            {% set includeInactive = app.request.query.get('inactive') == '1' %}
+            <div class="form-row">
+                <label for="cts-voitures-active-only-uneditable" style="margin-left: 12px;">Actives</label>
+                <input id="cts-voitures-active-only-uneditable"
+                       type="checkbox"
+                       name="active"
+                       value="1"
+                       data-list-search-param="1"
+                    {{ includeActive ? 'checked' : '' }}>
+            </div>
+
+            <div class="form-row">
+                <label for="cts-voitures-inactive-only-uneditable" style="margin-left: 8px;">Inactives</label>
+                <input id="cts-voitures-inactive-only-uneditable"
+                       type="checkbox"
+                       name="inactive"
+                       value="1"
+                       data-list-search-param="1"
+                    {{ includeInactive ? 'checked' : '' }}>
+            </div>
+        </div>
+
+        <div id="cts-voitures-uneditable-results" class="table-wrapper" data-list-results-container="1">
             {{ include('cts/voitures/_list_results_uneditable.html.twig') }}
+        </div>
+
+        <div class="filters-print-actions">
+            {% if is_granted('ROLE_LIST_VOITURES_ADD') %}
+                <a href="{{ path('app_voitures_add') }}" class="btn-link add">Ajouter</a>
+            {% endif %}
+
+            {% if is_granted('ROLE_LIST_VOITURES_EDIT') %}
+                <a href="{{ path('app_voitures_list') }}" class="btn-link edit">Modifier</a>
+            {% endif %}
+
+            <a class="btn-link"
+               href="{{ path('app_voitures_list_uneditable_print') }}"
+               data-print-keep-filters="1"
+               data-print-base-href="{{ path('app_voitures_list_uneditable_print') }}"
+               target="_blank"
+               rel="noopener">Imprimer</a>
         </div>
     </div>
 
@@ -81,21 +106,4 @@
             </div>
         </div>
     {% endif %}
-
-    <div class="edit-print">
-        {% if is_granted('ROLE_LIST_VOITURES_ADD') %}
-            <a href="{{ path('app_voitures_add') }}" class="btn-link add">Ajouter</a>
-        {% endif %}
-
-        {% if is_granted('ROLE_LIST_VOITURES_EDIT') %}
-            <a href="{{ path('app_voitures_list') }}" class="btn-link edit">Modifier</a>
-        {% endif %}
-
-        <a class="btn-link"
-           href="{{ path('app_voitures_list_uneditable_print') }}"
-           data-print-keep-filters="1"
-           data-print-base-href="{{ path('app_voitures_list_uneditable_print') }}"
-           target="_blank"
-           rel="noopener">Imprimer</a>
-    </div>
 {% endblock %}

@@ -125,7 +125,6 @@ button {
 
         &:not(.dropdown-toggle) {
             background: var(--cts-alt);
-            transform: scale(1.1);
         }
     }
 }
@@ -180,7 +179,6 @@ button {
     font-weight: normal;
 
     &:hover {
-        transform: none !important;
         border: 1px solid var(--cts-main) !important;
         background: white !important;
         color: black !important;

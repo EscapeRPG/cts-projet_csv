@@ -3,13 +3,56 @@
 {% block title %}Organigrammes structurels{% endblock %}
 
 {% block body %}
-    <div class="organigram-filters">
-        <button class="organigram-filters__button active" data-filter="controles">EXPLOITATIONS</button>
-        <button class="organigram-filters__button" data-filter="immobilier">IMMOBILIER</button>
-    </div>
+    {% set route = app.request.attributes.get('_route') %}
 
-    <img src="{{ asset('img/organigramme/organigramme-structurel.jpg') }}"
-         alt="organigramme structurel"
-         title="Organigramme structurel"
-         class="organigram">
+    <div class="suivi-container organigram-container" data-disable-mobile-filters-drawer="1">
+        <div class="sidenav">
+            <div class="onglets">
+                <a href="{{ path('app_organigram') }}"
+                   class="{{ route == 'app_organigram' ? 'active' : '' }}"
+                >
+                    Exploitations
+                </a>
+
+                <a href="{{ path('app_organigram_immobilier') }}"
+                   class="{{ route == 'app_organigram_immobilier' ? 'active' : '' }}"
+                >
+                    Immobilier
+                </a>
+
+                <a href="{{ path('app_organigram_hierarchique') }}"
+                   class="{{ route == 'app_organigram_hierarchique' ? 'active' : '' }}"
+                >
+                    Hiérarchie
+                </a>
+            </div>
+
+            {% if is_granted('ROLE_ADMIN') %}
+                <div class="organigram-admin-actions">
+                    <a href="{{ path('app_organigram_edit') }}" class="btn-link edit">Éditer</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="organigram-view"
+             data-organigram-view="1"
+             data-pdf-url="{{ pdfUrl ?? '' }}"
+             data-page="{{ page ?? '' }}"
+             data-pdf-worker-url="{{ asset('vendor/pdfjs-dist/build/pdf.worker.mjs.js') }}">
+            {% if pdfUrl is empty %}
+                <div class="organigram-empty">
+                    <p>Aucun PDF configuré.</p>
+                </div>
+            {% elseif page is empty %}
+                <div class="organigram-empty">
+                    <p>Aucun organigramme hiérarchique paramétré à l'heure actuelle.</p>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_organigram_configure') }}" class="btn-link">Configurer</a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <canvas class="organigram-canvas" data-organigram-canvas="1"></canvas>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}

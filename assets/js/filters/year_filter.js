@@ -67,9 +67,9 @@ export function bindYearFilter(form) {
  * @returns {void}
  */
 export function bindYearRangeFilter(form) {
-    const fromInput = document.querySelector('[data-encours-year-from]');
-    const toInput = document.querySelector('[data-encours-year-to]');
-    if (!(fromInput instanceof HTMLInputElement) && !(toInput instanceof HTMLInputElement)) return;
+    const fromControl = form.querySelector('[data-encours-year-from]');
+    const toControl = form.querySelector('[data-encours-year-to]');
+    if (!(fromControl instanceof HTMLElement) && !(toControl instanceof HTMLElement)) return;
 
     const normalize = (v) => {
         const s = String(v ?? '').trim();
@@ -78,27 +78,46 @@ export function bindYearRangeFilter(form) {
         return Number.isFinite(n) && n > 0 ? String(Math.trunc(n)) : '';
     };
 
-    const apply = async () => {
-        if (fromInput instanceof HTMLInputElement) {
-            setYearValue(form, 'annee_debut', normalize(fromInput.value));
+    const readValue = (control) => {
+        if (control instanceof HTMLInputElement || control instanceof HTMLSelectElement) {
+            return control.value;
         }
-        if (toInput instanceof HTMLInputElement) {
-            setYearValue(form, 'annee_fin', normalize(toInput.value));
+        if (control instanceof HTMLElement) {
+            const checked = control.querySelector('input[type="radio"]:checked');
+            if (checked instanceof HTMLInputElement) return checked.value;
+        }
+        return '';
+    };
+
+    const apply = async () => {
+        if (fromControl instanceof HTMLElement) {
+            setYearValue(form, 'annee_debut', normalize(readValue(fromControl)));
+        }
+        if (toControl instanceof HTMLElement) {
+            setYearValue(form, 'annee_fin', normalize(readValue(toControl)));
         }
         syncUrlWithForm(form);
         await scheduleRefreshResults(form, 200);
     };
 
-    if (fromInput instanceof HTMLInputElement) {
-        fromInput.addEventListener('change', apply);
-        fromInput.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') apply();
-        });
+    if (fromControl instanceof HTMLInputElement || fromControl instanceof HTMLSelectElement) {
+        fromControl.addEventListener('change', apply);
+        if (fromControl instanceof HTMLInputElement) {
+            fromControl.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') apply();
+            });
+        }
+    } else if (fromControl instanceof HTMLElement) {
+        fromControl.addEventListener('change', apply);
     }
-    if (toInput instanceof HTMLInputElement) {
-        toInput.addEventListener('change', apply);
-        toInput.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') apply();
-        });
+    if (toControl instanceof HTMLInputElement || toControl instanceof HTMLSelectElement) {
+        toControl.addEventListener('change', apply);
+        if (toControl instanceof HTMLInputElement) {
+            toControl.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') apply();
+            });
+        }
+    } else if (toControl instanceof HTMLElement) {
+        toControl.addEventListener('change', apply);
     }
 }

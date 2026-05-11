@@ -10,134 +10,153 @@
             <p>Tous prix indiqués HT | Marge d'erreur CA < 1%</p>
         </div>
 
-        <div class="pro-stats-container" data-ajax-results>
-            <div class="pro-stats-panel">
-                <div class="summary">
-                    <div class="ca-summary">
-                        <span class="panel-tools-title">CA {{ "now"|date('Y') }}</span>
-                        <strong>{{ summary.ca_now|number_format(2, ',', ' ') }} €</strong>
+        <div class="centres-pros-wrapper">
+            <div class="pro-stats-container" data-ajax-results>
+                <div class="pro-stats-panel">
+                    <div class="summary">
+                        <div class="ca-summary">
+                            <span class="panel-tools-title">CA {{ "now"|date('Y') }}</span>
+                            <strong>{{ summary.ca_now|number_format(2, ',', ' ') }} €</strong>
 
-                        <div class="previous">
-                            <div class="row">
-                                <strong>{{ "now"|date('Y') - 1 }}</strong>
-                                {{ summary.ca_n1|number_format(2, ',', ' ') }} €
-                                <div class="{{ summary.per_ca_n1 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ca_n1|number_format(2, ',', ' ') }}%</div>
+                            <div class="previous">
+                                <div class="row">
+                                    <strong>{{ "now"|date('Y') - 1 }}</strong>
+                                    {{ summary.ca_n1|number_format(2, ',', ' ') }} €
+                                    <div
+                                        class="{{ summary.per_ca_n1 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ca_n1|number_format(2, ',', ' ') }}
+                                        %
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <strong>{{ "now"|date('Y') - 2 }}</strong>
+                                    {{ summary.ca_n2|number_format(2, ',', ' ') }} €
+                                    <div
+                                        class="{{ summary.per_ca_n2 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ca_n2|number_format(2, ',', ' ') }}
+                                        %
+                                    </div>
+                                </div>
                             </div>
+                        </div>
 
-                            <div class="row">
-                                <strong>{{ "now"|date('Y') - 2 }}</strong>
-                                {{ summary.ca_n2|number_format(2, ',', ' ') }} €
-                                <div class="{{ summary.per_ca_n2 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ca_n2|number_format(2, ',', ' ') }}%</div>
+                        <div class="ca-summary">
+                            <span class="panel-tools-title">Contrôles {{ "now"|date('Y') }}</span>
+                            <strong>{{ summary.vol_now|number_format(0, ',', ' ') }}</strong>
+
+                            <div class="previous">
+                                <div class="row">
+                                    <strong>{{ "now"|date('Y') - 1 }}</strong>
+                                    {{ summary.vol_n1|number_format(0, ',', ' ') }}
+                                    <div
+                                        class="{{ summary.per_ctrl_n1 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ctrl_n1|number_format(2, ',', ' ') }}
+                                        %
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <strong>{{ "now"|date('Y') - 2 }}</strong>
+                                    {{ summary.vol_n2|number_format(0, ',', ' ') }}
+                                    <div
+                                        class="{{ summary.per_ctrl_n2 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ctrl_n2|number_format(2, ',', ' ') }}
+                                        %
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="ca-summary">
-                        <span class="panel-tools-title">Contrôles {{ "now"|date('Y') }}</span>
-                        <strong>{{ summary.vol_now|number_format(0, ',', ' ') }}</strong>
-
-                        <div class="previous">
-                            <div class="row">
-                                <strong>{{ "now"|date('Y') - 1 }}</strong>
-                                {{ summary.vol_n1|number_format(0, ',', ' ') }}
-                                <div class="{{ summary.per_ctrl_n1 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ctrl_n1|number_format(2, ',', ' ') }}%</div>
-                            </div>
-
-                            <div class="row">
-                                <strong>{{ "now"|date('Y') - 2 }}</strong>
-                                {{ summary.vol_n2|number_format(0, ',', ' ') }}
-                                <div class="{{ summary.per_ctrl_n2 < 0 ? 'decreased' : 'increased' }}">{{ summary.per_ctrl_n2|number_format(2, ',', ' ') }}%</div>
-                            </div>
+                    <div class="stats-wrapper graphique"
+                         data-pro-charts='{{ proCharts|json_encode|e('html_attr') }}'>
+                        <div class="chart-toolbar">
+                            <button type="button" class="chart-toggle active" data-chart-kind="ca">CA</button>
+                            <button type="button" class="chart-toggle" data-chart-kind="volumes">Contrôles</button>
+                        </div>
+                        <div class="chart-canvas-wrap">
+                            <canvas class="pro-chart-canvas"
+                                    aria-label="Comparatif {{ "now"|date('Y') - 2 }} à {{ "now"|date('Y') }}"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <div class="stats-wrapper graphique"
-                     data-pro-charts='{{ proCharts|json_encode|e('html_attr') }}'>
-                    <div class="chart-toolbar">
-                        <button type="button" class="chart-toggle active" data-chart-kind="ca">CA</button>
-                        <button type="button" class="chart-toggle" data-chart-kind="volumes">Contrôles</button>
-                    </div>
-                    <div class="chart-canvas-wrap">
-                        <canvas class="pro-chart-canvas" aria-label="Comparatif {{ "now"|date('Y') - 2 }} à {{ "now"|date('Y') }}"></canvas>
+                <div class="stats-wrapper">
+                    <div class="stats-panel table-panel">
+                        <table class="table-pros pro-table-wrapper">
+                            <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>CA N</th>
+                                <th>CA N-1</th>
+                                <th>CA N-2</th>
+                                <th>CA // N-1</th>
+                                <th>CA // N-2</th>
+                                <th>Vol. N</th>
+                                <th>Vol. N-1</th>
+                                <th>Vol. N-2</th>
+                                <th>Vol. // N-1</th>
+                                <th>Vol. // N-2</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            {% for client in clients %}
+                                <tr>
+                                    <td>{{ client.nom }}</td>
+                                    <td class="{{ client.ca_now < client.ca_n1 ? 'malus' : 'bonus' }} right">{{ client.ca_now|number_format(2, ',', ' ') }}
+                                        €
+                                    </td>
+                                    <td class="right">{{ client.ca_n1|number_format(2, ',', ' ') }} €</td>
+                                    <td class="right">{{ client.ca_n2|number_format(2, ',', ' ') }} €</td>
+                                    <td class="{{ client.per_ca_n1 < 0 ? 'decreased' : 'increased' }}">{{ client.per_ca_n1|number_format(2, ',', ' ') }}
+                                        %
+                                    </td>
+                                    <td class="{{ client.per_ca_n2 < 0 ? 'decreased' : 'increased' }}">{{ client.per_ca_n2|number_format(2, ',', ' ') }}
+                                        %
+                                    </td>
+                                    <td>{{ client.nb_ctrl_now }}</td>
+                                    <td>{{ client.nb_ctrl_n1 }}</td>
+                                    <td>{{ client.nb_ctrl_n2 }}</td>
+                                    <td class="{{ client.per_n1 < 0 ? 'decreased' : 'increased' }}">{{ client.per_n1|number_format(2, ',', ' ') }}
+                                        %
+                                    </td>
+                                    <td class="{{ client.per_n2 < 0 ? 'decreased' : 'increased' }}">{{ client.per_n2|number_format(2, ',', ' ') }}
+                                        %
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+
+                        {% if pagination.total_pages > 1 %}
+                            <div class="pagination">
+                                {% if pagination.has_previous %}
+                                    <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': 1})) }}">❮❮</a>
+                                    <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.previous_page})) }}">❮</a>
+                                {% endif %}
+                                <span>Page {{ pagination.page }} / {{ pagination.total_pages }} ({{ pagination.total_items }} clients)</span>
+                                {% if pagination.has_next %}
+                                    <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.next_page})) }}">❯</a>
+                                    <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.total_pages})) }}">❯❯</a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
 
-            <div class="stats-wrapper">
-                <div class="stats-panel table-panel">
-                    <table class="table-pros pro-table-wrapper">
-                        <thead>
-                        <tr>
-                            <th>Client</th>
-                            <th>CA N</th>
-                            <th>CA N-1</th>
-                            <th>CA N-2</th>
-                            <th>CA // N-1</th>
-                            <th>CA // N-2</th>
-                            <th>Vol. N</th>
-                            <th>Vol. N-1</th>
-                            <th>Vol. N-2</th>
-                            <th>Vol. // N-1</th>
-                            <th>Vol. // N-2</th>
-                        </tr>
-                        </thead>
-
-                        <tbody>
-                        {% for client in clients %}
-                            <tr>
-                                <td>{{ client.nom }}</td>
-                                <td class="{{ client.ca_now < client.ca_n1 ? 'malus' : 'bonus' }} right">{{ client.ca_now|number_format(2, ',', ' ') }}
-                                    €
-                                </td>
-                                <td class="right">{{ client.ca_n1|number_format(2, ',', ' ') }} €</td>
-                                <td class="right">{{ client.ca_n2|number_format(2, ',', ' ') }} €</td>
-                                <td class="{{ client.per_ca_n1 < 0 ? 'decreased' : 'increased' }}">{{ client.per_ca_n1|number_format(2, ',', ' ') }}%
-                                </td>
-                                <td class="{{ client.per_ca_n2 < 0 ? 'decreased' : 'increased' }}">{{ client.per_ca_n2|number_format(2, ',', ' ') }}%
-                                </td>
-                                <td>{{ client.nb_ctrl_now }}</td>
-                                <td>{{ client.nb_ctrl_n1 }}</td>
-                                <td>{{ client.nb_ctrl_n2 }}</td>
-                                <td class="{{ client.per_n1 < 0 ? 'decreased' : 'increased' }}">{{ client.per_n1|number_format(2, ',', ' ') }}%
-                                </td>
-                                <td class="{{ client.per_n2 < 0 ? 'decreased' : 'increased' }}">{{ client.per_n2|number_format(2, ',', ' ') }}%
-                                </td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-
-                    {% if pagination.total_pages > 1 %}
-                        <div class="pagination">
-                            {% if pagination.has_previous %}
-                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': 1})) }}">❮❮</a>
-                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.previous_page})) }}">❮</a>
-                            {% endif %}
-                            <span>Page {{ pagination.page }} / {{ pagination.total_pages }} ({{ pagination.total_items }} clients)</span>
-                            {% if pagination.has_next %}
-                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.next_page})) }}">❯</a>
-                                <a href="{{ path('app_suivi_focus_pro', app.request.query.all|merge({'page': pagination.total_pages})) }}">❯❯</a>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-                </div>
+            <div class="filters-print-actions">
+                <a href="{{ path('app_suivi_focus_pro_print_recap') }}"
+                   data-print-keep-filters="1"
+                   data-print-base-href="{{ path('app_suivi_focus_pro_print_recap') }}"
+                   target="_blank"
+                   rel="noopener"
+                   class="btn-link">Imprimer récap</a>
+                <a href="{{ path('app_suivi_focus_pro_print_table') }}"
+                   data-print-keep-filters="1"
+                   data-print-base-href="{{ path('app_suivi_focus_pro_print_table') }}"
+                   target="_blank"
+                   rel="noopener"
+                   class="btn-link">Imprimer table</a>
             </div>
         </div>
-    </div>
-
-    <div class="filters-print-actions">
-        <a href="{{ path('app_suivi_focus_pro_print_recap') }}"
-           data-print-keep-filters="1"
-           data-print-base-href="{{ path('app_suivi_focus_pro_print_recap') }}"
-           target="_blank"
-           rel="noopener"
-           class="btn-link">Imprimer récap</a>
-        <a href="{{ path('app_suivi_focus_pro_print_table') }}"
-           data-print-keep-filters="1"
-           data-print-base-href="{{ path('app_suivi_focus_pro_print_table') }}"
-           target="_blank"
-           rel="noopener"
-           class="btn-link">Imprimer table</a>
     </div>
 {% endblock %}

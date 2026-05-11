@@ -4,9 +4,42 @@
     flex-direction: row;
     align-items: stretch;
     width: 100%;
-    height: 70vh;
+    flex: 1;
     margin: 0 auto;
     box-sizing: border-box;
+}
+
+.centres-pros-wrapper {
+    width: 100%;
+}
+
+.filters-print-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    height: fit-content;
+    margin-top: 10px;
+
+    a {
+        margin: 0;
+
+        &.add {
+            background: #12ba12;
+
+            &:hover {
+                background: #079907;
+            }
+        }
+
+        &.edit {
+            background: orange;
+
+            &:hover {
+                background: #bf7c03;
+            }
+        }
+    }
 }
 
 .activite-infos {
@@ -23,13 +56,13 @@
 .pro-stats-container,
 .stats-container {
     gap: 10px;
-    width: calc(100% - 40px);
+    width: 100%;
     max-height: 80vh;
     padding: 10px;
     background: var(--cts-main);
     border-radius: 10px;
     position: relative;
-    box-shadow: var(--box-shadow);
+    box-sizing: border-box;
 
     h2 {
         margin: 10px 0;
@@ -230,7 +263,7 @@
     box-shadow: var(--box-shadow);
     padding: 0;
     background: var(--blocks);
-    overflow: hidden;
+    overflow-y: auto;
     height: stretch;
 
     &:not(.controleur):last-child {
@@ -238,9 +271,10 @@
     }
 }
 
-.stats-panel, .pro-stats-panel {
+.stats-panel,
+.pro-stats-panel {
     width: 100%;
-    height: calc(100% - 35px);
+    flex: 1;
     overflow: auto;
 
     &.table-panel {

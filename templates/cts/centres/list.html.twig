@@ -3,23 +3,36 @@
 {% block title %}Liste des centres{% endblock %}
 
 {% block body %}
-    <div class="search-list">
-        <label for="cts-centres-search">Recherche :</label>
-        <input id="cts-centres-search"
-               type="search"
-               autocomplete="off"
-               placeholder="Agr, ville, réseau..."
-               value="{{ app.request.query.get('q') }}"
-               data-list-search-input="1"
-               data-list-search-partial-url="{{ path('app_centres_list_partial') }}"
-               data-list-search-push-url="{{ path('app_centres_list') }}"
-               data-list-search-results="#cts-centres-results">
-        <small data-list-search-blocked-message hidden>Veuillez enregistrer vos modifications pour effectuer une recherche.</small>
-    </div>
+    <div class="list-container">
+        <div class="search-list">
+            <div class="form-row">
+                <label for="cts-centres-search">Recherche :</label>
+                <input id="cts-centres-search"
+                       type="search"
+                       autocomplete="off"
+                       placeholder="Agr, ville, réseau..."
+                       value="{{ app.request.query.get('q') }}"
+                       data-list-search-input="1"
+                       data-list-search-partial-url="{{ path('app_centres_list_partial') }}"
+                       data-list-search-push-url="{{ path('app_centres_list') }}"
+                       data-list-search-results="#cts-centres-results">
+            </div>
 
-    <div class="container">
-        <div id="cts-centres-results" data-list-results-container="1">
+            <small data-list-search-blocked-message hidden>Veuillez enregistrer vos modifications pour effectuer une
+                recherche.</small>
+        </div>
+
+        <div id="cts-centres-results" class="table-wrapper" data-list-results-container="1">
             {{ include('cts/centres/_list_results.html.twig') }}
+        </div>
+
+        <div class="filters-print-actions">
+            <a class="btn-link"
+               href="{{ path('app_centres_list_print') }}"
+               data-print-keep-filters="1"
+               data-print-base-href="{{ path('app_centres_list_print') }}"
+               target="_blank"
+               rel="noopener">Imprimer</a>
         </div>
     </div>
 
@@ -66,11 +79,4 @@
             </div>
         </div>
     {% endif %}
-
-    <a class="btn-link"
-       href="{{ path('app_centres_list_print') }}"
-       data-print-keep-filters="1"
-       data-print-base-href="{{ path('app_centres_list_print') }}"
-       target="_blank"
-       rel="noopener">Imprimer</a>
 {% endblock %}

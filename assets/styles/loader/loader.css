@@ -36,8 +36,9 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin: auto;
-    width: 95%;
+    margin: 120px 50px auto;
+    width: calc(100% - 100px);
+    box-sizing: border-box;
     opacity: 0;
     transition: opacity 2s ease-in-out;
 

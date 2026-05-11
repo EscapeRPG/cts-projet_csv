@@ -28,4 +28,10 @@ return [
     'sort_tables' => [
         'path' => './assets/js/modules/sort_tables.js',
     ],
+    'pdfjs-dist' => [
+        'version' => '5.7.284',
+    ],
+    'pdfjs-dist/build/pdf.worker.mjs' => [
+        'version' => '5.7.284',
+    ],
 ];

@@ -448,6 +448,35 @@ final class SuiviActiviteController extends AbstractController
         ));
     }
 
+    #[Route('/cts/suivi/activite/print-totals', name: 'app_suivi_activite_print_totals')]
+    public function suiviActivitePrintTotals(Request $request): Response
+    {
+        $filters = $this->applyDefaultCurrentYearForYearFilteredPages(
+            $this->filtersResolver->resolveFromRequest($request)
+        );
+        $filters = $this->centresScope->apply($filters);
+
+        $queryFilters = $filters;
+        $queryFilters['type'] = [];
+        $queryFilters['vehicule'] = [];
+
+        $rows = $this->repo->fetchSyntheseRows($queryFilters);
+        $synthese = $this->syntheseBuilder->buildSynthese($rows);
+        $activityTotals = $this->syntheseBuilder->buildActivityTotals($synthese);
+
+        $view = $this->commonViewDataBuilder->build($filters);
+        $view['printFilters'] = $this->buildPrintFilters($filters, $view);
+
+        return $this->render('cts/suivis/print/activite_totals.html.twig', array_merge(
+            $view,
+            [
+                'synthese' => $synthese,
+                'societeTotals' => $activityTotals['societes'],
+                'globalTotals' => $activityTotals['global'],
+            ]
+        ));
+    }
+
     /**
      * Returns dependent filter values (centers and controllers) for selected companies/centers.
      *

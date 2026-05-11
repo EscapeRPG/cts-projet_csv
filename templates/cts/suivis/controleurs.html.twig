@@ -3,24 +3,25 @@
 {% block title %}Suivi contrôleurs{% endblock %}
 
 {% block body %}
-    {% include 'partials/year-filter.html.twig' %}
-
     <div class="suivi-container">
+        {% include 'partials/year-filter.html.twig' %}
         {% include 'partials/filters.html.twig' %}
 
         <div class="activite-infos">
             <p>Tous prix indiqués HT | Marge d'erreur CA < 1%</p>
         </div>
 
+        <div class="centres-pros-wrapper">
         {% include 'cts/suivis/_controleurs_results.html.twig' %}
-    </div>
 
-    <div class="filters-print-actions">
-        <a href="{{ path('app_suivi_controleurs_print') }}"
-           data-print-keep-filters="1"
-           data-print-base-href="{{ path('app_suivi_controleurs_print') }}"
-           target="_blank"
-           rel="noopener"
-           class="btn-link">Imprimer</a>
+        <div class="filters-print-actions">
+            <a href="{{ path('app_suivi_controleurs_print') }}"
+               data-print-keep-filters="1"
+               data-print-base-href="{{ path('app_suivi_controleurs_print') }}"
+               target="_blank"
+               rel="noopener"
+               class="btn-link">Imprimer</a>
+        </div>
+        </div>
     </div>
 {% endblock %}

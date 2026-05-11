@@ -11,6 +11,8 @@ function applyMobileFiltersLayout() {
         sidenav,
         placeholder,
         content,
+        searchList,
+        searchPlaceholder,
         yearFilter,
         yearPlaceholder,
         yearHost,
@@ -25,6 +27,13 @@ function applyMobileFiltersLayout() {
         if (sidenav instanceof HTMLElement && placeholder instanceof HTMLElement && placeholder.parentElement) {
             if (sidenav.parentElement !== placeholder.parentElement || sidenav.nextElementSibling !== placeholder) {
                 placeholder.parentElement.insertBefore(sidenav, placeholder);
+            }
+        }
+
+        // If the search list was moved into the drawer, move it back before its placeholder.
+        if (searchList instanceof HTMLElement && searchPlaceholder instanceof HTMLElement && searchPlaceholder.parentElement) {
+            if (searchList.parentElement !== searchPlaceholder.parentElement || searchList.nextElementSibling !== searchPlaceholder) {
+                searchPlaceholder.parentElement.insertBefore(searchList, searchPlaceholder);
             }
         }
 
@@ -43,6 +52,12 @@ function applyMobileFiltersLayout() {
     // Mobile: move filters into drawer content.
     drawer.classList.add('is-mobile');
     toggle.removeAttribute('hidden');
+
+    // Mobile: move search controls into drawer.
+    if (searchList instanceof HTMLElement && content instanceof HTMLElement && searchList.parentElement !== content) {
+        content.prepend(searchList);
+    }
+
     if (sidenav instanceof HTMLElement && content instanceof HTMLElement && sidenav.parentElement !== content) {
         content.appendChild(sidenav);
     }
@@ -77,25 +92,49 @@ function openMobileFiltersDrawer() {
 
 function initMobileFiltersDrawerDom() {
     const sidenav = document.querySelector('.sidenav');
-    if (!(sidenav instanceof HTMLElement)) return null;
+    const searchList = document.querySelector('.search-list');
+    if (!(sidenav instanceof HTMLElement) && !(searchList instanceof HTMLElement)) return null;
 
     const existing = document.querySelector('[data-mobile-filters-drawer="1"]');
     if (existing instanceof HTMLElement) {
         // Drawer already exists (Turbo cache). Rebuild state by locating placeholder/content.
         const placeholder = document.querySelector('[data-mobile-filters-placeholder="1"]');
         const content = existing.querySelector('[data-mobile-filters-content="1"]');
+        const searchPlaceholder = document.querySelector('[data-mobile-search-placeholder="1"]');
         const yearFilter = document.querySelector('.annees-filter');
         const yearPlaceholder = document.querySelector('[data-mobile-year-placeholder="1"]');
         const yearHost = existing.querySelector('[data-mobile-year-host="1"]');
-        return {drawer: existing, sidenav, placeholder, content, yearFilter, yearPlaceholder, yearHost};
+        return {
+            drawer: existing,
+            sidenav,
+            placeholder,
+            content,
+            searchList,
+            searchPlaceholder,
+            yearFilter,
+            yearPlaceholder,
+            yearHost
+        };
     }
 
     // Placeholder marks where the sidenav should be on desktop.
-    const placeholder = document.createElement('div');
-    placeholder.setAttribute('data-mobile-filters-placeholder', '1');
-    // Keep it layout-neutral.
-    placeholder.style.display = 'none';
-    sidenav.insertAdjacentElement('afterend', placeholder);
+    let placeholder = null;
+    if (sidenav instanceof HTMLElement) {
+        placeholder = document.createElement('div');
+        placeholder.setAttribute('data-mobile-filters-placeholder', '1');
+        // Keep it layout-neutral.
+        placeholder.style.display = 'none';
+        sidenav.insertAdjacentElement('afterend', placeholder);
+    }
+
+    // Placeholder marks where the search list should be on desktop.
+    let searchPlaceholder = null;
+    if (searchList instanceof HTMLElement) {
+        searchPlaceholder = document.createElement('div');
+        searchPlaceholder.setAttribute('data-mobile-search-placeholder', '1');
+        searchPlaceholder.style.display = 'none';
+        searchList.insertAdjacentElement('afterend', searchPlaceholder);
+    }
 
     const drawer = document.createElement('div');
     drawer.className = 'mobile-filters-drawer';
@@ -137,7 +176,7 @@ function initMobileFiltersDrawerDom() {
         yearFilter.insertAdjacentElement('afterend', yearPlaceholder);
     }
 
-    return {drawer, sidenav, placeholder, content, yearFilter, yearPlaceholder, yearHost};
+    return {drawer, sidenav, placeholder, content, searchList, searchPlaceholder, yearFilter, yearPlaceholder, yearHost};
 }
 
 export function destroyMobileFiltersDrawer() {
@@ -155,9 +194,12 @@ export function destroyMobileFiltersDrawer() {
 
     // Ensure sidenav is back in place before Turbo caches the page.
     try {
-        const {sidenav, placeholder, yearFilter, yearPlaceholder} = mobileFiltersState;
+        const {sidenav, placeholder, searchList, searchPlaceholder, yearFilter, yearPlaceholder} = mobileFiltersState;
         if (sidenav instanceof HTMLElement && placeholder instanceof HTMLElement && placeholder.parentElement) {
             placeholder.parentElement.insertBefore(sidenav, placeholder);
+        }
+        if (searchList instanceof HTMLElement && searchPlaceholder instanceof HTMLElement && searchPlaceholder.parentElement) {
+            searchPlaceholder.parentElement.insertBefore(searchList, searchPlaceholder);
         }
         if (yearFilter instanceof HTMLElement && yearPlaceholder instanceof HTMLElement && yearPlaceholder.parentElement) {
             yearPlaceholder.parentElement.insertBefore(yearFilter, yearPlaceholder);
@@ -175,10 +217,13 @@ export function destroyMobileFiltersDrawer() {
 }
 
 export function initMobileFiltersDrawer() {
+    // Some pages (e.g. organigram) use a .sidenav for navigation only; don't turn it into a filters drawer.
+    if (document.querySelector('[data-disable-mobile-filters-drawer="1"]')) return;
+
     const mediaQuery = window.matchMedia(MOBILE_FILTERS_QUERY);
     const dom = initMobileFiltersDrawerDom();
     if (!dom) return;
-    const {drawer, sidenav, placeholder, content, yearFilter, yearPlaceholder, yearHost} = dom;
+    const {drawer, sidenav, placeholder, content, searchList, searchPlaceholder, yearFilter, yearPlaceholder, yearHost} = dom;
     if (!(drawer instanceof HTMLElement)) return;
 
     if (mobileFiltersState) return;
@@ -213,6 +258,8 @@ export function initMobileFiltersDrawer() {
         sidenav,
         placeholder,
         content,
+        searchList,
+        searchPlaceholder,
         yearFilter,
         yearPlaceholder,
         yearHost,

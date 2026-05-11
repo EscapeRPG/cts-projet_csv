@@ -112,10 +112,9 @@
         top: 25px;
         left: 50%;
         transform: translateX(-50%);
-        border: 1px solid var(--cts-main);
         border-radius: 10px;
-        background: var(--blocks);
-        color: var(--cts-main);
+        background: var(--cts-main);
+        color: var(--blocks);
         font-weight: bold;
         padding: 10px 15px;
         cursor: pointer;
@@ -123,7 +122,6 @@
 
         &:hover {
             transform: translateX(-50%) !important;
-            color: var(--blocks);
         }
     }
 
@@ -157,6 +155,14 @@
 
         .annees-filter {
             margin: 0 0 12px;
+        }
+
+        .search-list {
+            flex-direction: column;
+            position: static;
+            bottom: auto;
+            margin: 0 0 12px;
+            gap: 8px;
         }
 
         .sidenav {
@@ -224,7 +230,8 @@
         overflow: hidden;
     }
 
-    .suivi-container {
+    .suivi-container,
+    .list-container {
         height: auto;
         width: 100%;
     }
@@ -322,6 +329,40 @@
 
     .form-wrapper {
         max-height: 70vh;
+    }
+
+    .organigram-container {
+        justify-content: center;
+        flex-direction: column;
+        max-height: 80vh;
+
+        .sidenav {
+            width: auto;
+            margin: 0 auto 10px;
+
+            .onglets {
+                flex-direction: row;
+
+                a {
+                    border: none;
+                    padding: 10px 15px;
+                    background: var(--cts-main);
+                    color: var(--text);
+                    border-radius: 10px;
+
+                    &:hover,
+                    &.active {
+                        background: var(--cts-alt);
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media screen and (max-width: 950px) {
+    .entreprise {
+        flex-direction: column;
     }
 }
 

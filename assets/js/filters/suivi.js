@@ -274,9 +274,31 @@ export function initSuiviFilters(form, currentRoute) {
 
             // Clear year only for encours page; on suivis the year filter is a primary view context.
             if (currentRoute === 'app_encours_bancaires') {
-                document.querySelectorAll('.annees-filter a.active').forEach((el) => el.classList.remove('active'));
                 setYearValue(form, 'annee_debut', '');
                 setYearValue(form, 'annee_fin', '');
+
+                const clearYearControl = (selector) => {
+                    const control = form.querySelector(selector);
+                    if (!(control instanceof HTMLElement)) return;
+
+                    if (control instanceof HTMLInputElement || control instanceof HTMLSelectElement) {
+                        control.value = '';
+                        return;
+                    }
+
+                    const radios = Array.from(control.querySelectorAll('input[type="radio"]'));
+                    const emptyRadio = radios.find((r) => r instanceof HTMLInputElement && (r.value ?? '') === '');
+                    if (emptyRadio instanceof HTMLInputElement) {
+                        emptyRadio.checked = true;
+                    } else {
+                        radios.forEach((r) => {
+                            if (r instanceof HTMLInputElement) r.checked = false;
+                        });
+                    }
+                };
+
+                clearYearControl('[data-encours-year-from]');
+                clearYearControl('[data-encours-year-to]');
             }
 
             if (monthInputs.length) {

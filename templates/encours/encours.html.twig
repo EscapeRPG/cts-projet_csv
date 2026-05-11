@@ -3,8 +3,6 @@
 {% block title %}Suivi encours bancaires{% endblock %}
 
 {% block body %}
-    {% include 'encours/_year-filter.html.twig' %}
-
     <div class="suivi-container">
         {% include 'encours/_filters.html.twig' %}
 
@@ -102,19 +100,19 @@
                     </tbody>
                 </table>
             </div>
+
+            <div class="filters-print-actions">
+                {% if is_granted('ROLE_ENCOURS_ADD') %}
+                    <a href="{{ path('app_encours_bancaires_add') }}" class="btn-link add">Ajouter</a>
+                {% endif %}
+
+                <a href="{{ path('app_encours_bancaires_print') }}"
+                   data-print-keep-filters="1"
+                   data-print-base-href="{{ path('app_encours_bancaires_print') }}"
+                   target="_blank"
+                   rel="noopener"
+                   class="btn-link">Imprimer</a>
+            </div>
         </div>
-    </div>
-
-    <div class="edit-print">
-        {% if is_granted('ROLE_ENCOURS_ADD') %}
-            <a href="{{ path('app_encours_bancaires_add') }}" class="btn-link add">Ajouter</a>
-        {% endif %}
-
-        <a href="{{ path('app_encours_bancaires_print') }}"
-           data-print-keep-filters="1"
-           data-print-base-href="{{ path('app_encours_bancaires_print') }}"
-           target="_blank"
-           rel="noopener"
-           class="btn-link">Imprimer</a>
     </div>
 {% endblock %}

@@ -1188,13 +1188,57 @@ final class ListsController extends AbstractController
     }
 
     /**
-     * Displays employees with one inline edit form per row.
+     * Displays structural organigram.
      */
     #[IsGranted('ROLE_ORGANIGRAM_VIEW')]
     #[Route("/organigramme", name: 'app_organigram')]
-    public function organigram(): Response
+    public function organigram(\App\Service\Organigram\OrganigramConfig $config): Response
     {
-        return $this->render('/organigram/organigram.html.twig');
+        $mapping = $config->getMapping();
+        $mtime = $config->getPdfMtime();
+        $pdfUrl = $config->hasPdf() ? $this->generateUrl('app_organigram_pdf', $mtime ? ['v' => $mtime] : []) : null;
+
+        return $this->render('organigram/organigram.html.twig', [
+            'organigramKey' => 'structurel',
+            'pdfUrl' => $pdfUrl,
+            'page' => $mapping['structurel'] ?? null,
+        ]);
+    }
+
+    /**
+     * Displays properties organigram.
+     */
+    #[IsGranted('ROLE_ORGANIGRAM_VIEW')]
+    #[Route("/organigramme-immobilier", name: 'app_organigram_immobilier')]
+    public function organigramProperty(\App\Service\Organigram\OrganigramConfig $config): Response
+    {
+        $mapping = $config->getMapping();
+        $mtime = $config->getPdfMtime();
+        $pdfUrl = $config->hasPdf() ? $this->generateUrl('app_organigram_pdf', $mtime ? ['v' => $mtime] : []) : null;
+
+        return $this->render('organigram/organigram.html.twig', [
+            'organigramKey' => 'immobilier',
+            'pdfUrl' => $pdfUrl,
+            'page' => $mapping['immobilier'] ?? null,
+        ]);
+    }
+
+    /**
+     * Displays hierarchy organigram.
+     */
+    #[IsGranted('ROLE_ORGANIGRAM_VIEW')]
+    #[Route("/organigramme-hierarchique", name: 'app_organigram_hierarchique')]
+    public function organigramHierarchy(\App\Service\Organigram\OrganigramConfig $config): Response
+    {
+        $mapping = $config->getMapping();
+        $mtime = $config->getPdfMtime();
+        $pdfUrl = $config->hasPdf() ? $this->generateUrl('app_organigram_pdf', $mtime ? ['v' => $mtime] : []) : null;
+
+        return $this->render('organigram/organigram.html.twig', [
+            'organigramKey' => 'hierarchique',
+            'pdfUrl' => $pdfUrl,
+            'page' => $mapping['hierarchique'] ?? null,
+        ]);
     }
 
     private function renderSalariesList(array $salaries, array $forms, array $paginationView): Response
@@ -1246,11 +1290,13 @@ final class ListsController extends AbstractController
 
         $type = (string) ($viewData['type'] ?? 'exploitation');
         $anneeDepuis = $viewData['anneeDepuis'] ?? null;
+        $anneeJusqua = $viewData['anneeJusqua'] ?? null;
 
         $printFilters = [
             ['label' => 'Type', 'value' => $type === 'immobilier' ? 'Immobilier' : 'Exploitations'],
             ['label' => 'Sociétés', 'value' => $societesSelected !== [] ? implode(', ', $societesSelected) : 'Toutes'],
             ['label' => 'Année depuis', 'value' => is_int($anneeDepuis) && $anneeDepuis > 0 ? (string) $anneeDepuis : 'Toutes'],
+            ['label' => 'Année jusqu\'à', 'value' => is_int($anneeJusqua) && $anneeJusqua > 0 ? (string) $anneeJusqua : 'Toutes'],
         ];
 
         $viewData['printFilters'] = $printFilters;

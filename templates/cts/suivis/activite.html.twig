@@ -3,9 +3,8 @@
 {% block title %}Suivi activité{% endblock %}
 
 {% block body %}
-    {% include 'partials/year-filter.html.twig' %}
-
     <div class="suivi-container">
+        {% include 'partials/year-filter.html.twig' %}
         {% include 'partials/filters.html.twig' %}
 
         <div class="activite-infos">
@@ -185,15 +184,22 @@
                     </tbody>
                 </table>
             </div>
-        </div>
-    </div>
 
-    <div class="filters-print-actions">
-        <a href="{{ path('app_suivi_activite_print') }}"
-           data-print-keep-filters="1"
-           data-print-base-href="{{ path('app_suivi_activite_print') }}"
-           target="_blank"
-           rel="noopener"
-           class="btn-link">Imprimer</a>
+            <div class="filters-print-actions">
+                <a href="{{ path('app_suivi_activite_print') }}"
+                   data-print-keep-filters="1"
+                   data-print-base-href="{{ path('app_suivi_activite_print') }}"
+                   target="_blank"
+                   rel="noopener"
+                   class="btn-link">Imprimer</a>
+
+                <a href="{{ path('app_suivi_activite_print_totals') }}"
+                   data-print-keep-filters="1"
+                   data-print-base-href="{{ path('app_suivi_activite_print_totals') }}"
+                   target="_blank"
+                   rel="noopener"
+                   class="btn-link">Imprimer totaux</a>
+            </div>
+        </div>
     </div>
 {% endblock %}
