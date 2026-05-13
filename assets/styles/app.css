@@ -411,17 +411,22 @@ main {
     overflow: auto;
 }
 
+.increased,
 .decreased,
-.increased {
+.partially {
     font-weight: bold;
+}
+
+.increased {
+    color: #12ba12;
 }
 
 .decreased {
     color: red;
 }
 
-.increased {
-    color: #12ba12;
+.partially {
+    color: orange;
 }
 
 .btn-link {

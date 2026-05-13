@@ -1,5 +1,17 @@
 {% extends 'base.html.twig' %}
 
+{% macro accessClass(canView, canEdit, canAdd) %}
+    {% if not canView %}
+        decreased
+    {% elseif (not canEdit) or (not canAdd) %}
+        partially
+    {% else %}
+        increased
+    {% endif %}
+{% endmacro %}
+
+{% import _self as ui %}
+
 {% block title %}Liste des utilisateurs{% endblock %}
 
 {% block body %}
@@ -11,93 +23,117 @@
                     <th rowspan="2">Nom<br>d'utilisateur</th>
                     <th rowspan="2">Email</th>
                     <th rowspan="2">Rôle</th>
-                    <th colspan="3">Organigrammes</th>
-                    <th colspan="3">Encours bancaires</th>
+                    <th colspan="4">Organigrammes</th>
+                    <th rowspan="2">Encours</th>
                     <th class="td-centres-selectlike" rowspan="2">Rattachement</th>
-                    <th colspan="3">Sociétés</th>
-                    <th colspan="3">Centres</th>
-                    <th colspan="3">Voitures</th>
-                    <th colspan="3">Salariés</th>
+                    <th rowspan="2">Sociétés</th>
+                    <th rowspan="2">Centres</th>
+                    <th rowspan="2">Voitures</th>
+                    <th rowspan="2">Salariés</th>
                     <th rowspan="2">Actions</th>
                     <th rowspan="2">Supprimer</th>
                 </tr>
 
                 <tr>
-                    <th>Voir</th>
-                    <th>Éditer</th>
-                    <th>Ajouter</th>
-                    <th>Voir</th>
-                    <th>Éditer</th>
-                    <th>Ajouter</th>
-                    <th>Voir</th>
-                    <th>Éditer</th>
-                    <th>Ajouter</th>
-                    <th>Voir</th>
-                    <th>Éditer</th>
-                    <th>Ajouter</th>
-                    <th>Voir</th>
-                    <th>Éditer</th>
-                    <th>Ajouter</th>
-                    <th>Voir</th>
-                    <th>Éditer</th>
-                    <th>Ajouter</th>
+                    <th>Modifier</th>
+                    <th>Structurel</th>
+                    <th>Immobilier</th>
+                    <th>Hiérarchique</th>
                 </tr>
                 </thead>
 
                 <tbody>
                 {% for userList in users %}
-                    {% set canViewOrganigrams = ('ROLE_ADMIN' in userList.roles) or ('ROLE_ORGANIGRAM_VIEW' in userList.roles) %}
-                    {% set canEditOrganigrams = ('ROLE_ADMIN' in userList.roles) or ('ROLE_ORGANIGRAM_EDIT' in userList.roles) %}
-                    {% set canAddOrganigrams = ('ROLE_ADMIN' in userList.roles) or ('ROLE_ORGANIGRAM_ADD' in userList.roles) %}
-                    {% set canViewEncours = ('ROLE_ADMIN' in userList.roles) or ('ROLE_ENCOURS_VIEW' in userList.roles) %}
-                    {% set canEditEncours = ('ROLE_ADMIN' in userList.roles) or ('ROLE_ENCOURS_EDIT' in userList.roles) %}
-                    {% set canAddEncours = ('ROLE_ADMIN' in userList.roles) or ('ROLE_ENCOURS_ADD' in userList.roles) %}
-                    {% set canViewSocietes = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_SOCIETES_VIEW' in userList.roles) %}
-                    {% set canEditSocietes = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_SOCIETES_EDIT' in userList.roles) %}
-                    {% set canAddSocietes = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_SOCIETES_ADD' in userList.roles) %}
-                    {% set canViewCentres = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_CENTRES_VIEW' in userList.roles) %}
-                    {% set canEditCentres = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_CENTRES_EDIT' in userList.roles) %}
-                    {% set canAddCentres = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_CENTRES_ADD' in userList.roles) %}
-                    {% set canViewVoitures = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_VOITURES_VIEW' in userList.roles) %}
-                    {% set canEditVoitures = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_VOITURES_EDIT' in userList.roles) %}
-                    {% set canAddVoitures = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_VOITURES_ADD' in userList.roles) %}
-                    {% set canViewSalaries = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_SALARIES_VIEW' in userList.roles) %}
-                    {% set canEditSalaries = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_SALARIES_EDIT' in userList.roles) %}
-                    {% set canAddSalaries = ('ROLE_ADMIN' in userList.roles) or ('ROLE_LIST_SALARIES_ADD' in userList.roles) %}
+                    {% set roles = userList.roles %}
+                    {% set isAdmin = 'ROLE_ADMIN' in roles %}
+
+                    {# Organigrammes: "Editer" implique "Ajouter" (donc un seul indicateur). #}
+                    {% set canEditOrganigrams = isAdmin or ('ROLE_ORGANIGRAM_EDIT' in roles) %}
+
+                    {% set canViewOrganigrammeStructurel = isAdmin or ('ROLE_ORGANIGRAM_STRUCT_VIEW' in roles) %}
+                    {% set canViewOrganigrammeImmobilier = isAdmin or ('ROLE_ORGANIGRAM_IMMO_VIEW' in roles) %}
+                    {% set canViewOrganigrammeHierarchique = isAdmin or ('ROLE_ORGANIGRAM_HIERARCHY_VIEW' in roles) %}
+
+                    {# Pour les colonnes "Structurel/Immobilier/Hierarchique" on affiche la lecture par onglet. #}
+                    {% set organigrammeStructurel = canViewOrganigrammeStructurel %}
+                    {% set organigrammeImmobilier = canViewOrganigrammeImmobilier %}
+                    {% set organigrammeHierarchique = canViewOrganigrammeHierarchique %}
+
+                    {% set canViewEncours = isAdmin or ('ROLE_ENCOURS_VIEW' in roles) %}
+                    {% set canEditEncours = isAdmin or ('ROLE_ENCOURS_EDIT' in roles) %}
+                    {% set canAddEncours = isAdmin or ('ROLE_ENCOURS_ADD' in roles) %}
+                    {% set encoursClass = ui.accessClass(canViewEncours, canEditEncours, canAddEncours)|trim %}
+
+                    {% set canViewSocietes = isAdmin or ('ROLE_LIST_SOCIETES_VIEW' in roles) %}
+                    {% set canEditSocietes = isAdmin or ('ROLE_LIST_SOCIETES_EDIT' in roles) %}
+                    {% set canAddSocietes = isAdmin or ('ROLE_LIST_SOCIETES_ADD' in roles) %}
+                    {% set societesClass = ui.accessClass(canViewSocietes, canEditSocietes, canAddSocietes)|trim %}
+
+                    {% set canViewCentres = isAdmin or ('ROLE_LIST_CENTRES_VIEW' in roles) %}
+                    {% set canEditCentres = isAdmin or ('ROLE_LIST_CENTRES_EDIT' in roles) %}
+                    {% set canAddCentres = isAdmin or ('ROLE_LIST_CENTRES_ADD' in roles) %}
+                    {% set centresClass = ui.accessClass(canViewCentres, canEditCentres, canAddCentres)|trim %}
+
+                    {% set canViewVoitures = isAdmin or ('ROLE_LIST_VOITURES_VIEW' in roles) %}
+                    {% set canEditVoitures = isAdmin or ('ROLE_LIST_VOITURES_EDIT' in roles) %}
+                    {% set canAddVoitures = isAdmin or ('ROLE_LIST_VOITURES_ADD' in roles) %}
+                    {% set voituresClass = ui.accessClass(canViewVoitures, canEditVoitures, canAddVoitures)|trim %}
+
+                    {% set canViewSalaries = isAdmin or ('ROLE_LIST_SALARIES_VIEW' in roles) %}
+                    {% set canEditSalaries = isAdmin or ('ROLE_LIST_SALARIES_EDIT' in roles) %}
+                    {% set canAddSalaries = isAdmin or ('ROLE_LIST_SALARIES_ADD' in roles) %}
+                    {% set salariesClass = ui.accessClass(canViewSalaries, canEditSalaries, canAddSalaries)|trim %}
 
                     <tr>
                         <td>{{ userList.username }}</td>
                         <td>{{ userList.email }}</td>
                         <td>
-                            {% if ('ROLE_ADMIN' in userList.roles) %}
+                            {% if isAdmin %}
                                 Administrateur
                             {% else %}
                                 {% set labels = [] %}
-                                {% if 'ROLE_CTS' in userList.roles %}{% set labels = labels|merge(['CTS']) %}{% endif %}
-                                {% if 'ROLE_ASTIKOTO' in userList.roles %}{% set labels = labels|merge(['Astikoto']) %}{% endif %}
+                                {% if 'ROLE_CTS' in roles %}{% set labels = labels|merge(['CTS']) %}{% endif %}
+                                {% if 'ROLE_ASTIKOTO' in roles %}{% set labels = labels|merge(['Astikoto']) %}{% endif %}
                                 {{ labels is empty ? 'Utilisateur' : labels|join(' + ') }}
                             {% endif %}
-                        </td>
-                        <td class="{{ canViewOrganigrams ? 'increased' : 'decreased' }} centered">
-                            {{ canViewOrganigrams ? '✓' : '✕' }}
                         </td>
                         <td class="{{ canEditOrganigrams ? 'increased' : 'decreased' }} centered">
                             {{ canEditOrganigrams ? '✓' : '✕' }}
                         </td>
-                        <td class="{{ canAddOrganigrams ? 'increased' : 'decreased' }} centered">
-                            {{ canAddOrganigrams ? '✓' : '✕' }}
+                        <td class="{{ organigrammeStructurel ? 'increased' : 'decreased' }} centered">
+                            {{ organigrammeStructurel ? '✓' : '✕' }}
                         </td>
-                        <td class="{{ canViewEncours ? 'increased' : 'decreased' }} centered">
-                            {{ canViewEncours ? '✓' : '✕' }}
+                        <td class="{{ organigrammeImmobilier ? 'increased' : 'decreased' }} centered">
+                            {{ organigrammeImmobilier ? '✓' : '✕' }}
                         </td>
-                        <td class="{{ canEditEncours ? 'increased' : 'decreased' }} centered">
-                            {{ canEditEncours ? '✓' : '✕' }}
+                        <td class="{{ organigrammeHierarchique ? 'increased' : 'decreased' }} centered">
+                            {{ organigrammeHierarchique ? '✓' : '✕' }}
                         </td>
-                        <td class="{{ canAddEncours ? 'increased' : 'decreased' }} centered">
-                            {{ canAddEncours ? '✓' : '✕' }}
+                        <td class="{{ encoursClass }} centered hoverable">
+                            &#11044
+                            <div class="user-overlay">
+                                <div class="user-overlay-row">
+                                    Voir :
+                                    <span class="{{ canViewEncours ? 'increased' : 'decreased' }}">
+                                        {{ canViewEncours ? '✓' : '✕' }}
+                                    </span>
+                                </div>
+                                <div class="user-overlay-row">
+                                    Modifier :
+                                    <span class="{{ canEditEncours ? 'increased' : 'decreased' }}">
+                                        {{ canEditEncours ? '✓' : '✕' }}
+                                    </span>
+                                </div>
+                                <div class="user-overlay-row">
+                                    Ajouter :
+                                    <span class="{{ canAddEncours ? 'increased' : 'decreased' }}">
+                                        {{ canAddEncours ? '✓' : '✕' }}
+                                    </span>
+                                </div>
+                            </div>
                         </td>
                         <td class="td-centres-selectlike">
-                            {% if 'ROLE_ADMIN' in userList.roles %}
+                            {% if isAdmin %}
                                 Toutes
                             {% else %}
                                 {# Build an optgroup-friendly structure: company -> list of centres. #}
@@ -134,41 +170,97 @@
                                 </div>
                             {% endif %}
                         </td>
-                        <td class="{{ canViewSocietes ? 'increased' : 'decreased' }} centered">
-                            {{ canViewSocietes ? '✓' : '✕' }}
+                        <td class="{{ societesClass }} centered hoverable">
+                            &#11044
+                            <div class="user-overlay">
+                                <div class="user-overlay-row">
+                                    Voir :
+                                    <span class="{{ canViewSocietes ? 'increased' : 'decreased' }}">
+                                        {{ canViewSocietes ? '✓' : '✕' }}
+                                    </span>
+                                </div>
+                                <div class="user-overlay-row">
+                                    Modifier :
+                                    <span class="{{ canEditSocietes ? 'increased' : 'decreased' }}">
+                                        {{ canEditSocietes ? '✓' : '✕' }}
+                                    </span>
+                                </div>
+                                <div class="user-overlay-row">
+                                    Ajouter :
+                                    <span class="{{ canAddSocietes ? 'increased' : 'decreased' }}">
+                                        {{ canAddSocietes ? '✓' : '✕' }}
+                                    </span>
+                                </div>
+                            </div>
                         </td>
-                        <td class="{{ canEditSocietes ? 'increased' : 'decreased' }} centered">
-                            {{ canEditSocietes ? '✓' : '✕' }}
+                        <td class="{{ centresClass }} centered hoverable">
+                            &#11044
+                            <div class="user-overlay">
+                                <div class="user-overlay-row">
+                                    Voir :
+                                    <span class="{{ canViewCentres ? 'increased' : 'decreased' }}">
+                                        {{ canViewCentres ? '✓' : '✕' }}
+                                    </span>
+                                </div>
+                                <div class="user-overlay-row">
+                                    Modifier :
+                                    <span class="{{ canEditCentres ? 'increased' : 'decreased' }}">
+                                        {{ canEditCentres ? '✓' : '✕' }}
+                                    </span>
+                                </div>
+                                <div class="user-overlay-row">
+                                    Ajouter :
+                                    <span class="{{ canAddCentres ? 'increased' : 'decreased' }}">
+                                        {{ canAddCentres ? '✓' : '✕' }}
+                                    </span>
+                                </div>
+                            </div>
                         </td>
-                        <td class="{{ canAddSocietes ? 'increased' : 'decreased' }} centered">
-                            {{ canAddSocietes ? '✓' : '✕' }}
+                        <td class="{{ voituresClass }} centered hoverable">
+                            &#11044
+                            <div class="user-overlay">
+                                <div class="user-overlay-row">
+                                    Voir :
+                                    <span class="{{ canViewVoitures ? 'increased' : 'decreased' }}">
+                                        {{ canViewVoitures ? '✓' : '✕' }}
+                                    </span>
+                                </div>
+                                <div class="user-overlay-row">
+                                    Modifier :
+                                    <span class="{{ canEditVoitures ? 'increased' : 'decreased' }}">
+                                        {{ canEditVoitures ? '✓' : '✕' }}
+                                    </span>
+                                </div>
+                                <div class="user-overlay-row">
+                                    Ajouter :
+                                    <span class="{{ canAddVoitures ? 'increased' : 'decreased' }}">
+                                        {{ canAddVoitures ? '✓' : '✕' }}
+                                    </span>
+                                </div>
+                            </div>
                         </td>
-                        <td class="{{ canViewCentres ? 'increased' : 'decreased' }} centered">
-                            {{ canViewCentres ? '✓' : '✕' }}
-                        </td>
-                        <td class="{{ canEditCentres ? 'increased' : 'decreased' }} centered">
-                            {{ canEditCentres ? '✓' : '✕' }}
-                        </td>
-                        <td class="{{ canAddCentres ? 'increased' : 'decreased' }} centered">
-                            {{ canAddCentres ? '✓' : '✕' }}
-                        </td>
-                        <td class="{{ canViewVoitures ? 'increased' : 'decreased' }} centered">
-                            {{ canViewVoitures ? '✓' : '✕' }}
-                        </td>
-                        <td class="{{ canEditVoitures ? 'increased' : 'decreased' }} centered">
-                            {{ canEditVoitures ? '✓' : '✕' }}
-                        </td>
-                        <td class="{{ canAddVoitures ? 'increased' : 'decreased' }} centered">
-                            {{ canAddVoitures ? '✓' : '✕' }}
-                        </td>
-                        <td class="{{ canViewSalaries ? 'increased' : 'decreased' }} centered">
-                            {{ canViewSalaries ? '✓' : '✕' }}
-                        </td>
-                        <td class="{{ canEditSalaries ? 'increased' : 'decreased' }} centered">
-                            {{ canEditSalaries ? '✓' : '✕' }}
-                        </td>
-                        <td class="{{ canAddSalaries ? 'increased' : 'decreased' }} centered">
-                            {{ canAddSalaries ? '✓' : '✕' }}
+                        <td class="{{ salariesClass }} centered hoverable">
+                            &#11044
+                            <div class="user-overlay">
+                                <div class="user-overlay-row">
+                                    Voir :
+                                    <span class="{{ canViewSalaries ? 'increased' : 'decreased' }}">
+                                        {{ canViewSalaries ? '✓' : '✕' }}
+                                    </span>
+                                </div>
+                                <div class="user-overlay-row">
+                                    Modifier :
+                                    <span class="{{ canEditSalaries ? 'increased' : 'decreased' }}">
+                                        {{ canEditSalaries ? '✓' : '✕' }}
+                                    </span>
+                                </div>
+                                <div class="user-overlay-row">
+                                    Ajouter :
+                                    <span class="{{ canAddSalaries ? 'increased' : 'decreased' }}">
+                                        {{ canAddSalaries ? '✓' : '✕' }}
+                                    </span>
+                                </div>
+                            </div>
                         </td>
                         <td class="table-action">
                             <a class="btn-link"

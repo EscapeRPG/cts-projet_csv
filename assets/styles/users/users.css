@@ -2,24 +2,6 @@
     width: 80%;
 }
 
-.degrade {
-    background: red;
-    width: 200px;
-
-    &:hover {
-        background: darkred;
-    }
-}
-
-.promote {
-    background: limegreen;
-    width: 200px;
-
-    &:hover {
-        background: darkgreen;
-    }
-}
-
 .delete {
     border: 2px solid red;
     border-radius: 100%;
@@ -81,4 +63,36 @@ table.users-list {
     thead tr:first-child {
         box-shadow: none;
     }
+
+    td.hoverable {
+        position: relative;
+    }
+}
+
+.user-overlay {
+    display: none;
+    width: max-content;
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    box-shadow: var(--box-shadow);
+    padding: 10px;
+
+    .user-overlay-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
+        flex: 1;
+    }
+}
+
+.user-overlay.is-open {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 6px;
+    pointer-events: none;
 }

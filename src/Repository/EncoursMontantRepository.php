@@ -16,13 +16,40 @@ class EncoursMontantRepository extends ServiceEntityRepository
         parent::__construct($registry, EncoursMontant::class);
     }
 
-    public function getYears(): array
+    public function getYears(?string $type = null, ?array $societeScopeIds = null): array
     {
-        return $this->createQueryBuilder('e')
-            ->select('DISTINCT e.annee')
-            ->orderBy('e.annee', 'ASC')
-            ->getQuery()
-            ->getSingleColumnResult();
+        $qb = $this->createQueryBuilder('e')
+            ->select('DISTINCT e.annee AS annee');
+
+        $qb->innerJoin('e.encours', 'b');
+
+        if ($type !== null) {
+            $qb->andWhere('b.type = :type')
+                ->setParameter('type', $type);
+        }
+
+        if (is_array($societeScopeIds)) {
+            if ($societeScopeIds === []) {
+                $qb->andWhere('1 = 0');
+            } else {
+                $qb->innerJoin('b.societe', 's')
+                    ->andWhere('s.id IN (:societeScopeIds)')
+                    ->setParameter('societeScopeIds', $societeScopeIds);
+            }
+        }
+
+        $qb->orderBy('e.annee', 'ASC');
+
+        /** @var array<int, array{annee: int|string|null}> $rows */
+        $rows = $qb->getQuery()->getScalarResult();
+
+        return array_values(array_filter(array_map(static function (array $row): ?int {
+            $v = $row['annee'] ?? null;
+            if ($v === null) return null;
+            if (is_int($v)) return $v;
+            $s = trim((string) $v);
+            return ctype_digit($s) ? (int) $s : null;
+        }, $rows)));
     }
 
     //    /**

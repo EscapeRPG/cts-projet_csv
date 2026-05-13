@@ -64,6 +64,24 @@
             </div>
         </div>
 
+        <div class="form-row indent">
+            {{ form_label(form.organigrammeStructurel) }}
+            {{ form_errors(form.organigrammeStructurel) }}
+            {{ form_widget(form.organigrammeStructurel) }}
+        </div>
+
+        <div class="form-row indent">
+            {{ form_label(form.organigrammeImmobilier) }}
+            {{ form_errors(form.organigrammeImmobilier) }}
+            {{ form_widget(form.organigrammeImmobilier) }}
+        </div>
+
+        <div class="form-row indent">
+            {{ form_label(form.organigrammeHierarchique) }}
+            {{ form_errors(form.organigrammeHierarchique) }}
+            {{ form_widget(form.organigrammeHierarchique) }}
+        </div>
+
         <div class="form-row">
             {{ form_label(form.encours) }}
             {{ form_errors(form.encours) }}

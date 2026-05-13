@@ -51,6 +51,9 @@ class Societe
     #[ORM\OneToMany(targetEntity: EncoursBancaire::class, mappedBy: 'societe')]
     private Collection $encoursBancaires;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $orderViewEncours = null;
+
     public function __construct()
     {
         $this->centre = new ArrayCollection();
@@ -229,6 +232,17 @@ class Societe
             }
         }
 
+        return $this;
+    }
+
+    public function getOrderViewEncours(): ?int
+    {
+        return $this->orderViewEncours;
+    }
+
+    public function setOrderViewEncours(?int $orderViewEncours): static
+    {
+        $this->orderViewEncours = $orderViewEncours;
         return $this;
     }
 }

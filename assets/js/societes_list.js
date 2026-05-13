@@ -1,14 +1,4 @@
-import { sortTableByColumn, enableSubmitOnChange, adjustColumnWidths } from "sort_tables";
-
-/**
- * Applies dynamic column width adjustments.
- *
- * @param {HTMLTableElement} table
- * @returns {void}
- */
-function initTable(table) {
-    adjustColumnWidths(table);
-}
+import { sortTableByColumn, enableSubmitOnChange } from "sort_tables";
 
 /**
  * Initializes sortable columns and inline submit behavior for companies table.
@@ -35,7 +25,6 @@ export function initSocietesList(root = document) {
         }
     });
 
-    initTable(table);
     enableSubmitOnChange(table);
 }
 

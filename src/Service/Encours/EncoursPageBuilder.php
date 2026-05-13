@@ -60,7 +60,7 @@ final readonly class EncoursPageBuilder
 
         $encoursAll = $this->encoursBancaireRepository->getResults(null, $type, $societeScopeIds);
 
-        $annees = $this->encoursMontantRepository->getYears();
+        $annees = $this->encoursMontantRepository->getYears($type, $societeScopeIds);
         $annees = array_values(array_map(static fn($v): int => (int)$v, $annees));
         sort($annees);
 
@@ -157,15 +157,31 @@ final readonly class EncoursPageBuilder
     {
         $societes = [];
         foreach ($encoursAll as $ligne) {
+            if (!$ligne) {
+                continue;
+            }
             $societe = $ligne->getSociete();
             $id = $societe?->getId();
             $nom = $societe?->getNom();
             if ($id !== null && $nom !== null && $nom !== '') {
-                $societes[$id] = $nom;
+                $societes[$id] = [
+                    'nom' => $nom,
+                    'order' => $societe?->getOrderViewEncours(),
+                ];
             }
         }
 
-        asort($societes, SORT_NATURAL | SORT_FLAG_CASE);
-        return $societes;
+        uasort($societes, static function (array $a, array $b): int {
+            $oa = is_numeric($a['order'] ?? null) ? (int) $a['order'] : PHP_INT_MAX;
+            $ob = is_numeric($b['order'] ?? null) ? (int) $b['order'] : PHP_INT_MAX;
+            if ($oa !== $ob) return $oa <=> $ob;
+            return strnatcasecmp((string) ($a['nom'] ?? ''), (string) ($b['nom'] ?? ''));
+        });
+
+        $out = [];
+        foreach ($societes as $id => $row) {
+            $out[(int) $id] = (string) ($row['nom'] ?? '');
+        }
+        return $out;
     }
 }

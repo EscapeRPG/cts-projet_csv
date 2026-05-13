@@ -14,6 +14,14 @@
                     <legend>Listes</legend>
 
                     {% if is_granted('ROLE_ORGANIGRAM_VIEW') %}
+                        {% if is_granted('ROLE_ORGANIGRAM_STRUCT_VIEW') %}
+                            {% set organigramme = 'app_organigram' %}
+                        {% elseif is_granted('ROLE_OGRANIGRAM_IMMO_VIEW') %}
+                            {% set organigramme = 'app_organigram_immobilier' %}
+                        {% else %}
+                            {% set organigramme = 'app_organigram_hierarchique' %}
+                        {% endif %}
+
                         <a href="{{ path('app_organigram') }}" class="app">
                             <img src="{{ asset('img/organigrammes.png') }}" alt="organigrammes structurels">
                             <div class="inner-div">Organigrammes</div>

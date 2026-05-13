@@ -12,6 +12,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,6 +29,22 @@ use Symfony\Component\Uid\Uuid;
  */
 final class AdminController extends AbstractController
 {
+    private const array ROLE_ENTREPRISES = ['ROLE_CTS', 'ROLE_ASTIKOTO'];
+    private const array ROLE_SOCIETE = ['ROLE_LIST_SOCIETES_VIEW', 'ROLE_LIST_SOCIETES_EDIT', 'ROLE_LIST_SOCIETES_ADD'];
+    private const array ROLE_CENTRE = ['ROLE_LIST_CENTRES_VIEW', 'ROLE_LIST_CENTRES_EDIT', 'ROLE_LIST_CENTRES_ADD'];
+    private const array ROLE_VOITURE = ['ROLE_LIST_VOITURES_VIEW', 'ROLE_LIST_VOITURES_EDIT', 'ROLE_LIST_VOITURES_ADD'];
+    private const array ROLE_SALARIES = ['ROLE_LIST_SALARIES_VIEW', 'ROLE_LIST_SALARIES_EDIT', 'ROLE_LIST_SALARIES_ADD'];
+    private const array ROLE_ORGANIGRAM_BASE = ['ROLE_ORGANIGRAM_VIEW', 'ROLE_ORGANIGRAM_EDIT', 'ROLE_ORGANIGRAM_ADD'];
+    private const array ROLE_ORGANIGRAM_SCOPES = ['ROLE_ORGANIGRAM_STRUCT_VIEW', 'ROLE_ORGANIGRAM_IMMO_VIEW', 'ROLE_ORGANIGRAM_HIERARCHY_VIEW'];
+    private const array ROLE_ENCOURS = ['ROLE_ENCOURS_VIEW', 'ROLE_ENCOURS_EDIT', 'ROLE_ENCOURS_ADD'];
+
+    private const array ADD_TO_VIEW = [
+        'ROLE_LIST_SOCIETES_ADD' => 'ROLE_LIST_SOCIETES_VIEW',
+        'ROLE_LIST_CENTRES_ADD' => 'ROLE_LIST_CENTRES_VIEW',
+        'ROLE_LIST_VOITURES_ADD' => 'ROLE_LIST_VOITURES_VIEW',
+        'ROLE_LIST_SALARIES_ADD' => 'ROLE_LIST_SALARIES_VIEW',
+    ];
+
     /**
      * @param string $mailerFromAddress Sender email address used for administrative notifications.
      * @param string $mailerFromName Sender display name used for administrative notifications.
@@ -91,59 +108,19 @@ final class AdminController extends AbstractController
             $user->setIsActive(false);
             $user->setPassword('!');
 
-            $isAdmin = (bool) $form->get('isAdmin')->getData();
-            /** @var array<int, string> $entreprises */
-            $entreprises = $form->get('entreprises')->getData() ?? [];
-            /** @var array<int, string> $societePerms */
-            $societePerms = $form->get('societe')->getData() ?? [];
-            /** @var array<int, string> $centrePerms */
-            $centrePerms = $form->get('centre')->getData() ?? [];
-            /** @var array<int, string> $voiturePerms */
-            $voiturePerms = $form->get('voiture')->getData() ?? [];
-            /** @var array<int, string> $salariesPerms */
-            $salariesPerms = $form->get('salaries')->getData() ?? [];
+            $result = $this->computeRolesFromForm($form);
+            if ($result['error'] instanceof FormError) {
+                // Attach the error to the right place for better UX.
+                $target = $result['error_field'] ? $form->get($result['error_field']) : $form;
+                $target->addError($result['error']);
 
-            $roles = [];
-            if ($isAdmin) {
-                $roles[] = 'ROLE_ADMIN';
-            } else {
-                $listPerms = array_merge($societePerms, $centrePerms, $voiturePerms, $salariesPerms);
-                $roles = array_merge($roles, $entreprises, $listPerms);
-
-                // If add permission is granted, ensure the corresponding view permission is also present.
-                $addToView = [
-                    'ROLE_LIST_SOCIETES_ADD' => 'ROLE_LIST_SOCIETES_VIEW',
-                    'ROLE_LIST_CENTRES_ADD' => 'ROLE_LIST_CENTRES_VIEW',
-                    'ROLE_LIST_VOITURES_ADD' => 'ROLE_LIST_VOITURES_VIEW',
-                    'ROLE_LIST_SALARIES_ADD' => 'ROLE_LIST_SALARIES_VIEW',
-                ];
-                foreach ($roles as $role) {
-                    $addRole = (string) $role;
-                    $viewRole = $addToView[$addRole] ?? null;
-                    if (is_string($viewRole)) {
-                        $roles[] = $viewRole;
-                    }
-                }
-
-                $roles = array_values(array_unique(array_filter($roles, static fn (string $r): bool => $r !== 'ROLE_USER')));
-
-                if ($entreprises === []) {
-                    $form->get('entreprises')->addError(new FormError('Veuillez sélectionner au moins une entreprise (CTS et/ou Astikoto).'));
-
-                    return $this->render('users/add.html.twig', [
-                        'form' => $form->createView(),
-                    ]);
-                }
-
-                if ($listPerms === []) {
-                    $form->addError(new FormError('Veuillez sélectionner au moins un accès (lister et/ou ajouter) sur une ou plusieurs listes.'));
-
-                    return $this->render('users/add.html.twig', [
-                        'form' => $form->createView(),
-                    ]);
-                }
+                return $this->render('users/add.html.twig', [
+                    'form' => $form->createView(),
+                ]);
             }
 
+            /** @var array<int, string> $roles */
+            $roles = $result['roles'];
             $user->setRoles($roles);
 
             try {
@@ -220,79 +197,24 @@ final class AdminController extends AbstractController
             'centre_repository' => $centreRepository,
         ]);
 
-        // Pre-fill unmapped fields based on the current persisted roles.
-        $currentRoles = $user->getRoles();
-        $form->get('isAdmin')->setData(in_array('ROLE_ADMIN', $currentRoles, true));
-        $form->get('entreprises')->setData(array_values(array_intersect($currentRoles, ['ROLE_CTS', 'ROLE_ASTIKOTO'])));
-        $form->get('societe')->setData(array_values(array_intersect($currentRoles, ['ROLE_LIST_SOCIETES_VIEW', 'ROLE_LIST_SOCIETES_EDIT', 'ROLE_LIST_SOCIETES_ADD'])));
-        $form->get('centre')->setData(array_values(array_intersect($currentRoles, ['ROLE_LIST_CENTRES_VIEW', 'ROLE_LIST_CENTRES_EDIT', 'ROLE_LIST_CENTRES_ADD'])));
-        $form->get('voiture')->setData(array_values(array_intersect($currentRoles, ['ROLE_LIST_VOITURES_VIEW', 'ROLE_LIST_VOITURES_EDIT', 'ROLE_LIST_VOITURES_ADD'])));
-        $form->get('salaries')->setData(array_values(array_intersect($currentRoles, ['ROLE_LIST_SALARIES_VIEW', 'ROLE_LIST_SALARIES_EDIT', 'ROLE_LIST_SALARIES_ADD'])));
-        $form->get('organigrammes')->setData(array_values(array_intersect($currentRoles, ['ROLE_ORGANIGRAM_VIEW', 'ROLE_ORGANIGRAM_EDIT', 'ROLE_ORGANIGRAM_ADD'])));
-        $form->get('encours')->setData(array_values(array_intersect($currentRoles, ['ROLE_ENCOURS_VIEW', 'ROLE_ENCOURS_EDIT', 'ROLE_ENCOURS_ADD'])));
+        $this->prefillUserForm($form, $user);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $isAdmin = (bool) $form->get('isAdmin')->getData();
-            /** @var array<int, string> $entreprises */
-            $entreprises = $form->get('entreprises')->getData() ?? [];
-            /** @var array<int, string> $societePerms */
-            $societePerms = $form->get('societe')->getData() ?? [];
-            /** @var array<int, string> $centrePerms */
-            $centrePerms = $form->get('centre')->getData() ?? [];
-            /** @var array<int, string> $voiturePerms */
-            $voiturePerms = $form->get('voiture')->getData() ?? [];
-            /** @var array<int, string> $salariesPerms */
-            $salariesPerms = $form->get('salaries')->getData() ?? [];
-            /** @var array<int, string> $organigrammesPerms */
-            $organigrammesPerms = $form->get('organigrammes')->getData() ?? [];
-            /** @var array<int, string> $encoursPerms */
-            $encoursPerms = $form->get('encours')->getData() ?? [];
+            $result = $this->computeRolesFromForm($form);
+            if ($result['error'] instanceof FormError) {
+                $target = $result['error_field'] ? $form->get($result['error_field']) : $form;
+                $target->addError($result['error']);
 
-            $roles = [];
-            if ($isAdmin) {
-                $roles[] = 'ROLE_ADMIN';
-            } else {
-                $listPerms = array_merge($societePerms, $centrePerms, $voiturePerms, $salariesPerms, $organigrammesPerms, $encoursPerms);
-                $roles = array_merge($roles, $entreprises, $listPerms);
-
-                // If add permission is granted, ensure the corresponding view permission is also present.
-                $addToView = [
-                    'ROLE_LIST_SOCIETES_ADD' => 'ROLE_LIST_SOCIETES_VIEW',
-                    'ROLE_LIST_CENTRES_ADD' => 'ROLE_LIST_CENTRES_VIEW',
-                    'ROLE_LIST_VOITURES_ADD' => 'ROLE_LIST_VOITURES_VIEW',
-                    'ROLE_LIST_SALARIES_ADD' => 'ROLE_LIST_SALARIES_VIEW',
-                ];
-                foreach ($roles as $role) {
-                    $addRole = (string) $role;
-                    $viewRole = $addToView[$addRole] ?? null;
-                    if (is_string($viewRole)) {
-                        $roles[] = $viewRole;
-                    }
-                }
-
-                $roles = array_values(array_unique(array_filter($roles, static fn (string $r): bool => $r !== 'ROLE_USER')));
-
-                if ($entreprises === []) {
-                    $form->get('entreprises')->addError(new FormError('Veuillez sélectionner au moins une entreprise (CTS et/ou Astikoto).'));
-
-                    return $this->render('users/edit.html.twig', [
-                        'form' => $form->createView(),
-                        'user' => $user,
-                    ]);
-                }
-
-                if ($listPerms === []) {
-                    $form->addError(new FormError('Veuillez sélectionner au moins un accès (lister et/ou ajouter) sur une ou plusieurs listes.'));
-
-                    return $this->render('users/edit.html.twig', [
-                        'form' => $form->createView(),
-                        'user' => $user,
-                    ]);
-                }
+                return $this->render('users/edit.html.twig', [
+                    'form' => $form->createView(),
+                    'user' => $user,
+                ]);
             }
 
+            /** @var array<int, string> $roles */
+            $roles = $result['roles'];
             $user->setRoles($roles);
 
             try {
@@ -345,5 +267,140 @@ final class AdminController extends AbstractController
         $this->addFlash('success', 'Utilisateur supprimé avec succès.');
 
         return $this->redirectToRoute('app_users_list');
+    }
+
+    private function prefillUserForm(FormInterface $form, User $user): void
+    {
+        $currentRoles = $user->getRoles();
+
+        $form->get('isAdmin')->setData(in_array('ROLE_ADMIN', $currentRoles, true));
+        $form->get('entreprises')->setData(self::intersectRoles($currentRoles, self::ROLE_ENTREPRISES));
+        $form->get('societe')->setData(self::intersectRoles($currentRoles, self::ROLE_SOCIETE));
+        $form->get('centre')->setData(self::intersectRoles($currentRoles, self::ROLE_CENTRE));
+        $form->get('voiture')->setData(self::intersectRoles($currentRoles, self::ROLE_VOITURE));
+        $form->get('salaries')->setData(self::intersectRoles($currentRoles, self::ROLE_SALARIES));
+        $form->get('organigrammes')->setData(self::intersectRoles($currentRoles, self::ROLE_ORGANIGRAM_BASE));
+        $form->get('encours')->setData(self::intersectRoles($currentRoles, self::ROLE_ENCOURS));
+
+        $hasAnyOrgScope = (bool) array_intersect($currentRoles, self::ROLE_ORGANIGRAM_SCOPES);
+        $hasOrgBase = (bool) array_intersect($currentRoles, self::ROLE_ORGANIGRAM_BASE);
+        if ($hasOrgBase && !$hasAnyOrgScope) {
+            // Backward compatibility: old users with only ROLE_ORGANIGRAM_* base perms see all organigrams by default.
+            $form->get('organigrammeStructurel')->setData(true);
+            $form->get('organigrammeImmobilier')->setData(true);
+            $form->get('organigrammeHierarchique')->setData(true);
+            return;
+        }
+
+        $form->get('organigrammeStructurel')->setData(in_array('ROLE_ORGANIGRAM_STRUCT_VIEW', $currentRoles, true));
+        $form->get('organigrammeImmobilier')->setData(in_array('ROLE_ORGANIGRAM_IMMO_VIEW', $currentRoles, true));
+        $form->get('organigrammeHierarchique')->setData(in_array('ROLE_ORGANIGRAM_HIERARCHY_VIEW', $currentRoles, true));
+    }
+
+    /**
+     * @return array{roles: array<int, string>, listPerms: array<int, string>, entreprises: array<int, string>, error: ?FormError, error_field: ?string}
+     */
+    private function computeRolesFromForm(FormInterface $form): array
+    {
+        $isAdmin = (bool) $form->get('isAdmin')->getData();
+
+        /** @var array<int, string> $entreprises */
+        $entreprises = $form->get('entreprises')->getData() ?? [];
+        /** @var array<int, string> $societePerms */
+        $societePerms = $form->get('societe')->getData() ?? [];
+        /** @var array<int, string> $centrePerms */
+        $centrePerms = $form->get('centre')->getData() ?? [];
+        /** @var array<int, string> $voiturePerms */
+        $voiturePerms = $form->get('voiture')->getData() ?? [];
+        /** @var array<int, string> $salariesPerms */
+        $salariesPerms = $form->get('salaries')->getData() ?? [];
+        /** @var array<int, string> $organigrammesPerms */
+        $organigrammesPerms = $form->get('organigrammes')->getData() ?? [];
+        /** @var array<int, string> $encoursPerms */
+        $encoursPerms = $form->get('encours')->getData() ?? [];
+
+        $orgStruct = (bool) $form->get('organigrammeStructurel')->getData();
+        $orgImmo = (bool) $form->get('organigrammeImmobilier')->getData();
+        $orgHier = (bool) $form->get('organigrammeHierarchique')->getData();
+
+        $roles = [];
+        if ($isAdmin) {
+            $roles[] = 'ROLE_ADMIN';
+            return [
+                'roles' => $roles,
+                'listPerms' => [],
+                'entreprises' => [],
+                'error' => null,
+                'error_field' => null,
+            ];
+        }
+
+        $listPerms = array_merge($societePerms, $centrePerms, $voiturePerms, $salariesPerms, $organigrammesPerms, $encoursPerms);
+        $roles = array_merge($roles, $entreprises, $listPerms);
+
+        // Organigram scopes (structurel / immobilier / hierarchique).
+        if ($organigrammesPerms !== []) {
+            $selectedAny = $orgStruct || $orgImmo || $orgHier;
+
+            // If no specific organigram is selected, consider it as "all" for convenience.
+            if (!$selectedAny) {
+                $orgStruct = true;
+                $orgImmo = true;
+                $orgHier = true;
+            }
+
+            if ($orgStruct) $roles[] = 'ROLE_ORGANIGRAM_STRUCT_VIEW';
+            if ($orgImmo) $roles[] = 'ROLE_ORGANIGRAM_IMMO_VIEW';
+            if ($orgHier) $roles[] = 'ROLE_ORGANIGRAM_HIERARCHY_VIEW';
+        }
+
+        // If add permission is granted, ensure the corresponding view permission is also present.
+        foreach ($roles as $role) {
+            $addRole = (string) $role;
+            $viewRole = self::ADD_TO_VIEW[$addRole] ?? null;
+            if (is_string($viewRole)) {
+                $roles[] = $viewRole;
+            }
+        }
+
+        $roles = array_values(array_unique(array_filter($roles, static fn (string $r): bool => $r !== 'ROLE_USER')));
+
+        if ($entreprises === []) {
+            return [
+                'roles' => [],
+                'listPerms' => $listPerms,
+                'entreprises' => $entreprises,
+                'error' => new FormError('Veuillez sélectionner au moins une entreprise (CTS et/ou Astikoto).'),
+                'error_field' => 'entreprises',
+            ];
+        }
+
+        if ($listPerms === []) {
+            return [
+                'roles' => [],
+                'listPerms' => $listPerms,
+                'entreprises' => $entreprises,
+                'error' => new FormError('Veuillez sélectionner au moins un accès (lister et/ou ajouter) sur une ou plusieurs listes.'),
+                'error_field' => null,
+            ];
+        }
+
+        return [
+            'roles' => $roles,
+            'listPerms' => $listPerms,
+            'entreprises' => $entreprises,
+            'error' => null,
+            'error_field' => null,
+        ];
+    }
+
+    /**
+     * @param array<int, string> $roles
+     * @param array<int, string> $allowed
+     * @return array<int, string>
+     */
+    private static function intersectRoles(array $roles, array $allowed): array
+    {
+        return array_values(array_intersect($roles, $allowed));
     }
 }

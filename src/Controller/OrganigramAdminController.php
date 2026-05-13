@@ -14,6 +14,61 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class OrganigramAdminController extends AbstractController
 {
+
+    /**
+     * Displays structural organigram.
+     */
+    #[IsGranted('ROLE_ORGANIGRAM_STRUCT_VIEW')]
+    #[Route("/organigramme", name: 'app_organigram')]
+    public function organigram(\App\Service\Organigram\OrganigramConfig $config): Response
+    {
+        $mapping = $config->getMapping();
+        $mtime = $config->getPdfMtime();
+        $pdfUrl = $config->hasPdf() ? $this->generateUrl('app_organigram_pdf', $mtime ? ['v' => $mtime] : []) : null;
+
+        return $this->render('organigram/organigram.html.twig', [
+            'organigramKey' => 'structurel',
+            'pdfUrl' => $pdfUrl,
+            'page' => $mapping['structurel'] ?? null,
+        ]);
+    }
+
+    /**
+     * Displays properties organigram.
+     */
+    #[IsGranted('ROLE_ORGANIGRAM_IMMO_VIEW')]
+    #[Route("/organigramme-immobilier", name: 'app_organigram_immobilier')]
+    public function organigramProperty(\App\Service\Organigram\OrganigramConfig $config): Response
+    {
+        $mapping = $config->getMapping();
+        $mtime = $config->getPdfMtime();
+        $pdfUrl = $config->hasPdf() ? $this->generateUrl('app_organigram_pdf', $mtime ? ['v' => $mtime] : []) : null;
+
+        return $this->render('organigram/organigram.html.twig', [
+            'organigramKey' => 'immobilier',
+            'pdfUrl' => $pdfUrl,
+            'page' => $mapping['immobilier'] ?? null,
+        ]);
+    }
+
+    /**
+     * Displays hierarchy organigram.
+     */
+    #[IsGranted('ROLE_ORGANIGRAM_HIERARCHY_VIEW')]
+    #[Route("/organigramme-hierarchique", name: 'app_organigram_hierarchique')]
+    public function organigramHierarchy(\App\Service\Organigram\OrganigramConfig $config): Response
+    {
+        $mapping = $config->getMapping();
+        $mtime = $config->getPdfMtime();
+        $pdfUrl = $config->hasPdf() ? $this->generateUrl('app_organigram_pdf', $mtime ? ['v' => $mtime] : []) : null;
+
+        return $this->render('organigram/organigram.html.twig', [
+            'organigramKey' => 'hierarchique',
+            'pdfUrl' => $pdfUrl,
+            'page' => $mapping['hierarchique'] ?? null,
+        ]);
+    }
+
     #[IsGranted('ROLE_ORGANIGRAM_VIEW')]
     #[Route('/organigramme/pdf', name: 'app_organigram_pdf', methods: ['GET'])]
     public function pdf(OrganigramConfig $config): Response

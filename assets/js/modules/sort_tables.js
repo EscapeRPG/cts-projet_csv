@@ -59,63 +59,6 @@ export function sortTableByColumn(table, colIndex) {
 }
 
 /**
- * Adjusts editable column widths based on the widest displayed input content.
- *
- * @param {HTMLTableElement} table
- * @returns {void}
- */
-export function adjustColumnWidths(table) {
-    if (!table) return;
-
-    /**
-     * Measures rendered text width for a specific font.
-     *
-     * @param {string} text
-     * @param {string} font
-     * @returns {number}
-     */
-    function getTextWidth(text, font) {
-        const span = document.createElement('span');
-        span.style.visibility = 'hidden';
-        span.style.position = 'absolute';
-        span.style.whiteSpace = 'pre';
-        span.style.font = font;
-        span.textContent = text;
-        document.body.appendChild(span);
-        const width = span.getBoundingClientRect().width;
-        document.body.removeChild(span);
-        return width;
-    }
-
-    const ths = table.querySelectorAll('thead th');
-    ths.forEach((th, colIndex) => {
-        let maxWidth = getTextWidth(th.textContent.trim(), getComputedStyle(th).font);
-
-        table.querySelectorAll('tbody tr').forEach((tr) => {
-            const td = tr.children[colIndex];
-            if (!td) return;
-
-            const input = td.querySelector('input, select');
-            if (!input) return;
-            if (input.matches('[data-row-change-ignore="1"]')) return;
-            if (input instanceof HTMLInputElement && input.type === 'file') return;
-
-            if (input.tagName.toLowerCase() === 'select') {
-                for (const option of input.options) {
-                    maxWidth = Math.max(maxWidth, getTextWidth(option.text, getComputedStyle(input).font) + 22);
-                }
-            } else if (input.type === 'date') {
-                maxWidth = Math.max(maxWidth, getTextWidth('0000-00-00', getComputedStyle(input).font));
-            } else {
-                maxWidth = Math.max(maxWidth, getTextWidth(input.value || input.placeholder || ' ', getComputedStyle(input).font) + 8);
-            }
-
-            input.style.width = `${maxWidth}px`;
-        });
-    });
-}
-
-/**
  * Enables row submit buttons only when row inputs differ from initial values.
  *
  * @param {HTMLTableElement} table

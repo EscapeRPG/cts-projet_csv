@@ -43,6 +43,9 @@ class EncoursBancaire
     #[ORM\OneToMany(targetEntity: EncoursMontant::class, mappedBy: 'encours', cascade: ['persist'], orphanRemoval: true)]
     private Collection $montants;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $centreOrderView = null;
+
     public function __construct()
     {
         $this->montants = new ArrayCollection();
@@ -182,6 +185,17 @@ class EncoursBancaire
             }
         }
 
+        return $this;
+    }
+
+    public function getCentreOrderView(): ?int
+    {
+        return $this->centreOrderView;
+    }
+
+    public function setCentreOrderView(?int $centreOrderView): static
+    {
+        $this->centreOrderView = $centreOrderView;
         return $this;
     }
 }

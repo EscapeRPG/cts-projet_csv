@@ -1187,60 +1187,6 @@ final class ListsController extends AbstractController
         ]);
     }
 
-    /**
-     * Displays structural organigram.
-     */
-    #[IsGranted('ROLE_ORGANIGRAM_VIEW')]
-    #[Route("/organigramme", name: 'app_organigram')]
-    public function organigram(\App\Service\Organigram\OrganigramConfig $config): Response
-    {
-        $mapping = $config->getMapping();
-        $mtime = $config->getPdfMtime();
-        $pdfUrl = $config->hasPdf() ? $this->generateUrl('app_organigram_pdf', $mtime ? ['v' => $mtime] : []) : null;
-
-        return $this->render('organigram/organigram.html.twig', [
-            'organigramKey' => 'structurel',
-            'pdfUrl' => $pdfUrl,
-            'page' => $mapping['structurel'] ?? null,
-        ]);
-    }
-
-    /**
-     * Displays properties organigram.
-     */
-    #[IsGranted('ROLE_ORGANIGRAM_VIEW')]
-    #[Route("/organigramme-immobilier", name: 'app_organigram_immobilier')]
-    public function organigramProperty(\App\Service\Organigram\OrganigramConfig $config): Response
-    {
-        $mapping = $config->getMapping();
-        $mtime = $config->getPdfMtime();
-        $pdfUrl = $config->hasPdf() ? $this->generateUrl('app_organigram_pdf', $mtime ? ['v' => $mtime] : []) : null;
-
-        return $this->render('organigram/organigram.html.twig', [
-            'organigramKey' => 'immobilier',
-            'pdfUrl' => $pdfUrl,
-            'page' => $mapping['immobilier'] ?? null,
-        ]);
-    }
-
-    /**
-     * Displays hierarchy organigram.
-     */
-    #[IsGranted('ROLE_ORGANIGRAM_VIEW')]
-    #[Route("/organigramme-hierarchique", name: 'app_organigram_hierarchique')]
-    public function organigramHierarchy(\App\Service\Organigram\OrganigramConfig $config): Response
-    {
-        $mapping = $config->getMapping();
-        $mtime = $config->getPdfMtime();
-        $pdfUrl = $config->hasPdf() ? $this->generateUrl('app_organigram_pdf', $mtime ? ['v' => $mtime] : []) : null;
-
-        return $this->render('organigram/organigram.html.twig', [
-            'organigramKey' => 'hierarchique',
-            'pdfUrl' => $pdfUrl,
-            'page' => $mapping['hierarchique'] ?? null,
-        ]);
-    }
-
     private function renderSalariesList(array $salaries, array $forms, array $paginationView): Response
     {
         return $this->render('cts/salaries/list.html.twig', [
@@ -1304,11 +1250,50 @@ final class ListsController extends AbstractController
         return $this->render('encours/print/encours.html.twig', $viewData);
     }
 
+    /**
+     * @throws Exception
+     */
+    #[IsGranted('ROLE_ENCOURS_VIEW')]
+    #[Route("/encours-bancaires/print-totals", name: 'app_encours_bancaires_print_totals')]
+    public function encoursPrintTotals(
+        Request $request,
+        EncoursPageBuilder $encoursPageBuilder
+    ): Response
+    {
+        $viewData = $encoursPageBuilder->build($request, 'exploitation', $this->getCurrentUserSocieteScopeIds());
+
+        $societesSelected = [];
+        $societeIds = $viewData['societeIds'] ?? [];
+        $societes = $viewData['societes'] ?? [];
+        if (is_array($societeIds) && is_array($societes)) {
+            foreach ($societeIds as $id) {
+                if (isset($societes[$id])) {
+                    $societesSelected[] = (string) $societes[$id];
+                }
+            }
+        }
+
+        $type = (string) ($viewData['type'] ?? 'exploitation');
+        $anneeDepuis = $viewData['anneeDepuis'] ?? null;
+        $anneeJusqua = $viewData['anneeJusqua'] ?? null;
+
+        $printFilters = [
+            ['label' => 'Type', 'value' => $type === 'immobilier' ? 'Immobilier' : 'Exploitations'],
+            ['label' => 'Sociétés', 'value' => $societesSelected !== [] ? implode(', ', $societesSelected) : 'Toutes'],
+            ['label' => 'Année depuis', 'value' => is_int($anneeDepuis) && $anneeDepuis > 0 ? (string) $anneeDepuis : 'Toutes'],
+            ['label' => 'Année jusqu\'à', 'value' => is_int($anneeJusqua) && $anneeJusqua > 0 ? (string) $anneeJusqua : 'Toutes'],
+        ];
+
+        $viewData['printFilters'] = $printFilters;
+
+        return $this->render('encours/print/encours_totals.html.twig', $viewData);
+    }
+
     #[IsGranted('ROLE_ENCOURS_ADD')]
     #[Route("/encours-bancaires/add", name: 'app_encours_bancaires_add', methods: ['GET', 'POST'])]
     public function addEncours(
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
     ): Response
     {
         $societeScopeIds = $this->getCurrentUserSocieteScopeIds();
@@ -1333,6 +1318,8 @@ final class ListsController extends AbstractController
             } elseif ($societeScopeIds !== null && !in_array($societeId, $societeScopeIds, true)) {
                 throw $this->createNotFoundException();
             } else {
+                $this->ensureEncoursCentreOrderView($encours, $em);
+
                 $em->persist($encours);
                 $em->flush();
 
@@ -1354,7 +1341,7 @@ final class ListsController extends AbstractController
     public function updateEncours(
         EncoursBancaire $encours,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
     ): Response
     {
         $societeScopeIds = $this->getCurrentUserSocieteScopeIds();
@@ -1375,6 +1362,8 @@ final class ListsController extends AbstractController
             } elseif ($societeScopeIds !== null && !in_array($societeId, $societeScopeIds, true)) {
                 throw $this->createNotFoundException();
             } else {
+                $this->ensureEncoursCentreOrderView($encours, $em);
+
                 $em->persist($encours);
                 $em->flush();
 
@@ -1390,6 +1379,58 @@ final class ListsController extends AbstractController
             'encours' => $encours,
             'form' => $form->createView(),
         ]);
+    }
+
+    private static function normalizeCentreLabel(?string $raw): string
+    {
+        $s = trim((string) ($raw ?? ''));
+        if ($s === '') return '';
+        $s = preg_replace('/\\s+/u', ' ', $s) ?? $s;
+        if (function_exists('mb_strtolower')) {
+            $s = mb_strtolower($s);
+        } else {
+            $s = strtolower($s);
+        }
+        return trim($s);
+    }
+
+    /**
+     * Assign a stable per-societe ordering key for the centre label without requiring a mapping table.
+     *
+     * Rule:
+     * - if another encours already exists with the same normalized centre for this societe, reuse its centreOrderView
+     * - else assign next max+1 for this societe (append at end)
+     */
+    private function ensureEncoursCentreOrderView(EncoursBancaire $encours, EntityManagerInterface $em): void
+    {
+        if ($encours->getCentreOrderView() !== null) {
+            return;
+        }
+
+        $societe = $encours->getSociete();
+        if (!$societe instanceof Societe) {
+            return;
+        }
+
+        $centreKey = self::normalizeCentreLabel($encours->getCentre());
+        if ($centreKey === '') {
+            return;
+        }
+
+        /** @var \App\Repository\EncoursBancaireRepository $repo */
+        $repo = $em->getRepository(EncoursBancaire::class);
+
+        $rows = $repo->getCentreOrdersForSociete($societe);
+        foreach ($rows as $row) {
+            $existingKey = self::normalizeCentreLabel($row['centre'] ?? null);
+            $existingOrder = $row['order'] ?? null;
+            if ($existingKey !== '' && $existingOrder !== null && $existingKey === $centreKey) {
+                $encours->setCentreOrderView((int) $existingOrder);
+                return;
+            }
+        }
+
+        $encours->setCentreOrderView($repo->getNextCentreOrderForSociete($societe));
     }
 
     /**

@@ -336,6 +336,13 @@ td.increased {
     top: 20px !important;
 }
 
+.encours * {
+    text-wrap: wrap;
+    min-width: 90px;
+    max-width: 200px !important;
+    text-overflow: unset !important;
+}
+
 @media print {
     /* Keep chrome from stripping some colors in the generated images/text. */
     * {

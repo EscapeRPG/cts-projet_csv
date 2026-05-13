@@ -293,6 +293,10 @@ button {
             }
         }
     }
+
+    &.indent {
+        padding-left: 50px;
+    }
 }
 
 .encours-montant-row {

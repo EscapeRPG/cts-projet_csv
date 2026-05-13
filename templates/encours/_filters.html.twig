@@ -32,7 +32,7 @@
                             <input type="radio"
                                    name="encours_year_from_ui"
                                    value="{{ annee }}"
-                                   {% if anneeDepuis is not null and annee == anneeDepuis %}checked{% elseif anneeDepuis is null and loop.first %}checked{% endif %}>
+                                   {% if anneeDepuis is not null and annee == anneeDepuis %}checked{% endif %}>
                             {{ annee }}
                         </label>
                     {% endfor %}
@@ -50,7 +50,7 @@
                             <input type="radio"
                                    name="encours_year_to_ui"
                                    value="{{ annee }}"
-                                   {% if anneeJusqua is not null and annee == anneeJusqua %}checked{% elseif anneeJusqua is null and loop.last %}checked{% endif %}>
+                                   {% if anneeJusqua is not null and annee == anneeJusqua %}checked{% endif %}>
                             {{ annee }}
                         </label>
                     {% endfor %}
@@ -77,15 +77,12 @@
                 </div>
             </div>
 
+            {# Year range filters should exist only if explicitly selected. #}
             {% if anneeDepuis is not null %}
                 <input type="hidden" name="annee_debut" value="{{ anneeDepuis }}">
-            {% elseif firstYear is not null %}
-                <input type="hidden" name="annee_debut" value="{{ firstYear }}">
             {% endif %}
             {% if anneeJusqua is not null %}
                 <input type="hidden" name="annee_fin" value="{{ anneeJusqua }}">
-            {% elseif lastYear is not null %}
-                <input type="hidden" name="annee_fin" value="{{ lastYear }}">
             {% endif %}
 
             <input type="hidden" name="type" value="{{ type|default('exploitation') }}">

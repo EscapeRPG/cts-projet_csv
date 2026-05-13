@@ -9,7 +9,7 @@
         <div class="container"
              data-ajax-results
              data-encours-societes="{{ societes|keys|join(',') }}">
-            <div class="table-wrapper">
+            <div class="table-wrapper encours-table">
                 <table data-activity-table>
                     <thead>
                     <tr>
@@ -63,7 +63,11 @@
                                 <td>{{ ligne.date }}</td>
                                 <td>{{ ligne.garanties }}</td>
                                 {% if is_granted('ROLE_ENCOURS_EDIT') %}
-                                    <td><a href="{{ path('app_encours_bancaires_update', { 'id': ligne.id }) }}" class="btn-link">Modifier</a></td>
+                                    <td class="edit-encours">
+                                        <a href="{{ path('app_encours_bancaires_update', { 'id': ligne.id }) }}" class="btn-link">
+                                            Modifier
+                                        </a>
+                                    </td>
                                 {% endif %}
                             </tr>
                         {% endfor %}
@@ -112,6 +116,13 @@
                    target="_blank"
                    rel="noopener"
                    class="btn-link">Imprimer</a>
+
+                <a href="{{ path('app_encours_bancaires_print_totals') }}"
+                   data-print-keep-filters="1"
+                   data-print-base-href="{{ path('app_encours_bancaires_print_totals') }}"
+                   target="_blank"
+                   rel="noopener"
+                   class="btn-link">Imprimer totaux</a>
             </div>
         </div>
     </div>

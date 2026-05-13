@@ -50,11 +50,27 @@
                         <span class="open-btn">></span>
                     </h3>
                     <ul class="menu">
-                        <li>
-                            <a href="{{ path('app_organigram') }}">
-                                → Organigrammes structurels
-                            </a>
-                        </li>
+                        {% if is_granted('ROLE_ORGANIGRAM_STRUCT_VIEW') %}
+                            <li>
+                                <a href="{{ path('app_organigram') }}">
+                                    → Organigramme structurel
+                                </a>
+                            </li>
+                        {% endif %}
+                        {% if is_granted('ROLE_ORGANIGRAM_IMMO_VIEW') %}
+                            <li>
+                                <a href="{{ path('app_organigram_immobilier') }}">
+                                    → Organigramme immobilier
+                                </a>
+                            </li>
+                        {% endif %}
+                        {% if is_granted('ROLE_ORGANIGRAM_HIERARCHY_VIEW') %}
+                            <li>
+                                <a href="{{ path('app_organigram_hierarchique') }}">
+                                    → Organigramme hiérarchique
+                                </a>
+                            </li>
+                        {% endif %}
                     </ul>
                 {% endif %}
 

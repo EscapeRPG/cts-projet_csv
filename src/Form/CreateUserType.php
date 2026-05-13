@@ -47,8 +47,23 @@ class CreateUserType extends AbstractType
                     'Ajouter' => 'ROLE_ORGANIGRAM_ADD',
                 ],
             ])
+            ->add('organigrammeStructurel', CheckboxType::class, [
+                'label' => '→ Structurel :',
+                'required' => false,
+                'mapped' => false,
+            ])
+            ->add('organigrammeImmobilier', CheckboxType::class, [
+                'label' => '→ Immobilier :',
+                'required' => false,
+                'mapped' => false,
+            ])
+            ->add('organigrammeHierarchique', CheckboxType::class, [
+                'label' => '→ Hiérarchique :',
+                'required' => false,
+                'mapped' => false,
+            ])
             ->add('encours', ChoiceType::class, [
-                'label' => 'Encours bancaires :',
+                'label' => 'Encours :',
                 'required' => false,
                 'mapped' => false,
                 'expanded' => true,

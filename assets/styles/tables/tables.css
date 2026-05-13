@@ -48,6 +48,7 @@ table {
             text-overflow: ellipsis;
 
             input {
+                width: max-content !important;
                 max-width: 100% !important;
             }
         }
@@ -271,4 +272,15 @@ tbody tr:not(.recap):hover {
         color: grey;
         pointer-events: none;
     }
+}
+
+.edit-encours {
+    padding: 15px;
+}
+
+.encours-table * {
+    text-wrap: wrap;
+    min-width: 90px;
+    max-width: 200px !important;
+    text-overflow: unset !important;
 }

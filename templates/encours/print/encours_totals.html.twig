@@ -6,7 +6,7 @@
 {% set printVariant = 'encours' %}
 
 {% block content %}
-    <div class="table-wrapper encours" data-print-fit="1">
+    <div class="table-wrapper" data-print-fit="1">
         <table data-activity-table>
             <thead>
             <tr>
@@ -16,49 +16,11 @@
                 {% for annee in anneesAffichees|default(annees) %}
                     <th>Solde {{ annee }}</th>
                 {% endfor %}
-
-                <th>Banque</th>
-                <th>Emprunt</th>
-                <th>Date</th>
-                <th>Garanties</th>
             </tr>
             </thead>
 
             <tbody>
             {% for societeNom, groupe in groupes %}
-                {% for ligne in groupe.lignes %}
-                    <tr>
-                        {% if loop.first %}
-                            <td rowspan="{{ groupe.lignes|length }}">
-                                {{ societeNom }}
-                            </td>
-                        {% endif %}
-
-                        <td>{{ ligne.centre }}</td>
-
-                        {% for annee in anneesAffichees|default(annees) %}
-                            {% set montant = ligne.montants[annee]|default(null) %}
-                            <td class="int-row">
-                                {% if montant is not null %}
-                                    {{ montant|number_format(2, ',', ' ') }} €
-                                {% endif %}
-                            </td>
-                        {% endfor %}
-
-                        <td>{{ ligne.banque }}</td>
-
-                        {% set emprunt = ligne.emprunt|default(null) %}
-                        <td class="int-row">
-                            {% if emprunt is not null %}
-                                {{ emprunt|number_format(2, ',', ' ') }} €
-                            {% endif %}
-                        </td>
-
-                        <td>{{ ligne.date }}</td>
-                        <td>{{ ligne.garanties }}</td>
-                    </tr>
-                {% endfor %}
-
                 <tr class="total-row recap societe">
                     <td class="sticky-societe">{{ societeNom }}</td>
                     <td>TOTAL ENCOURS</td>
@@ -69,8 +31,6 @@
                             {{ total|number_format(2, ',', ' ') }} €
                         </td>
                     {% endfor %}
-
-                    <td colspan="4"></td>
                 </tr>
             {% endfor %}
 
@@ -84,8 +44,6 @@
                             {{ total|number_format(2, ',', ' ') }} €
                         </td>
                     {% endfor %}
-
-                    <td colspan="4"></td>
                 </tr>
             {% endif %}
             </tbody>
