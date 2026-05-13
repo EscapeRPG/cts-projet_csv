@@ -13,6 +13,7 @@
         <th>Email</th>
         <th>Site web</th>
         <th>SIRET</th>
+        <th>Date de reprise</th>
         <th>Action</th>
     </tr>
     </thead>
@@ -33,6 +34,7 @@
             <td>{{ form_widget(forms[centre.id].email, {'attr': {'form': formId}}) }}</td>
             <td>{{ form_widget(forms[centre.id].siteWeb, {'attr': {'form': formId}}) }}</td>
             <td>{{ form_widget(forms[centre.id].numSiret, {'attr': {'form': formId}}) }}</td>
+            <td>{{ form_widget(forms[centre.id].dateReprise, {'attr': {'form': formId}}) }}</td>
             <td>
                 {{ form_start(forms[centre.id], {
                     'action': path('app_centres_update', {'id': centre.id, 'q': app.request.query.get('q')}),

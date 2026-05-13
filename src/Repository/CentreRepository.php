@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Centre;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -72,6 +73,57 @@ class CentreRepository extends ServiceEntityRepository
                 'LOWER(r.nom) LIKE :q',
             )
         )->setParameter('q', $like);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getFirstResultsPerCenter(): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = "WITH ranked AS (
+          SELECT
+            s.agr_centre,
+            s.agr_centre_cl,
+            s.annee,
+            s.mois,
+            ROW_NUMBER() OVER (
+              PARTITION BY s.agr_centre
+              ORDER BY (s.annee * 100 + s.mois) ASC
+            ) AS rn
+          FROM synthese_controles s
+        )
+
+        SELECT
+          c.reseau_nom,
+          c.ville AS centre_ville,
+          c.agr_centre,
+          COALESCE(r.agr_centre_cl, c.agr_cl_centre) AS agr_centre_cl,
+          r.annee,
+          r.mois,
+          c.date_reprise,
+          CASE
+            WHEN r.annee IS NULL OR r.mois IS NULL THEN NULL
+            ELSE DATE_FORMAT(
+              STR_TO_DATE(CONCAT(r.annee, '-', LPAD(r.mois, 2, '0'), '-01'), '%Y-%m-%d'),
+              '%m-%Y'
+            )
+          END AS premiere_entree
+        FROM centre c
+        LEFT JOIN ranked r
+          ON r.agr_centre = c.agr_centre
+         AND r.rn = 1
+        ORDER BY
+          (r.annee IS NULL) ASC,
+          r.annee ASC,
+          r.mois ASC,
+          c.reseau_nom ASC,
+          c.ville ASC;";
+
+        $stmt = $conn->executeQuery($sql);
+
+        return $stmt->fetchAllAssociative();
     }
 
     //    /**

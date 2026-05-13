@@ -124,6 +124,11 @@ class CreateCentreType extends AbstractType
                 'required' => false,
                 'empty_data' => null,
             ])
+            ->add('dateReprise', TextType::class, [
+                'label' => 'Date de reprise : ',
+                'required' => false,
+                'empty_data' => null,
+            ])
         ;
     }
 

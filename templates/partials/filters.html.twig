@@ -37,7 +37,7 @@
                             <input type="checkbox" data-months-toggle-all>
                             Tous
                         </label>
-                        <button type="button" data-months-select-ytd>Jan -> mois courant</button>
+                        <button type="button" data-months-select-ytd>Jan -> Ajd</button>
                     </div>
 
                     {% for key, label in mois %}
@@ -67,7 +67,7 @@
                                        name="reseau[]"
                                        value="{{ value }}"
                                        {% if value in selected.reseau %}checked{% endif %}>
-                                {{ label|upper }}
+                                {{ label|capitalize }}
                             </label>
                         {% endif %}
                     {% endfor %}

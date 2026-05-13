@@ -42,6 +42,8 @@ final readonly class SuiviCentresRepository extends AbstractSuiviQueryRepository
         $sql = "
             SELECT
                 agr_centre,
+                MIN(agr_centre_cl) AS agr_centre_cl,
+                MIN(centre_ville) AS centre_ville,
                 MIN(societe_nom) AS societe_nom,
                 MIN(reseau_nom) AS reseau_nom,
                 annee,

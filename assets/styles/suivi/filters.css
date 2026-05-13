@@ -186,11 +186,11 @@
     transition: all .8s ease;
 
     label {
-        font-size: 1.5em !important;
+        font-size: 1.2em !important;
         display: flex;
         align-items: center;
         gap: 6px;
-        padding: 4px 0;
+        padding: 2px 0;
         cursor: pointer;
     }
 
@@ -215,15 +215,7 @@
         }
 
         button {
-            cursor: pointer;
-            border: none;
-            padding: 4px 8px;
-        }
-
-        button:hover {
-            background: var(--cts-alt);
-            color: var(--nav-a-color);
-            transform: unset;
+            font-size: 1.3em !important;
         }
     }
 

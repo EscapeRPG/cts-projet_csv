@@ -150,6 +150,7 @@
                         <table class="table-pros pro-table-wrapper">
                             <thead>
                             <tr>
+                                <th>Société</th>
                                 <th>Centre</th>
                                 <th>CA N</th>
                                 <th>CA N-1</th>
@@ -165,30 +166,32 @@
                             </thead>
 
                             <tbody>
-                            {% for client in clients %}
+                            {% for centre in centresList %}
                                 <tr>
-                                    <td>{{ client.nom }}
-                                        <small>({{ client.societe }}{% if client.reseau is not empty %} - {{ client.reseau }}{% endif %}
-                                            )</small></td>
-                                    <td class="{{ client.ca_now < client.ca_n1 ? 'malus' : 'bonus' }} right">{{ client.ca_now|number_format(2, ',', ' ') }}
-                                        €
+                                    <td>{{ centre.societe }}</td>
+                                    <td class="left wrap">
+                                        {{ centre.reseau }} {{ centre.ville }}
+                                        <span class="light-info">({{ centre.agrement }})</span>
                                     </td>
-                                    <td class="right">{{ client.ca_n1|number_format(2, ',', ' ') }} €</td>
-                                    <td class="right">{{ client.ca_n2|number_format(2, ',', ' ') }} €</td>
-                                    <td class="{{ client.per_ca_n1 < 0 ? 'decreased' : 'increased' }}">{{ client.per_ca_n1|number_format(2, ',', ' ') }}
-                                        %
+                                    <td class="{{ centre.ca_now < centre.ca_n1 ? 'malus' : 'bonus' }} right">
+                                        {{ centre.ca_now|number_format(2, ',', ' ') }} €
                                     </td>
-                                    <td class="{{ client.per_ca_n2 < 0 ? 'decreased' : 'increased' }}">{{ client.per_ca_n2|number_format(2, ',', ' ') }}
-                                        %
+                                    <td class="right">{{ centre.ca_n1|number_format(2, ',', ' ') }} €</td>
+                                    <td class="right">{{ centre.ca_n2|number_format(2, ',', ' ') }} €</td>
+                                    <td class="{{ centre.per_ca_n1 < 0 ? 'decreased' : 'increased' }}">
+                                        {{ centre.per_ca_n1|number_format(2, ',', ' ') }} %
                                     </td>
-                                    <td>{{ client.nb_ctrl_now }}</td>
-                                    <td>{{ client.nb_ctrl_n1 }}</td>
-                                    <td>{{ client.nb_ctrl_n2 }}</td>
-                                    <td class="{{ client.per_n1 < 0 ? 'decreased' : 'increased' }}">{{ client.per_n1|number_format(2, ',', ' ') }}
-                                        %
+                                    <td class="{{ centre.per_ca_n2 < 0 ? 'decreased' : 'increased' }}">
+                                        {{ centre.per_ca_n2|number_format(2, ',', ' ') }} %
                                     </td>
-                                    <td class="{{ client.per_n2 < 0 ? 'decreased' : 'increased' }}">{{ client.per_n2|number_format(2, ',', ' ') }}
-                                        %
+                                    <td>{{ centre.nb_ctrl_now }}</td>
+                                    <td>{{ centre.nb_ctrl_n1 }}</td>
+                                    <td>{{ centre.nb_ctrl_n2 }}</td>
+                                    <td class="{{ centre.per_n1 < 0 ? 'decreased' : 'increased' }}">
+                                        {{ centre.per_n1|number_format(2, ',', ' ') }} %
+                                    </td>
+                                    <td class="{{ centre.per_n2 < 0 ? 'decreased' : 'increased' }}">
+                                        {{ centre.per_n2|number_format(2, ',', ' ') }} %
                                     </td>
                                 </tr>
                             {% endfor %}

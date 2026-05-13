@@ -15,16 +15,22 @@ let proChartsRaf = null;
 function init() {
     const table = document.querySelector('.table-pros');
     if (table) {
-        const headers = table.querySelectorAll('th');
+        // Avoid double-binding when both DOMContentLoaded + turbo:load fire on full page reload.
+        // With duplicated listeners, each click may toggle twice and appear to "do nothing".
+        if (!table.__ctsSortInit) {
+            table.__ctsSortInit = true;
 
-        // Enable click sorting on each table header.
-        headers.forEach((th, index) => {
-            th.style.cursor = 'pointer';
-            th.addEventListener('click', () => {
-                sortTableByColumn(table, index);
+            const headers = table.querySelectorAll('th');
+
+            // Enable click sorting on each table header.
+            headers.forEach((th, index) => {
+                th.style.cursor = 'pointer';
+                th.addEventListener('click', () => {
+                    sortTableByColumn(table, index);
+                });
+                th.classList.add('sorted-asc');
             });
-            th.classList.add('sorted-asc');
-        });
+        }
     }
 
     initProCharts();
@@ -100,14 +106,17 @@ function initProCharts() {
     };
 
     toggles.forEach((button) => {
-        button.addEventListener('click', () => {
-            const kind = button.dataset.chartKind;
-            if (kind !== 'ca' && kind !== 'volumes') return;
+        if (!button.__ctsChartToggleInit) {
+            button.__ctsChartToggleInit = true;
+            button.addEventListener('click', () => {
+                const kind = button.dataset.chartKind;
+                if (kind !== 'ca' && kind !== 'volumes') return;
 
-            proChartsState.currentKind = kind;
-            toggles.forEach((btn) => btn.classList.toggle('active', btn === button));
-            scheduleProChartsRender();
-        });
+                proChartsState.currentKind = kind;
+                toggles.forEach((btn) => btn.classList.toggle('active', btn === button));
+                scheduleProChartsRender();
+            });
+        }
 
         button.classList.toggle('active', button.dataset.chartKind === proChartsState.currentKind);
     });
@@ -544,8 +553,11 @@ function roundRect(ctx, x, y, width, height, radius) {
     ctx.closePath();
 }
 
-document.addEventListener('DOMContentLoaded', init);
-document.addEventListener('turbo:load', init);
+const boot = () => init();
+document.addEventListener('DOMContentLoaded', boot);
+document.addEventListener('turbo:load', boot);
+// Needed when Turbo restores a cached snapshot (event listeners are not preserved).
+document.addEventListener('turbo:render', boot);
 document.addEventListener('suivi:results-updated', init);
 window.addEventListener('resize', scheduleProChartsRender);
 document.addEventListener('suivi:panel-focus-changed', scheduleProChartsRender);

@@ -25,15 +25,17 @@ final class SuiviCentresAnalyticsService
 
         foreach ($rows as $row) {
             $centre = strtoupper((string) ($row['agr_centre'] ?? 'Centre inconnu'));
+            if ($row['agr_centre_cl']) $centre .= ' - ' . strtoupper((string) ($row['agr_centre_cl']));
             $societe = (string) ($row['societe_nom'] ?? 'Société inconnue');
             $reseau = (string) ($row['reseau_nom'] ?? '');
             $key = $societe . '|' . $centre;
 
             if (!isset($centres[$key])) {
                 $centres[$key] = [
-                    'nom' => $centre,
                     'societe' => $societe,
                     'reseau' => $reseau,
+                    'ville' => $row['centre_ville'],
+                    'agrement' => $centre,
                     'ca_client_pro' => 0.0,
                     'ca_now' => 0.0,
                     'ca_n1' => 0.0,
@@ -113,7 +115,7 @@ final class SuiviCentresAnalyticsService
         }
         unset($centre);
 
-        usort($centres, static fn (array $a, array $b) => $a['nom'] <=> $b['nom']);
+        usort($centres, static fn (array $a, array $b) => $a['agrement'] <=> $b['agrement']);
 
         return $centres;
     }

@@ -43,7 +43,6 @@ table {
         td:not(.td-centres-selectlike),
         th:not(.td-centres-selectlike) {
             width: fit-content;
-            max-width: 130px;
             overflow: clip;
             text-overflow: ellipsis;
 
@@ -139,6 +138,19 @@ table {
             background: var(--cts-alt-light);
         }
     }
+}
+
+.wrap {
+    white-space: wrap !important;
+}
+
+.light-info {
+    color: #777777;
+    font-style: italic;
+}
+
+.left {
+    text-align: left !important;
 }
 
 .right {

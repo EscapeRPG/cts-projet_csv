@@ -411,6 +411,19 @@ main {
     overflow: auto;
 }
 
+.bonus,
+.malus {
+    color: black !important;
+}
+
+.bonus {
+    background: #94e594 !important;
+}
+
+.malus {
+    background: #ff9797 !important;
+}
+
 .increased,
 .decreased,
 .partially {

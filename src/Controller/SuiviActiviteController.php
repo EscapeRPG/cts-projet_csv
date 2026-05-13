@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Repository\CentreRepository;
 use App\Repository\SuiviActiviteRepository;
+use App\Repository\TestRepository;
 use App\Service\Suivi\ArrayPaginator;
 use App\Service\Suivi\SuiviCentresAnalyticsService;
 use App\Service\Suivi\SuiviCentresScope;
@@ -117,6 +119,20 @@ final class SuiviActiviteController extends AbstractController
         private readonly SuiviCentresAnalyticsService $centresAnalyticsService,
         private readonly ArrayPaginator $arrayPaginator,
     ) {
+    }
+
+    /**
+     * @throws Exception
+     */
+    #[isGranted('ROLE_ADMIN')]
+    #[Route('cts/suivi/premieres-donnees-par-centre', name: 'app_first_results')]
+    public function firstResults(CentreRepository $repository): Response
+    {
+        $datas = $repository->getFirstResultsPerCenter();
+
+        return $this->render('cts/suivis/first-results-per-center.html.twig', [
+            'datas' => $datas
+        ]);
     }
 
     /**
@@ -356,7 +372,7 @@ final class SuiviActiviteController extends AbstractController
         return $this->render('cts/suivis/centres.html.twig', array_merge(
             $this->commonViewDataBuilder->build($filters),
             [
-                'clients' => $centres,
+                'centresList' => $centres,
                 'summary' => $summary,
                 'splitSummary' => $splitSummary,
                 'proCharts' => $proCharts,

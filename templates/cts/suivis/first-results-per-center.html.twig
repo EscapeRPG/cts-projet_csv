@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Premières données par centre{% endblock %}
+
+{% block body %}
+    <div class="container" style="max-width: 1000px;">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>Réseau</th>
+                    <th>Centre</th>
+                    <th>Premières données</th>
+                    <th>Date attendue</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for data in datas %}
+                    {% if not data.agr_centre_cl == null %}
+                        {% set agrement = data.agr_centre ~ ' - ' ~ data.agr_centre_cl %}
+                    {% else %}
+                        {% set agrement = data.agr_centre %}
+                    {% endif %}
+
+                    <tr>
+                        <td>{{ data.reseau_nom }}</td>
+                        <td><strong>{{ data.centre_ville }}</strong> <span class="light-info">({{ agrement|upper }})</span></td>
+
+                        {% if not data.date_reprise == null and data.date_reprise == data.premiere_entree %}
+                            <td class="bonus centered">{{ data.premiere_entree }}</td>
+                        {% elseif data.date_reprise == null %}
+                            <td class="centered">{{ data.premiere_entree }}</td>
+                        {% else %}
+                            <td class="malus centered">{{ data.premiere_entree }}</td>
+                        {% endif %}
+
+                        <td class="centered">{{ data.date_reprise }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

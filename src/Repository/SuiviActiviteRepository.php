@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Repository\Suivi\SuiviCentresRepository;
 use App\Repository\Suivi\SuiviProsRepository;
 use App\Repository\Suivi\SuiviSyntheseRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Exception;
 
 /**
@@ -19,9 +20,10 @@ readonly class SuiviActiviteRepository
      */
     public function __construct(
         private SuiviSyntheseRepository $syntheseRepository,
-        private SuiviProsRepository $prosRepository,
-        private SuiviCentresRepository $centresRepository
-    ) {
+        private SuiviProsRepository     $prosRepository,
+        private SuiviCentresRepository  $centresRepository
+    )
+    {
     }
 
     /**

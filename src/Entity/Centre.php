@@ -66,6 +66,9 @@ class Centre
     #[ORM\ManyToMany(targetEntity: Salarie::class, mappedBy: 'centres')]
     private Collection $salaries;
 
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $dateReprise = null;
+
     public function __construct()
     {
         $this->voitures = new ArrayCollection();
@@ -273,6 +276,18 @@ class Centre
                 $voiture->setCentre(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getDateReprise(): ?string
+    {
+        return $this->dateReprise;
+    }
+
+    public function setDateReprise(?string $dateReprise): static
+    {
+        $this->dateReprise = $dateReprise;
 
         return $this;
     }

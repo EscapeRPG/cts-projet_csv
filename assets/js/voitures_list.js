@@ -9,8 +9,10 @@ import { sortTableByColumn, enableSubmitOnChange } from "sort_tables";
 export function initVoituresList(root = document) {
     const table = root.querySelector('.voitures-list');
     if (!table) return;
-    if (table.dataset.ctsInit === '1') return;
-    table.dataset.ctsInit = '1';
+    // Don't use a data-* attribute for init-guard: Turbo snapshots can preserve
+    // dataset values while event listeners are lost, which would prevent re-init.
+    if (table.__ctsInit) return;
+    table.__ctsInit = true;
 
     const headers = table.querySelectorAll('th');
 
@@ -29,7 +31,11 @@ export function initVoituresList(root = document) {
     enableSubmitOnChange(table);
 }
 
-document.addEventListener('turbo:load', () => initVoituresList(document));
+const boot = () => initVoituresList(document);
+document.addEventListener('DOMContentLoaded', boot);
+document.addEventListener('turbo:load', boot);
+// Needed when Turbo restores a cached snapshot (event listeners are not preserved).
+document.addEventListener('turbo:render', boot);
 document.addEventListener('cts:list:content-updated', (e) => {
     initVoituresList(e?.detail?.container ?? document);
 });

@@ -231,6 +231,13 @@
                     <span class="open-btn">></span>
                 </h3>
                 <ul class="menu">
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <li>
+                            <a href="{{ path('app_first_results') }}">
+                                → Dates des premières données
+                            </a>
+                        </li>
+                    {% endif %}
                     <li>
                         <a href="{{ path('app_suivi_activite') }}">
                             → Synthèse
