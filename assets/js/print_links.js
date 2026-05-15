@@ -28,6 +28,16 @@ function withSearch(baseHref, search) {
     return merged ? `${path}?${merged}` : path;
 }
 
+function dropSearchParams(search, dropListRaw) {
+    const dropList = String(dropListRaw ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+    if (!dropList.length) return search;
+
+    const params = new URLSearchParams(search && search.startsWith('?') ? search.slice(1) : (search || ''));
+    dropList.forEach((key) => params.delete(key));
+    const next = params.toString();
+    return next ? `?${next}` : '';
+}
+
 document.addEventListener(
     'click',
     (event) => {
@@ -40,7 +50,8 @@ document.addEventListener(
         const baseHref = normalizeBaseHref(a);
         if (!baseHref) return;
 
-        a.href = withSearch(baseHref, window.location.search);
+        const filteredSearch = dropSearchParams(window.location.search, a.dataset.keepFiltersDrop);
+        a.href = withSearch(baseHref, filteredSearch);
     },
     true
 );

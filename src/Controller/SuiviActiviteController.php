@@ -360,6 +360,11 @@ final class SuiviActiviteController extends AbstractController
                 $this->filtersResolver->resolveFromRequest($request)
             )
         );
+        // The "centres" view is always a rolling N / N-1 / N-2 comparison.
+        // When navigating from year-scoped pages (synthese/controleurs), we may inherit `annee`
+        // via "keep filters" links. That would incorrectly restrict the dataset to a single year
+        // and break N-1/N-2.
+        $filters['annee'] = null;
         $filters = $this->centresScope->apply($filters);
         $referenceYear = $this->resolveReferenceYear($filters);
 
@@ -388,6 +393,7 @@ final class SuiviActiviteController extends AbstractController
                 $this->filtersResolver->resolveFromRequest($request)
             )
         );
+        $filters['annee'] = null;
         $filters = $this->centresScope->apply($filters);
         $referenceYear = $this->resolveReferenceYear($filters);
 
@@ -418,6 +424,7 @@ final class SuiviActiviteController extends AbstractController
                 $this->filtersResolver->resolveFromRequest($request)
             )
         );
+        $filters['annee'] = null;
         $filters = $this->centresScope->apply($filters);
         $referenceYear = $this->resolveReferenceYear($filters);
 

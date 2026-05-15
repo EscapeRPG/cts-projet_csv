@@ -1,7 +1,7 @@
 <div class="sidenav">
     {% set route = app.request.attributes.get('_route') %}
 
-    <div class="onglets">
+        <div class="onglets">
         <a href="{{ path('app_suivi_activite') }}"
            data-keep-filters="1"
            data-keep-filters-base-href="{{ path('app_suivi_activite') }}"
@@ -24,6 +24,7 @@
           class="filter-form"
           data-dependent-url="{{ path('app_suivi_filters_dependent') }}"
           data-current-route="{{ route }}"
+          {% if route == 'app_suivi_centres' %}data-preserve-query-params="annee"{% endif %}
           data-preserve-centre-on-clear="{{ (is_granted('ROLE_CTS') and not is_granted('ROLE_ADMIN')) ? '1' : '0' }}">
         <div class="filters-container">
             <div class="filter-dropdown">

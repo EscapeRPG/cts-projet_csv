@@ -10,6 +10,21 @@ use Doctrine\DBAL\Exception;
 final readonly class SuiviCentresRepository extends AbstractSuiviQueryRepository
 {
     /**
+     * Wraps numeric column names with COALESCE to avoid NULL-propagation in SQL arithmetic.
+     *
+     * @param array<int, string> $columns
+     *
+     * @return array<int, string>
+     */
+    private function coalesceNumericColumns(array $columns): array
+    {
+        return array_map(
+            static fn (string $col): string => sprintf('COALESCE(%s, 0)', $col),
+            $columns
+        );
+    }
+
+    /**
      * Returns center-level aggregates for selected filters.
      *
      * @param array<string, mixed> $filters Selected filters.
@@ -67,7 +82,8 @@ final readonly class SuiviCentresRepository extends AbstractSuiviQueryRepository
         ";
 
         return $this->cachedRows(
-            'suivi_centres',
+            // v2: cache key bump (COALESCE fix for NULL-propagation in arithmetic expressions).
+            'suivi_centres_v2',
             ['filters' => $filters, 'types' => $selectedTypeFamilies, 'vehicle' => $selectedVehicleTypes],
             fn() => $this->connection->executeQuery($sql, $params, $types)->fetchAllAssociative()
         );
@@ -124,8 +140,10 @@ final readonly class SuiviCentresRepository extends AbstractSuiviQueryRepository
         $nbColumns = array_values(array_unique($nbColumns));
         $caColumns = array_values(array_unique($caColumns));
 
-        $nbExpr = $nbColumns === [] ? '0' : implode(' + ', $nbColumns);
-        $caExpr = $caColumns === [] ? '0' : implode(' + ', $caColumns);
+        // Use COALESCE per column so NULL values do not turn the whole sum into NULL.
+        // This prevents NULL metrics for some years (e.g. N-1 / N-2) when historical columns are missing.
+        $nbExpr = $nbColumns === [] ? '0' : implode(' + ', $this->coalesceNumericColumns($nbColumns));
+        $caExpr = $caColumns === [] ? '0' : implode(' + ', $this->coalesceNumericColumns($caColumns));
 
         return [$nbExpr, $caExpr];
     }
@@ -174,8 +192,8 @@ final readonly class SuiviCentresRepository extends AbstractSuiviQueryRepository
         $caPartColumns = array_values(array_unique($caPartColumns));
         $caProColumns = array_values(array_unique($caProColumns));
 
-        $caPartExpr = $caPartColumns === [] ? '0' : implode(' + ', $caPartColumns);
-        $caProExpr = $caProColumns === [] ? '0' : implode(' + ', $caProColumns);
+        $caPartExpr = $caPartColumns === [] ? '0' : implode(' + ', $this->coalesceNumericColumns($caPartColumns));
+        $caProExpr = $caProColumns === [] ? '0' : implode(' + ', $this->coalesceNumericColumns($caProColumns));
 
         return [$caProExpr, $caPartExpr];
     }
@@ -224,8 +242,8 @@ final readonly class SuiviCentresRepository extends AbstractSuiviQueryRepository
         $nbPartColumns = array_values(array_unique($nbPartColumns));
         $nbProColumns = array_values(array_unique($nbProColumns));
 
-        $nbPartExpr = $nbPartColumns === [] ? '0' : implode(' + ', $nbPartColumns);
-        $nbProExpr = $nbProColumns === [] ? '0' : implode(' + ', $nbProColumns);
+        $nbPartExpr = $nbPartColumns === [] ? '0' : implode(' + ', $this->coalesceNumericColumns($nbPartColumns));
+        $nbProExpr = $nbProColumns === [] ? '0' : implode(' + ', $this->coalesceNumericColumns($nbProColumns));
 
         return [$nbProExpr, $nbPartExpr];
     }

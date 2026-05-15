@@ -38,6 +38,35 @@ export function buildFormQueryString(form) {
     return params.toString();
 }
 
+function applyPreservedQueryParams(form, params) {
+    if (!(params instanceof URLSearchParams)) return params;
+    if (!form || !(form instanceof HTMLFormElement)) return params;
+
+    const preserveRaw = String(form.dataset.preserveQueryParams ?? '').trim();
+    if (!preserveRaw) return params;
+
+    const keys = preserveRaw.split(',').map((s) => s.trim()).filter(Boolean);
+    if (!keys.length) return params;
+
+    const current = new URLSearchParams(window.location.search.startsWith('?') ? window.location.search.slice(1) : window.location.search);
+    keys.forEach((key) => {
+        if (!key) return;
+        if (params.has(key)) return;
+        if (!current.has(key)) return;
+        params.set(key, current.get(key) ?? '');
+    });
+
+    return params;
+}
+
+function buildUrlFromForm(form) {
+    const queryString = buildFormQueryString(form);
+    const params = applyPreservedQueryParams(form, new URLSearchParams(queryString));
+    const path = window.location.pathname;
+    const nextQuery = params.toString();
+    return nextQuery ? `${path}?${nextQuery}` : path;
+}
+
 /**
  * Updates browser URL from current form state without fetching server results.
  *
@@ -45,10 +74,7 @@ export function buildFormQueryString(form) {
  * @returns {void}
  */
 export function syncUrlWithForm(form) {
-    const queryString = buildFormQueryString(form);
-    const path = window.location.pathname;
-    const url = queryString ? `${path}?${queryString}` : path;
-    window.history.replaceState({}, '', url);
+    window.history.replaceState({}, '', buildUrlFromForm(form));
 }
 
 /**
@@ -62,9 +88,7 @@ export async function refreshResults(form) {
     if (!currentContainer) return;
     const requestToken = ++activeResultsRequestToken;
 
-    const queryString = buildFormQueryString(form);
-    const path = window.location.pathname;
-    const url = queryString ? `${path}?${queryString}` : path;
+    const url = buildUrlFromForm(form);
 
     if (resultsRequestController) {
         resultsRequestController.abort();
@@ -144,4 +168,3 @@ export function scheduleDebouncedTask(task, delay) {
 export function scheduleRefreshResults(form, delay = 300) {
     return scheduleDebouncedTask(() => refreshResults(form), delay);
 }
-
