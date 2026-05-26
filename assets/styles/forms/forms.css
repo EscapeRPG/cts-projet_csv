@@ -167,6 +167,10 @@ button {
 }
 
 .selectlike-multi__control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
     width: 100%;
     border: 1px solid var(--cts-main);
     color: var(--main-text);
@@ -186,9 +190,8 @@ button {
 
     &::after {
         content: 'v';
-        float: right;
+        flex: 0 0 auto;
         font-weight: bold;
-        margin-left: 10px;
     }
 }
 
@@ -199,6 +202,7 @@ button {
     width: max-content !important;
     z-index: 30;
     background: var(--blocks);
+    color: var(--main-text);
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 10px;
     box-shadow: var(--box-shadow);
@@ -252,6 +256,103 @@ button {
     align-items: center;
     justify-content: flex-start;
     gap: 5px !important;
+}
+
+.selectlike {
+    position: relative;
+}
+
+.selectlike__native {
+    position: absolute;
+    inset: 0;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.selectlike__control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    border: 1px solid var(--cts-main);
+    border-radius: 10px;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    background: var(--blocks);
+    color: var(--main-text);
+    text-align: left;
+    margin: 0;
+    font-weight: normal;
+
+    &:hover {
+        border: 1px solid var(--cts-main) !important;
+        background: var(--blocks) !important;
+    }
+
+    &::after {
+        content: 'v';
+        flex: 0 0 auto;
+        font-weight: bold;
+    }
+}
+
+.selectlike__dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    z-index: 30;
+    background: var(--blocks);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    box-shadow: var(--box-shadow);
+    padding: 6px;
+}
+
+.selectlike__list {
+    display: flex;
+    flex-direction: column;
+    max-height: 45vh;
+    overflow: auto;
+}
+
+.selectlike__item {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--main-text);
+    text-align: left;
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 0;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.06);
+    }
+
+    &.is-selected {
+        background: rgba(2, 142, 177, 0.16);
+    }
+
+    &:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+    }
+}
+
+.dark {
+    .selectlike__item {
+        &:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        &.is-selected {
+            background: rgba(255, 255, 255, 0.12);
+        }
+    }
 }
 
 .selectlike-multi.is-readonly {
@@ -339,4 +440,8 @@ button {
 
 [data-encours-montants] .encours-montant-item > button[data-remove-montant] {
     align-self: flex-end;
+}
+
+input, textarea, select, option, optgroup {
+    color: var(--main-text);
 }

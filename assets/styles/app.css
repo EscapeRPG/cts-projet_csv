@@ -15,6 +15,7 @@
     --blocks: #fafafa;
     --active: #fafafa;
     --light: white;
+    color-scheme: light;
 }
 
 .dark {
@@ -24,12 +25,14 @@
     --blocks: rgb(60,60,60);
     --active: #fafafa;
     --light: rgb(40,40,40);
+    color-scheme: dark;
 }
 
 * {
     scrollbar-color: var(--cts-main) var(--light);
     scrollbar-width: thin;
     font-size: 18px;
+    transition: background .5s ease, color .5s ease;
 }
 
 body {

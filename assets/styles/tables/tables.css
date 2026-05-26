@@ -225,12 +225,14 @@ td.sticky-centre.total {
     background: var(--cts-main);
 }
 
-tbody tr:not(.recap):hover {
-    filter: brightness(.9);
+/* Do not use `filter` on hovered rows: it creates a containing block for `position: fixed`
+   descendants and breaks portal-style dropdowns (selectlike). */
+tbody tr:not(.recap):hover td:not(.total) {
+    background: rgba(0, 0, 0, 0.04);
+}
 
-    .selectlike-multi__dropdown {
-        filter: none;
-    }
+.dark tbody tr:not(.recap):hover td:not(.total) {
+    background: rgba(255, 255, 255, 0.06);
 }
 
 .list-container {

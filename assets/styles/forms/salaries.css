@@ -23,7 +23,7 @@
     }
 
     button:disabled {
-        background: lightgrey;
+        background: grey;
         cursor: default;
 
         &:hover {
