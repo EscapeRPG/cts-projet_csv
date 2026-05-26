@@ -50,6 +50,8 @@
 
     p {
         margin: 10px;
+        font-size: small;
+        color: var(--main-text);
     }
 }
 
@@ -192,7 +194,7 @@
                         justify-content: center;
                         white-space: nowrap;
                         min-height: 20px;
-                        color: var(--blocks);
+                        color: var(--main-text);
                         width: 100%;
                         min-width: 100px;
                         position: relative;
@@ -268,6 +270,7 @@
     width: 100%;
     flex: 1;
     overflow: auto;
+    color: var(--main-text);
 
     &.table-panel {
         height: calc(100% - 35px);
@@ -326,4 +329,5 @@
     font-size: .85em;
     font-weight: 600;
     opacity: .7;
+    color: var(--main-text);
 }

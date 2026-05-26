@@ -119,8 +119,8 @@
 
 .dropdown-toggle {
     position: relative;
-    background: var(--text);
-    color: black;
+    background: var(--blocks);
+    color: var(--main-text);
     border-radius: 10px;
     border: none;
     cursor: pointer;
@@ -155,7 +155,7 @@
 
     &:hover {
         background: var(--cts-alt);
-        color: var(--blocks);
+        color: var(--text);
 
         &::after {
             content: "▼";
@@ -187,6 +187,7 @@
 
     label {
         font-size: 1.2em !important;
+        color: var(--main-text);
         display: flex;
         align-items: center;
         gap: 6px;
@@ -203,6 +204,7 @@
         gap: 5px;
         padding: 4px 0 6px 0;
         background: var(--blocks);
+        color: var(--main-text);
         border-bottom: 1px solid rgba(0, 0, 0, .08);
         margin-bottom: 4px;
 

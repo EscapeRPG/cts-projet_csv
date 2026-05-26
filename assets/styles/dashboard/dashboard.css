@@ -88,7 +88,7 @@
         max-height: 20%;
         box-sizing: border-box;
         background: var(--cts-main);
-        color: var(--blocks);
+        color: var(--text);
         transition: all .25s ease;
         border-top: 1px solid var(--blocks);
         font-size: .8em;

@@ -7,6 +7,30 @@ let proChartsState = null;
 let proChartsResizeObserver = null;
 let proChartsRaf = null;
 
+function readCssVar(style, name, fallback) {
+    const value = style.getPropertyValue(name);
+    const trimmed = typeof value === 'string' ? value.trim() : '';
+    return trimmed || fallback;
+}
+
+function getChartPalette(rootEl) {
+    const style = getComputedStyle(rootEl || document.documentElement);
+
+    return {
+        text: readCssVar(style, '--chart-text', '#1d2830'),
+        mutedText: readCssVar(style, '--chart-muted-text', '#51606d'),
+        grid: readCssVar(style, '--chart-grid', '#d9e2ea'),
+        axis: readCssVar(style, '--chart-axis', '#8ca0b2'),
+        tooltipBg: readCssVar(style, '--chart-tooltip-bg', 'rgba(29, 40, 48, 0.95)'),
+        tooltipText: readCssVar(style, '--chart-tooltip-text', '#ffffff'),
+        seriesColors: [
+            readCssVar(style, '--chart-series-1', SERIES_COLORS[0]),
+            readCssVar(style, '--chart-series-2', SERIES_COLORS[1]),
+            readCssVar(style, '--chart-series-3', SERIES_COLORS[2]),
+        ],
+    };
+}
+
 /**
  * Initializes table sorting and chart rendering for the professional clients page.
  *
@@ -260,6 +284,8 @@ function drawLineChart(canvas, payload, hoveredPoint = null) {
     const root = canvas.parentElement;
     if (!root) return;
 
+    const palette = getChartPalette(root);
+
     const dpr = window.devicePixelRatio || 1;
     const width = Math.floor(root.clientWidth);
     const height = Math.floor(root.clientHeight || 280);
@@ -285,11 +311,11 @@ function drawLineChart(canvas, payload, hoveredPoint = null) {
     const gridSteps = 5;
     const yMax = niceUpper(maxValue);
 
-    ctx.fillStyle = '#1d2830';
+    ctx.fillStyle = palette.text;
     ctx.font = '600 13px Arial';
     ctx.fillText(payload.title, padding.left, 18);
 
-    ctx.strokeStyle = '#d9e2ea';
+    ctx.strokeStyle = palette.grid;
     ctx.lineWidth = 1;
     for (let i = 0; i <= gridSteps; i += 1) {
         const y = padding.top + (chartHeight * i) / gridSteps;
@@ -299,12 +325,12 @@ function drawLineChart(canvas, payload, hoveredPoint = null) {
         ctx.stroke();
 
         const value = yMax - (yMax * i) / gridSteps;
-        ctx.fillStyle = '#51606d';
+        ctx.fillStyle = palette.mutedText;
         ctx.font = '11px Arial';
         ctx.fillText(formatTick(value, payload.unit), 6, y + 4);
     }
 
-    ctx.strokeStyle = '#8ca0b2';
+    ctx.strokeStyle = palette.axis;
     ctx.beginPath();
     ctx.moveTo(padding.left, padding.top);
     ctx.lineTo(padding.left, padding.top + chartHeight);
@@ -313,7 +339,7 @@ function drawLineChart(canvas, payload, hoveredPoint = null) {
 
     for (let i = 0; i < 12; i += 1) {
         const x = padding.left + (chartWidth * i) / 11;
-        ctx.fillStyle = '#51606d';
+        ctx.fillStyle = palette.mutedText;
         ctx.font = '11px Arial';
         ctx.textAlign = 'center';
         ctx.fillText(MONTH_LABELS[i], x, height - 10);
@@ -321,7 +347,7 @@ function drawLineChart(canvas, payload, hoveredPoint = null) {
 
     const orderedYears = [...payload.series].sort((a, b) => Number(a.year) - Number(b.year));
     const colorByYear = new Map(
-        orderedYears.map((serie, index) => [String(serie.year), SERIES_COLORS[index % SERIES_COLORS.length]])
+        orderedYears.map((serie, index) => [String(serie.year), palette.seriesColors[index % palette.seriesColors.length]])
     );
 
     const points = [];
@@ -364,13 +390,13 @@ function drawLineChart(canvas, payload, hoveredPoint = null) {
         });
     });
 
-    drawLegend(ctx, orderedYears, colorByYear, width, padding);
+    drawLegend(ctx, orderedYears, colorByYear, width, padding, palette);
 
     if (hoveredPoint) {
         const activePoint = points.find((point) => point.id === hoveredPoint.id);
         if (activePoint) {
             drawHoveredPoint(ctx, activePoint);
-            drawTooltip(ctx, activePoint, width, height, padding);
+            drawTooltip(ctx, activePoint, width, height, padding, palette);
         }
     }
     return points;
@@ -386,7 +412,7 @@ function drawLineChart(canvas, payload, hoveredPoint = null) {
  * @param {{top:number,right:number,bottom:number,left:number}} padding
  * @returns {void}
  */
-function drawLegend(ctx, series, colorByYear, width, padding) {
+function drawLegend(ctx, series, colorByYear, width, padding, palette) {
     let x = width - padding.right - 8;
     const y = 18;
 
@@ -398,7 +424,7 @@ function drawLegend(ctx, series, colorByYear, width, padding) {
         const label = String(serie.year);
         const textWidth = ctx.measureText(label).width;
 
-        ctx.fillStyle = '#1d2830';
+        ctx.fillStyle = palette.text;
         ctx.fillText(label, x, y);
         x -= textWidth + 8;
 
@@ -468,7 +494,7 @@ function drawHoveredPoint(ctx, point) {
  * @param {{top:number,right:number,bottom:number,left:number}} padding
  * @returns {void}
  */
-function drawTooltip(ctx, point, width, height, padding) {
+function drawTooltip(ctx, point, width, height, padding, palette) {
     const month = MONTH_LABELS[point.monthIndex] || '';
     const valueLabel = formatTooltipValue(point.value, point.unit);
     const line1 = `${month} ${point.year}`;
@@ -500,11 +526,11 @@ function drawTooltip(ctx, point, width, height, padding) {
         y = height - padding.bottom - tooltipHeight;
     }
 
-    ctx.fillStyle = 'rgba(29, 40, 48, 0.95)';
+    ctx.fillStyle = palette.tooltipBg;
     roundRect(ctx, x, y, tooltipWidth, tooltipHeight, 6);
     ctx.fill();
 
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = palette.tooltipText;
     ctx.font = '600 12px Arial';
     ctx.textAlign = 'left';
     ctx.fillText(line1, x + 10, y + 16);
@@ -558,6 +584,7 @@ document.addEventListener('DOMContentLoaded', boot);
 document.addEventListener('turbo:load', boot);
 // Needed when Turbo restores a cached snapshot (event listeners are not preserved).
 document.addEventListener('turbo:render', boot);
+document.addEventListener('theme:change', scheduleProChartsRender);
 document.addEventListener('suivi:results-updated', init);
 window.addEventListener('resize', scheduleProChartsRender);
 document.addEventListener('suivi:panel-focus-changed', scheduleProChartsRender);

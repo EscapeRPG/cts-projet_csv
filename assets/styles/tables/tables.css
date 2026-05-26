@@ -26,7 +26,7 @@ table {
         position: sticky;
         top: 0;
         background: var(--cts-main);
-        color: var(--text);
+        color: white;
         text-align: center;
         z-index: 2;
 
@@ -77,6 +77,7 @@ table {
 
     tr:not(.recap) td {
         background: var(--blocks);
+        color: var(--main-text);
     }
 
     td {
@@ -109,23 +110,24 @@ table {
     }
 
     .total {
-        background: var(--cts-alt-light);
+        background: var(--cts-main-light);
         font-weight: bold;
     }
 
     .total-row {
         background: var(--cts-main-light);
+        color: var(--main-text);
         font-weight: bold;
         text-align: center;
 
         &.societe {
             background: var(--cts-alt);
-            color: var(--blocks);
+            color: white;
         }
 
         &.global {
             background: var(--cts-main);
-            color: var(--blocks);
+            color: white;
             position: sticky;
             bottom: 0;
 
@@ -135,7 +137,7 @@ table {
         }
 
         &.total {
-            background: var(--cts-alt-light);
+            background: var(--cts-main-light);
         }
     }
 }
@@ -166,7 +168,7 @@ table {
     bottom: 0;
     text-align: center;
     background: var(--blocks);
-    color: black;
+    color: var(--main-text);
     padding: 5px 0;
     font-size: .8em;
 

@@ -35,7 +35,7 @@
     border: 5px solid var(--cts-main);
     border-radius: 12px;
     background: var(--blocks);
-    color: black;
+    color: var(--main-text);
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -49,7 +49,7 @@
     border: 5px solid var(--cts-main);
     border-radius: 20px;
     box-sizing: border-box;
-    background: white;
+    background: var(--blocks);
 }
 
 .organigram-config {
@@ -93,7 +93,7 @@
     height: auto;
     border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: 8px;
-    background: white;
+    background: var(--blocks);
     display: block;
     margin: auto;
 }
@@ -156,7 +156,7 @@
     object-fit: contain;
     border: 2px solid var(--cts-main);
     border-radius: 12px;
-    background: white;
+    background: var(--blocks);
     box-sizing: border-box;
     display: block;
     margin: 0 auto;

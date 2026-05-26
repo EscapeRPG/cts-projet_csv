@@ -4,6 +4,7 @@
     --cts-main-light: #ddeff4;
     --cts-alt: #33b4a7;
     --cts-alt-light: #def2f3;
+    --main-text: rgba(10,10,10);
     --text: #fafafa;
     --a-color: orange;
     --a-color-hover: darkorange;
@@ -13,10 +14,20 @@
     --bg-main-color: linear-gradient(var(--cts-main-light), var(--cts-alt-light));
     --blocks: #fafafa;
     --active: #fafafa;
+    --light: white;
+}
+
+.dark {
+    --cts-main-light: rgb(30,30,30);
+    --main-text: #fafafa;
+    --bg-main-color: rgb(60,60,60);
+    --blocks: rgb(80,80,80);
+    --active: #fafafa;
+    --light: rgb(60,60,60);
 }
 
 * {
-    scrollbar-color: var(--cts-main) white;
+    scrollbar-color: var(--cts-main) var(--light);
     scrollbar-width: thin;
     font-size: 18px;
 }
@@ -137,7 +148,7 @@ header {
                 text-transform: uppercase;
                 margin-bottom: 0;
                 padding: 10px 70px 0 70px;
-                border-top: 1px solid var(--cts-main-light);
+                border-top: 1px solid #fafafa;
             }
 
             h3 {
@@ -194,7 +205,6 @@ header {
                 margin: 0 auto;
                 padding: 0 33px;
                 list-style-type: none;
-                border-bottom: 1px solid var(--bg-main-color);
 
                 li {
                     width: fit-content;
@@ -285,6 +295,7 @@ header {
             .meta-info {
                 color: var(--text);
                 text-align: center;
+                font-size: small;
             }
         }
     }
@@ -431,20 +442,20 @@ main {
 }
 
 .increased {
-    color: #12ba12;
+    color: #12ba12 !important;
 }
 
 .decreased {
-    color: red;
+    color: red !important;
 }
 
 .partially {
-    color: orange;
+    color: orange !important;
 }
 
 .btn-link {
     background: var(--cts-main);
-    color: var(--blocks);
+    color: var(--text);
     padding: 10px 15px;
     border-radius: 20px;
     cursor: pointer;
