@@ -20,10 +20,10 @@
 .dark {
     --cts-main-light: rgb(30,30,30);
     --main-text: #fafafa;
-    --bg-main-color: rgb(60,60,60);
-    --blocks: rgb(80,80,80);
+    --bg-main-color: rgb(40,40,40);
+    --blocks: rgb(60,60,60);
     --active: #fafafa;
-    --light: rgb(60,60,60);
+    --light: rgb(40,40,40);
 }
 
 * {
