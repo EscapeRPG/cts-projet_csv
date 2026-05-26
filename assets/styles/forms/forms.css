@@ -445,3 +445,10 @@ button {
 input, textarea, select, option, optgroup {
     color: var(--main-text);
 }
+
+table input {
+    width: 100%;
+    border: 1px solid var(--cts-main);
+    border-radius: 10px;
+    padding: 5px 10px;
+}

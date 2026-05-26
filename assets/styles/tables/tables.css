@@ -57,7 +57,8 @@ table {
         width: 100% !important;
 
         .selectlike-multi {
-            width: max-content;
+            min-width: max-content;
+            width: 100%;
 
             .selectlike-multi__dropdown {
                 left: 0;
