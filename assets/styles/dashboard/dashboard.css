@@ -38,10 +38,13 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    margin: 5px;
+    margin: 5px 0;
+    margin-inline: 0;
     padding: 5px 10px;
     border: 1px solid var(--cts-main);
     border-radius: 10px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .app {
