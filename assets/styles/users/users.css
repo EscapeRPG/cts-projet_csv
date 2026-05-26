@@ -34,30 +34,8 @@ table.users-list {
         max-width: 260px;
     }
 
-    td.td-centres-selectlike,
-    th.td-centres-selectlike {
-        max-width: 260px;
-        overflow: clip;
-        text-overflow: ellipsis;
-    }
-
-    .td-centres-selectlike .centres-selectlike {
+    .centres-selectlike {
         width: 100% !important;
-        max-width: 260px;
-    }
-
-    .td-centres-selectlike .selectlike-multi {
-        width: 100% !important;
-        max-width: 260px;
-    }
-
-    .td-centres-selectlike .selectlike-multi__control {
-        width: 100%;
-        max-width: 260px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        display: block;
     }
 
     thead tr:first-child {
