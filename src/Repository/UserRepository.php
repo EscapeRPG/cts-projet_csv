@@ -70,6 +70,30 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
+     * Returns active users eligible to receive internal notifications,
+     * with their scope attachments preloaded (centres + societes + societes.centres).
+     *
+     * @return array<int, User>
+     */
+    public function findActiveUsersWithScope(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.isActive = :isActive')
+            ->setParameter('isActive', true)
+            ->leftJoin('u.centres', 'c')
+            ->addSelect('c')
+            ->leftJoin('c.societe', 'cso')
+            ->addSelect('cso')
+            ->leftJoin('u.societes', 'uso')
+            ->addSelect('uso')
+            ->leftJoin('uso.centre', 'usoc')
+            ->addSelect('usoc')
+            ->orderBy('u.username', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Returns all users with their scope attachments preloaded (centres + societes).
      *
      * @return array<int, User>

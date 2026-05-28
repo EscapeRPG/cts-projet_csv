@@ -1,51 +1,62 @@
-<table class="centres-list">
-    <thead>
-    <tr>
-        <th>Société</th>
-        <th>Réseau</th>
-        <th>Enseigne</th>
-        <th>Agrément VL</th>
-        <th>Agrément CL</th>
-        <th>Coordonnées</th>
-        <th>CP</th>
-        <th>Ville</th>
-        <th>Téléphone</th>
-        <th>Email</th>
-        <th>Site web</th>
-        <th>SIRET</th>
-        <th>Date de reprise</th>
-        <th>Action</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for centre in centres %}
-        {% set formId = 'centre-form-' ~ centre.id %}
+<form id="centres-bulk-form"
+      method="post"
+      data-turbo="false"
+      action="{{ path('app_centres_bulk_update', {'q': app.request.query.get('q')}) }}">
+    <input type="hidden" name="_token" value="{{ csrf_token('centres_bulk') }}">
 
+    <table class="centres-list" data-bulk-edit="1">
+        <thead>
         <tr>
-            <td>{{ form_widget(forms[centre.id].societe, {'attr': {'form': formId, 'class': (forms[centre.id].societe.vars.attr.class|default('') ~ ' reseau-uppercase')|trim}}) }}</td>
-            <td>{{ form_widget(forms[centre.id].reseau, {'attr': {'form': formId, 'class': (forms[centre.id].reseau.vars.attr.class|default('') ~ ' reseau-uppercase')|trim}}) }}</td>
-            <td>{{ form_widget(forms[centre.id].reseauNom, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[centre.id].agrCentre, {'attr': {'form': formId, 'class': (forms[centre.id].agrCentre.vars.attr.class|default('') ~ ' reseau-uppercase')|trim}}) }}</td>
-            <td>{{ form_widget(forms[centre.id].agrClCentre, {'attr': {'form': formId, 'class': (forms[centre.id].agrClCentre.vars.attr.class|default('') ~ ' reseau-uppercase')|trim}}) }}</td>
-            <td>{{ form_widget(forms[centre.id].coordonnees, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[centre.id].cp, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[centre.id].ville, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[centre.id].telephone, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[centre.id].email, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[centre.id].siteWeb, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[centre.id].numSiret, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[centre.id].dateReprise, {'attr': {'form': formId}}) }}</td>
-            <td>
-                {{ form_start(forms[centre.id], {
-                    'action': path('app_centres_update', {'id': centre.id, 'q': app.request.query.get('q')}),
-                    'method': 'POST',
-                    'attr': {'data-turbo': 'false', 'id': formId}
-                }) }}
-                {{ form_errors(forms[centre.id]) }}
-                <button type="submit" disabled form="{{ formId }}" data-row-save-button="1">Enregistrer</button>
-                {{ form_end(forms[centre.id]) }}
-            </td>
+            <th>Société</th>
+            <th>Réseau</th>
+            <th>Enseigne</th>
+            <th>Agrément VL</th>
+            <th>Agrément CL</th>
+            <th>Coordonnées</th>
+            <th>CP</th>
+            <th>Ville</th>
+            <th>Téléphone</th>
+            <th>Email</th>
+            <th>Mdp email</th>
+            <th>Site web</th>
+            <th>SIRET</th>
+            <th>Date de reprise</th>
         </tr>
-    {% endfor %}
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        {% for centre in centres %}
+            {% set rowId = centre.id %}
+            <tr>
+                <td>
+                    <select name="changes[{{ rowId }}][societe]" class="reseau-uppercase">
+                        <option value="">- Choisir -</option>
+                        {% for so in societes %}
+                            <option value="{{ so.id }}" {{ so.id == centre.societe.id ? 'selected' : '' }}>{{ so.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <select name="changes[{{ rowId }}][reseau]" class="reseau-uppercase">
+                        <option value="">- Choisir -</option>
+                        {% for r in reseaux %}
+                            <option value="{{ r.id }}" {{ r.id == centre.reseau.id ? 'selected' : '' }}>{{ r.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td><input type="text" name="changes[{{ rowId }}][reseauNom]" value="{{ centre.reseauNom }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][agrCentre]" class="reseau-uppercase" value="{{ centre.agrCentre }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][agrClCentre]" class="reseau-uppercase" value="{{ centre.agrClCentre }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][coordonnees]" value="{{ centre.coordonnees }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][cp]" value="{{ centre.cp }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][ville]" value="{{ centre.ville }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][telephone]" value="{{ centre.telephone }}"></td>
+                <td><input type="email" name="changes[{{ rowId }}][email]" value="{{ centre.email }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][mailPassword]" value="{{ centre.mailPassword }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][siteWeb]" value="{{ centre.siteWeb }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][numSiret]" value="{{ centre.numSiret }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][dateReprise]" value="{{ centre.dateReprise }}"></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</form>

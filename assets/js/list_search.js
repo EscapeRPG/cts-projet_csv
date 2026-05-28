@@ -36,13 +36,22 @@ function initSearchInput(input) {
     const resultsEl = document.querySelector(resultsSelector);
     if (!resultsEl) return;
 
-    const blockedMsgEl = input.parentElement?.querySelector('[data-list-search-blocked-message]') || null;
     const scopeEl = input.closest?.('.search-list') || input.parentElement;
+    const blockedMsgEl = scopeEl?.querySelector?.('[data-list-search-blocked-message]') || null;
     const extraParamsEls = scopeEl ? Array.from(scopeEl.querySelectorAll('[data-list-search-param="1"]')) : [];
 
     const isDirty = () => {
         // Only consider row save buttons (not delete forms etc).
-        return Boolean(resultsEl.querySelector('button[data-row-save-button="1"]:not([disabled])'));
+        if (resultsEl.querySelector('button[data-row-save-button="1"]:not([disabled])')) {
+            return true;
+        }
+
+        // Bulk save buttons can live outside the scrollable results container.
+        // If they target the form inside the current results, they should still block searches.
+        const form = resultsEl.querySelector('form[id]');
+        const formId = form?.getAttribute?.('id') || '';
+        if (!formId) return false;
+        return Boolean(document.querySelector(`button[data-row-save-button="1"][form="${CSS.escape(formId)}"]:not([disabled])`));
     };
 
     const syncDirtyState = () => {

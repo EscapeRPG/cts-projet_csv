@@ -357,6 +357,7 @@ header {
             box-shadow: var(--box-shadow);
             transform: translateY(-150%);
             transition: transform .4s ease;
+            color: var(--main-text);
 
             &.open {
                 transform: translateY(75px);
@@ -454,6 +455,35 @@ main {
 
 .partially {
     color: orange !important;
+}
+
+small {
+    font-size: smaller !important;
+}
+
+.wrap {
+    white-space: wrap !important;
+}
+
+.light-info {
+    color: #777777;
+    font-style: italic;
+}
+
+.left {
+    text-align: left !important;
+}
+
+.right {
+    text-align: right !important;
+}
+
+.centered {
+    text-align: center !important;
+}
+
+.italic {
+    font-style: italic !important;
 }
 
 .btn-link {

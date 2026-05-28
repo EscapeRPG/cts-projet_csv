@@ -241,11 +241,15 @@ abstract class AbstractCsvImportService implements CsvImportInterface
 
 
     /**
-     * Inserts one batch using an `INSERT IGNORE` statement.
+     * Inserts one batch using an UPSERT statement.
+     *
+     * We rely on UNIQUE indexes on the business identifiers (see getUniqueKeys()).
+     * Without those UNIQUE keys, imports would create duplicates and later aggregates
+     * (syntheses) would multiply amounts.
      *
      * @param array<int, array<int, mixed>> $batch Prepared rows batch.
      *
-     * @return int Number of rows effectively inserted.
+     * @return int Number of affected rows as returned by the driver. (Not equal to inserted rows for upserts.)
      *
      * @throws Exception
      */
@@ -253,6 +257,7 @@ abstract class AbstractCsvImportService implements CsvImportInterface
     {
         $columns = static::getColumns();
         $table = static::getTableName();
+        $uniqueKeys = static::getUniqueKeys();
         $values = [];
 
         foreach ($batch as $row) {
@@ -267,11 +272,24 @@ abstract class AbstractCsvImportService implements CsvImportInterface
             $values[] = '(' . implode(',', $rowSql) . ')';
         }
 
+        // Build "col = VALUES(col)" for every non-unique column (MySQL upsert).
+        // If no unique keys are declared for this importer, fallback to plain insert to keep behavior explicit.
+        $updatableColumns = array_values(array_diff($columns, $uniqueKeys));
+        $updateSql = '';
+        if ($updatableColumns !== []) {
+            $assignments = array_map(
+                static fn(string $col) => sprintf('%s = VALUES(%s)', $col, $col),
+                $updatableColumns
+            );
+            $updateSql = ' ON DUPLICATE KEY UPDATE ' . implode(', ', $assignments);
+        }
+
         $sql = sprintf(
-            'INSERT IGNORE INTO %s (%s) VALUES %s',
+            'INSERT INTO %s (%s) VALUES %s%s',
             $table,
             implode(',', $columns),
-            implode(',', $values)
+            implode(',', $values),
+            $updateSql
         );
 
         $inserted = (int)$this->em->getConnection()->executeStatement($sql);

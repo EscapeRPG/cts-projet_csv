@@ -42,6 +42,9 @@ class Centre
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $email = null;
 
+    #[ORM\Column(length: 250, nullable: true)]
+    private ?string $mailPassword = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $siteWeb = null;
 
@@ -174,6 +177,18 @@ class Centre
     public function setEmail(?string $email): static
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    public function getMailPassword(): ?string
+    {
+        return $this->mailPassword;
+    }
+
+    public function setMailPassword(?string $mailPassword): static
+    {
+        $this->mailPassword = $mailPassword;
 
         return $this;
     }

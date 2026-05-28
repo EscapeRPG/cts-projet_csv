@@ -1,89 +1,130 @@
-<table class="voitures-list">
-    <thead>
-    <tr>
-        <th>Société</th>
-        <th>Centre</th>
-        <th>Immatriculation</th>
-        <th>Marque</th>
-        <th>Couleur</th>
-        <th>Modèle</th>
-        <th>Flocable</th>
-        <th>Année</th>
-        <th>Contrôle technique</th>
-        <th>Kilométrage</th>
-        <th>Prix</th>
-        <th>Carte grise</th>
-        <th>Lieu</th>
-        <th>Utilisateur</th>
-        <th>Remarques</th>
-        <th>Certificat cession</th>
-        <th>Active ?</th>
-        <th>Action</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for voiture in voitures %}
-        {% set formId = 'voiture-form-' ~ voiture.id %}
+<form id="voitures-bulk-form"
+      method="post"
+      data-turbo="false"
+      action="{{ path('app_voitures_bulk_update', {
+          'q': app.request.query.get('q'),
+          'active': app.request.query.get('active'),
+          'inactive': app.request.query.get('inactive')
+      }) }}">
+    <input type="hidden" name="_token" value="{{ csrf_token('voitures_bulk') }}">
 
+    <table class="voitures-list" data-bulk-edit="1">
+        <thead>
         <tr>
-            <td>{{ form_widget(forms[voiture.id].societe, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[voiture.id].centre, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[voiture.id].immatriculation, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[voiture.id].marque, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[voiture.id].couleur, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[voiture.id].modele, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[voiture.id].flocable, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[voiture.id].annee, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[voiture.id].controleTechnique, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[voiture.id].km, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[voiture.id].prix, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[voiture.id].carteGrise, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[voiture.id].lieu, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[voiture.id].utilisateur, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[voiture.id].remarques, {'attr': {'form': formId}}) }}</td>
-            <td>
-                {% if is_granted('ROLE_ADMIN') %}
-                    {% if voiture.certificatCessionPath is not empty %}
-                        <a class="btn-link"
-                           href="{{ path('app_voitures_certificat_view', {'id': voiture.id}) }}"
-                           target="_blank"
-                           rel="noopener">Consulter</a>
+            <th>Société</th>
+            <th>Centre</th>
+            <th>Immatriculation</th>
+            <th>Marque</th>
+            <th>Couleur</th>
+            <th>Modèle</th>
+            <th>Flocable</th>
+            <th>Année</th>
+            <th>Contrôle technique</th>
+            <th>Kilométrage</th>
+            <th>Prix</th>
+            <th>Carte grise</th>
+            <th>Lieu</th>
+            <th>Utilisateur</th>
+            <th>Remarques</th>
+            <th>Certificat cession</th>
+            <th>Active ?</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for voiture in voitures %}
+            {% set rowId = voiture.id %}
+            <tr>
+                <td>
+                    <select name="changes[{{ rowId }}][societe]">
+                        <option value="">- Choisir -</option>
+                        {% for so in societes %}
+                            <option value="{{ so.id }}" {{ so.id == voiture.societe.id ? 'selected' : '' }}>{{ so.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <select name="changes[{{ rowId }}][centre]">
+                        <option value="">- Choisir -</option>
+                        {% set currentGroup = null %}
+                        {% for c in centres %}
+                            {% set group = c.reseauNom ?? '' %}
+                            {% if group != currentGroup %}
+                                {% if currentGroup is not null %}</optgroup>{% endif %}
+                                <optgroup label="{{ group }}">
+                                {% set currentGroup = group %}
+                            {% endif %}
+                            {% set label = (c.reseauNom ?? '') ~ ' ' ~ (c.ville ?? '') %}
+                            <option value="{{ c.id }}" {{ voiture.centre and c.id == voiture.centre.id ? 'selected' : '' }}>{{ label }}</option>
+                        {% endfor %}
+                        {% if currentGroup is not null %}</optgroup>{% endif %}
+                    </select>
+                </td>
+                <td><input type="text" name="changes[{{ rowId }}][immatriculation]" value="{{ voiture.immatriculation }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][marque]" value="{{ voiture.marque }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][couleur]" value="{{ voiture.couleur }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][modele]" value="{{ voiture.modele }}"></td>
+                <td class="centered">
+                    <input type="hidden" name="changes[{{ rowId }}][flocable]" value="0">
+                    <input type="checkbox" name="changes[{{ rowId }}][flocable]" value="1" {{ voiture.flocable ? 'checked' : '' }}>
+                </td>
+                <td>
+                    <select name="changes[{{ rowId }}][annee]">
+                        <option value="">- Choisir -</option>
+                        {% for y in 1970..("now"|date("Y")) %}
+                            <option value="{{ y }}" {{ voiture.annee == y ? 'selected' : '' }}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td><input type="date" name="changes[{{ rowId }}][controleTechnique]" value="{{ voiture.controleTechnique ? voiture.controleTechnique|date('Y-m-d') : '' }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][km]" value="{{ voiture.km }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][prix]" value="{{ voiture.prix }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][carteGrise]" value="{{ voiture.carteGrise }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][lieu]" value="{{ voiture.lieu }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][utilisateur]" value="{{ voiture.utilisateur }}"></td>
+                <td><textarea name="changes[{{ rowId }}][remarques]" rows="3">{{ voiture.remarques }}</textarea></td>
+                <td>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        {% if voiture.certificatCessionPath is not empty %}
+                            <a class="btn-link"
+                               href="{{ path('app_voitures_certificat_view', {'id': voiture.id}) }}"
+                               target="_blank"
+                               rel="noopener">Consulter</a>
 
-                        <a class="btn-link"
-                           href="{{ path('app_voitures_certificat_download', {'id': voiture.id}) }}"
-                           target="_blank"
-                           rel="noopener">Télécharger</a>
+                            <a class="btn-link"
+                               href="{{ path('app_voitures_certificat_download', {'id': voiture.id}) }}"
+                               target="_blank"
+                               rel="noopener">Télécharger</a>
+
+                            <form method="post"
+                                  action="{{ path('app_voitures_certificat_delete', {'id': voiture.id, 'page': 1, 'q': app.request.query.get('q'), 'active': app.request.query.get('active'), 'inactive': app.request.query.get('inactive')}) }}"
+                                  data-turbo="false"
+                                  style="display:inline-block;">
+                                <input type="hidden" name="_token"
+                                       value="{{ csrf_token('voiture_certificat_delete_' ~ voiture.id) }}">
+                                <button type="submit">Supprimer</button>
+                            </form>
+                            <br><br>
+                            <small>Remplacer:</small>
+                        {% endif %}
 
                         <form method="post"
-                              action="{{ path('app_voitures_certificat_delete', {'id': voiture.id, 'page': pagination.page|default(1), 'q': app.request.query.get('q'), 'active': app.request.query.get('active'), 'inactive': app.request.query.get('inactive')}) }}"
+                              enctype="multipart/form-data"
                               data-turbo="false"
-                              style="display:inline-block;">
-                            <input type="hidden" name="_token"
-                                   value="{{ csrf_token('voiture_certificat_delete_' ~ voiture.id) }}">
-                            <button type="submit">Supprimer</button>
+                              action="{{ path('app_voitures_certificat_upload', {'id': voiture.id, 'page': 1, 'q': app.request.query.get('q'), 'active': app.request.query.get('active'), 'inactive': app.request.query.get('inactive')}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('voiture_certificat_upload_' ~ voiture.id) }}">
+                            <input type="file" name="certificat" data-row-change-ignore="1">
+                            <button type="submit">Uploader</button>
                         </form>
-                        <br>
-                        <br>
-                        <small>Remplacer:</small>
+                    {% else %}
+                        ---
                     {% endif %}
-
-                    {{ form_widget(forms[voiture.id].certificatCessionFile, {'attr': {'form': formId, 'data-row-change-track': '1'}}) }}
-                {% else %}
-                    ---
-                {% endif %}
-            </td>
-            <td>{{ form_widget(forms[voiture.id].active, {'attr': {'form': formId}}) }}</td>
-            <td>
-                {{ form_start(forms[voiture.id], {
-                    'action': path('app_voitures_update', {'id': voiture.id, 'page': pagination.page|default(1), 'q': app.request.query.get('q'), 'active': app.request.query.get('active'), 'inactive': app.request.query.get('inactive')}),
-                    'method': 'POST',
-                    'attr': {'data-turbo': 'false', 'id': formId}
-                }) }}
-                {{ form_errors(forms[voiture.id]) }}
-                <button type="submit" disabled form="{{ formId }}" data-row-save-button="1">Enregistrer</button>
-                {{ form_end(forms[voiture.id]) }}
-            </td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
+                </td>
+                <td class="centered">
+                    <input type="hidden" name="changes[{{ rowId }}][active]" value="0">
+                    <input type="checkbox" name="changes[{{ rowId }}][active]" value="1" {{ voiture.active ? 'checked' : '' }}>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</form>

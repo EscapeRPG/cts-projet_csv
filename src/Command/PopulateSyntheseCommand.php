@@ -7,6 +7,7 @@ use Doctrine\DBAL\Exception;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -21,6 +22,7 @@ class PopulateSyntheseCommand extends Command
 {
     private const string META_KEY = 'synthese_controles';
     private bool $forceFullRefresh = false;
+    private ?string $forcePeriod = null; // YYYY-MM
 
     /**
      * @param Connection $connection DBAL connection used for DDL/DML operations.
@@ -29,6 +31,17 @@ class PopulateSyntheseCommand extends Command
         private readonly Connection $connection
     ) {
         parent::__construct();
+    }
+
+    protected function configure(): void
+    {
+        $this
+            ->addOption(
+                'period',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Force le recalcul d’une periode unique (format YYYY-MM), sans tenir compte de last_run_at.'
+            );
     }
 
     /**
@@ -43,6 +56,7 @@ class PopulateSyntheseCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+        $this->forcePeriod = $input->getOption('period');
 
         $io->title('[synthese-summary] Démarrage de la mise à jour incrémentale de synthese_controles.');
 
@@ -274,6 +288,21 @@ class PopulateSyntheseCommand extends Command
      */
     private function fetchPeriodsToRefresh(?string $lastRunAt): array
     {
+        if ($this->forcePeriod !== null && $this->forcePeriod !== '') {
+            if (!preg_match('/^\d{4}-\d{2}$/', $this->forcePeriod)) {
+                throw new \InvalidArgumentException('Option --period invalide. Attendu: YYYY-MM.');
+            }
+
+            [$y, $m] = array_map('intval', explode('-', $this->forcePeriod));
+            if ($y < 2000 || $m < 1 || $m > 12) {
+                throw new \InvalidArgumentException('Option --period invalide. Attendu: YYYY-MM.');
+            }
+
+            return [
+                ['annee' => $y, 'mois' => $m],
+            ];
+        }
+
         if ($lastRunAt === null) {
             return $this->connection->fetchAllAssociative("
                 SELECT DISTINCT YEAR(date_ctrl) AS annee, MONTH(date_ctrl) AS mois
@@ -362,12 +391,53 @@ class PopulateSyntheseCommand extends Command
      */
     private function insertAggregatesForPeriods(): void
     {
+        // Base tables can contain multiple rows per business identifier (idcontrole / idfacture)
+        // because imports rely on ON DUPLICATE KEY UPDATE but the DB doesn't enforce those
+        // business keys as UNIQUE. If we join raw tables, amounts get multiplied.
+        // Dedupe here by keeping only the latest exported row per identifier.
+        $controlesLatestSql = "
+            SELECT *
+            FROM (
+                SELECT
+                    c.*,
+                    ROW_NUMBER() OVER (PARTITION BY c.idcontrole ORDER BY c.date_export DESC, c.id DESC) AS rn
+                FROM controles c
+            ) ranked_controles
+            WHERE ranked_controles.rn = 1
+        ";
+
+        $facturesLatestSql = "
+            SELECT *
+            FROM (
+                SELECT
+                    f.*,
+                    ROW_NUMBER() OVER (PARTITION BY f.idfacture ORDER BY f.date_export DESC, f.id DESC) AS rn
+                FROM factures f
+            ) ranked_factures
+            WHERE ranked_factures.rn = 1
+        ";
+
         $centreJoinCondition = $this->hasSecondaryCentreAgreementColumn()
             ? '(ce.agr_centre = cc.agr_centre OR ce.agr_cl_centre = cc.agr_centre)'
             : 'ce.agr_centre = cc.agr_centre';
+        // Some exports include both a draft invoice (type 'D') and the final invoice (type 'F')
+        // linked to the same control. Counting both would double count revenue for recent months
+        // (draft + paid). Keep 'D' only when there is no 'F' invoice for the control.
         $distinctControleFactureSql = "
-            SELECT DISTINCT idcontrole, idfacture
-            FROM controles_factures
+            SELECT DISTINCT cf.idcontrole, cf.idfacture
+            FROM controles_factures cf
+            INNER JOIN ({$facturesLatestSql}) f ON f.idfacture = cf.idfacture
+            WHERE f.type_facture IN ('F','A','D')
+              AND (
+                f.type_facture <> 'D'
+                OR NOT EXISTS (
+                    SELECT 1
+                    FROM controles_factures cf2
+                    INNER JOIN ({$facturesLatestSql}) f2 ON f2.idfacture = cf2.idfacture
+                    WHERE cf2.idcontrole = cf.idcontrole
+                      AND f2.type_facture = 'F'
+                )
+              )
         ";
         $factureControlCountSql = "
             SELECT cf_count.idfacture, COUNT(DISTINCT cf_count.idcontrole) AS nb_ctrl_facture
@@ -379,7 +449,7 @@ class PopulateSyntheseCommand extends Command
                 cf_ref.idcontrole,
                 SUM(COALESCE(f_ref.montant_presta_ht, f_ref.total_ht) / NULLIF(t_ref.nb_ctrl_facture, 0)) AS ref_ca
             FROM ({$distinctControleFactureSql}) cf_ref
-            INNER JOIN factures f_ref ON f_ref.idfacture = cf_ref.idfacture
+            INNER JOIN ({$facturesLatestSql}) f_ref ON f_ref.idfacture = cf_ref.idfacture
             INNER JOIN ({$factureControlCountSql}) t_ref ON t_ref.idfacture = f_ref.idfacture
             WHERE f_ref.type_facture IN ('F', 'D')
               AND COALESCE(f_ref.montant_presta_ht, f_ref.total_ht) > 0
@@ -543,7 +613,7 @@ class PopulateSyntheseCommand extends Command
                 COUNT(DISTINCT IF(ctrl.type_ctrl LIKE 'CL%' AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_particuliers_moto,
                 COUNT(DISTINCT IF(ctrl.type_ctrl NOT LIKE 'CL%' AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_professionnels_auto,
                 COUNT(DISTINCT IF(ctrl.type_ctrl LIKE 'CL%' AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_professionnels_moto
-            FROM controles ctrl
+            FROM ({$controlesLatestSql}) ctrl
             INNER JOIN tmp_synthese_periods p
                 ON p.annee = YEAR(ctrl.date_ctrl) AND p.mois = MONTH(ctrl.date_ctrl)
             LEFT JOIN (
@@ -611,7 +681,7 @@ class PopulateSyntheseCommand extends Command
             LEFT JOIN (
                 {$distinctControleFactureSql}
             ) cf ON cf.idcontrole = ctrl.idcontrole
-            LEFT JOIN factures f ON f.idfacture = cf.idfacture
+            LEFT JOIN ({$facturesLatestSql}) f ON f.idfacture = cf.idfacture
             LEFT JOIN (
                 {$factureControlCountSql}
             ) t ON t.idfacture = f.idfacture

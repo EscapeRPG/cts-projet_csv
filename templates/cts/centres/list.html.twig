@@ -27,6 +27,13 @@
         </div>
 
         <div class="filters-print-actions">
+            {% if is_granted('ROLE_LIST_CENTRES_EDIT') %}
+                <button type="submit"
+                        form="centres-bulk-form"
+                        disabled
+                        data-row-save-button="1"
+                        data-bulk-save-button="1">Enregistrer</button>
+            {% endif %}
             <a class="btn-link"
                href="{{ path('app_centres_list_print') }}"
                data-print-keep-filters="1"

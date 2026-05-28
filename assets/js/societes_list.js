@@ -1,4 +1,4 @@
-import { sortTableByColumn, enableSubmitOnChange } from "sort_tables";
+import { sortTableByColumn, enableSubmitOnChange, enableBulkSubmitOnChange } from "sort_tables";
 
 /**
  * Initializes sortable columns and inline submit behavior for companies table.
@@ -27,7 +27,11 @@ export function initSocietesList(root = document) {
         }
     });
 
-    enableSubmitOnChange(table);
+    if (table.dataset.bulkEdit === '1') {
+        enableBulkSubmitOnChange(table);
+    } else {
+        enableSubmitOnChange(table);
+    }
 }
 
 const boot = () => initSocietesList(document);

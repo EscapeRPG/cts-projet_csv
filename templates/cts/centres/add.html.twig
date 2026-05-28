@@ -93,6 +93,11 @@
         </div>
 
         <div>
+            {{ form_label(form.mailPassword) }}
+            {{ form_widget(form.mailPassword) }}
+        </div>
+
+        <div>
             {{ form_label(form.siteWeb) }}
             {{ form_widget(form.siteWeb) }}
         </div>
@@ -101,6 +106,13 @@
             {{ form_label(form.numSiret) }}
             {{ form_widget(form.numSiret) }}
         </div>
+
+        <div>
+            {{ form_label(form.dateReprise) }}
+            {{ form_widget(form.dateReprise) }}
+        </div>
+
+        <small class="required-inputs right italic" style="width: 100%">(Format mm-aaaa)</small>
 
         {{ form_rest(form) }}
         <button type="submit">Enregistrer</button>

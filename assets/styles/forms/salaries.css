@@ -12,15 +12,6 @@
         max-width: unset;
     }
 
-    button:disabled {
-        background: grey;
-        cursor: default;
-
-        &:hover {
-            transform: none;
-        }
-    }
-
     td:last-of-type {
         text-align: center;
     }
@@ -28,8 +19,26 @@
 
 .voitures-list td {
     padding: 15px 5px;
+    min-width: max-content !important;
 }
 
 .reseau-uppercase {
     text-transform: uppercase;
+}
+
+button:disabled {
+    background: grey;
+    cursor: default;
+
+    &:hover {
+        transform: none;
+        background: grey;
+    }
+}
+
+input[type="search"],
+textarea {
+    border: 1px solid var(--cts-main);
+    border-radius: 10px;
+    padding: 5px 10px;
 }

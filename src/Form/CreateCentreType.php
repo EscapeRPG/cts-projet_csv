@@ -114,6 +114,11 @@ class CreateCentreType extends AbstractType
                 'required' => false,
                 'empty_data' => null,
             ])
+            ->add('mailPassword', TextType::class, [
+                'label' => 'Mot de passe email : ',
+                'required' => false,
+                'empty_data' => null,
+            ])
             ->add('siteWeb', TextType::class, [
                 'label' => 'Site web : ',
                 'required' => false,

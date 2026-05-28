@@ -45,11 +45,6 @@ table {
             width: fit-content;
             overflow: clip;
             text-overflow: ellipsis;
-
-            input {
-                width: max-content !important;
-                max-width: 100% !important;
-            }
         }
     }
 
@@ -143,27 +138,6 @@ table {
     }
 }
 
-.wrap {
-    white-space: wrap !important;
-}
-
-.light-info {
-    color: #777777;
-    font-style: italic;
-}
-
-.left {
-    text-align: left !important;
-}
-
-.right {
-    text-align: right !important;
-}
-
-.centered {
-    text-align: center !important;
-}
-
 .pagination {
     position: sticky;
     bottom: 0;
@@ -226,13 +200,11 @@ td.sticky-centre.total {
     background: var(--cts-main);
 }
 
-/* Do not use `filter` on hovered rows: it creates a containing block for `position: fixed`
-   descendants and breaks portal-style dropdowns (selectlike). */
-tbody tr:not(.recap):hover td:not(.total) {
+tbody tr:not(.recap):hover {
     background: rgba(0, 0, 0, 0.04);
 }
 
-.dark tbody tr:not(.recap):hover td:not(.total) {
+.dark tbody tr:not(.recap):hover {
     background: rgba(255, 255, 255, 0.06);
 }
 

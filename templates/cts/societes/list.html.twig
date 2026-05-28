@@ -27,6 +27,13 @@
         </div>
 
         <div class="filters-print-actions">
+            {% if is_granted('ROLE_LIST_SOCIETES_EDIT') %}
+                <button type="submit"
+                        form="societes-bulk-form"
+                        disabled
+                        data-row-save-button="1"
+                        data-bulk-save-button="1">Enregistrer</button>
+            {% endif %}
             <a class="btn-link"
                href="{{ path('app_societes_list_print') }}"
                data-print-keep-filters="1"

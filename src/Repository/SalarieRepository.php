@@ -90,6 +90,32 @@ class SalarieRepository extends ServiceEntityRepository
     }
 
     /**
+     * Returns employees ordered by company then identity, filtered by search query.
+     *
+     * @return array<int, Salarie>
+     */
+    public function findOrderedBySocieteSearch(?string $q, ?array $centreIds = null, bool $includeActive = true, bool $includeInactive = false): array
+    {
+        if ($centreIds !== null && $centreIds === []) {
+            return [];
+        }
+
+        $qb = $this->createQueryBuilder('s')
+            ->distinct()
+            ->leftJoin('s.societe', 'so')
+            ->addSelect('so')
+            ->orderBy('so.nom', 'DESC')
+            ->addOrderBy('s.nom', 'ASC')
+            ->addOrderBy('s.prenom', 'ASC');
+
+        $this->applyCentreScopeFilter($qb, $centreIds);
+        $this->applySearchFilter($qb, $q);
+        $this->applyIsActiveFilter($qb, $includeActive, $includeInactive);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
      * Returns employees ordered by identity, filtered by search query.
      *
      * @return array<int, Salarie>
@@ -182,6 +208,8 @@ class SalarieRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('s')
             ->leftJoin('s.societe', 'so')
             ->addSelect('so')
+            ->leftJoin('s.centres', 'c')
+            ->addSelect('c')
             ->andWhere('s.isActive = :isActive')
             ->andWhere('s.dateNaissance IS NOT NULL')
             ->setParameter('isActive', true)

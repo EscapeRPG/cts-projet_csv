@@ -42,16 +42,18 @@
 
 .error-modal {
     background: #ffd5d5;
+    color: black !important;
 }
 
 .success-modal {
     background: #d5ffd5;
+    color: black !important;
 }
 
 
 .abort-btn {
     background: white;
-    color: black;
+    color: black !important;
 }
 
 .confirm-btn {

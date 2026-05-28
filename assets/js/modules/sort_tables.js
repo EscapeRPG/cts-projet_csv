@@ -115,3 +115,76 @@ export function enableSubmitOnChange(table) {
         });
     });
 }
+
+/**
+ * Enables a single bulk submit button when any table input differs from initial values.
+ *
+ * Expected markup:
+ * - a button with data-bulk-save-button="1" (usually outside <tbody>)
+ *
+ * @param {HTMLTableElement} table
+ * @returns {void}
+ */
+export function enableBulkSubmitOnChange(table) {
+    if (!table) return;
+    if (table.__ctsBulkSubmitInit) return;
+    table.__ctsBulkSubmitInit = true;
+
+    const form = table.closest('form');
+    const formId = form?.id || '';
+    const submitButton =
+        table.querySelector('button[data-bulk-save-button="1"]')
+        || form?.querySelector?.('button[data-bulk-save-button="1"]')
+        || (formId ? document.querySelector(`button[data-bulk-save-button="1"][form="${CSS.escape(formId)}"]`) : null)
+        || null;
+    if (!submitButton) return;
+
+    const inputs = Array.from(table.querySelectorAll('input, select, textarea')).filter((input) => {
+        if (!(input instanceof HTMLElement)) return false;
+        if (input.matches('[data-row-change-ignore="1"]')) return false;
+        if (input instanceof HTMLInputElement && input.type === 'file') {
+            return input.matches('[data-row-change-track="1"]');
+        }
+        return true;
+    });
+
+    const initialValues = inputs.map((input) => {
+        if (input instanceof HTMLInputElement && input.type === 'file') {
+            return (input.files && input.files.length) ? input.files.length : 0;
+        }
+        if (input.type === 'checkbox' || input.type === 'radio') {
+            return input.checked;
+        }
+        return input.value;
+    });
+
+    const checkChanged = () => {
+        return inputs.some((input, i) => {
+            if (input instanceof HTMLInputElement && input.type === 'file') {
+                const now = (input.files && input.files.length) ? input.files.length : 0;
+                return now !== initialValues[i];
+            }
+            if (input.type === 'checkbox' || input.type === 'radio') {
+                return input.checked !== initialValues[i];
+            }
+            return input.value !== initialValues[i];
+        });
+    };
+
+    const sync = () => {
+        submitButton.disabled = !checkChanged();
+    };
+
+    // Keep the initial state consistent (e.g. when browser restores form values).
+    sync();
+
+    inputs.forEach((input) => {
+        input.addEventListener('input', sync);
+        input.addEventListener('change', sync);
+    });
+
+    // Some widgets (selectlike) can dispatch bubbling events from inside the enhanced UI;
+    // ensure we always re-evaluate on any change within the table.
+    table.addEventListener('input', sync, true);
+    table.addEventListener('change', sync, true);
+}

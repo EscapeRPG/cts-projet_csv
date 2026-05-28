@@ -136,6 +136,30 @@ class PopulateClientProSummaryCommand extends Command
                 ? '(ce.agr_centre = cc.agr_centre OR ce.agr_cl_centre = cc.agr_centre)'
                 : 'ce.agr_centre = cc.agr_centre';
 
+            // Base tables can contain duplicates per business identifier (idcontrole / idfacture).
+            // Dedupe here by keeping only the latest exported row per identifier to avoid multiplying sums.
+            $controlesLatestSql = "
+                SELECT *
+                FROM (
+                    SELECT
+                        c.*,
+                        ROW_NUMBER() OVER (PARTITION BY c.idcontrole ORDER BY c.date_export DESC, c.id DESC) AS rn
+                    FROM controles c
+                ) ranked_controles
+                WHERE ranked_controles.rn = 1
+            ";
+
+            $facturesLatestSql = "
+                SELECT *
+                FROM (
+                    SELECT
+                        f.*,
+                        ROW_NUMBER() OVER (PARTITION BY f.idfacture ORDER BY f.date_export DESC, f.id DESC) AS rn
+                    FROM factures f
+                ) ranked_factures
+                WHERE ranked_factures.rn = 1
+            ";
+
             $sql = "
                 INSERT INTO synthese_pros (
                     code_client, annee, mois, ca, ca_auto, ca_moto, nb_controles, nb_controles_auto, nb_controles_moto,
@@ -225,15 +249,29 @@ class PopulateClientProSummaryCommand extends Command
                     COALESCE(so.nom, 'Société inconnue') AS societe_nom,
                     c.reseau_id AS reseau_id,
                     COALESCE(ce.reseau_nom, '') AS reseau_nom
-                FROM controles c
+                FROM ({$controlesLatestSql}) c
                 INNER JOIN tmp_synthese_pros_periods p
                     ON p.annee = YEAR(c.date_ctrl) AND p.mois = MONTH(c.date_ctrl)
                 INNER JOIN (
-                    SELECT DISTINCT idcontrole, idfacture
-                    FROM controles_factures
+                    -- Avoid double counting when both a draft invoice ('D') and a final invoice ('F')
+                    -- are linked to the same control: keep 'D' only when there is no 'F' for the control.
+                    SELECT DISTINCT cf.idcontrole, cf.idfacture
+                    FROM controles_factures cf
+                    INNER JOIN ({$facturesLatestSql}) f ON f.idfacture = cf.idfacture
+                    WHERE f.type_facture IN ('F','A','D')
+                      AND (
+                        f.type_facture <> 'D'
+                        OR NOT EXISTS (
+                            SELECT 1
+                            FROM controles_factures cf2
+                            INNER JOIN ({$facturesLatestSql}) f2 ON f2.idfacture = cf2.idfacture
+                            WHERE cf2.idcontrole = cf.idcontrole
+                              AND f2.type_facture = 'F'
+                        )
+                      )
                 ) cf
                     ON cf.idcontrole = c.idcontrole
-                INNER JOIN factures fa
+                INNER JOIN ({$facturesLatestSql}) fa
                     ON fa.idfacture = cf.idfacture
                 INNER JOIN (
                     SELECT DISTINCT idcontrole, idclient, agr_centre
@@ -265,8 +303,21 @@ class PopulateClientProSummaryCommand extends Command
                         idfacture,
                         COUNT(DISTINCT idcontrole) AS nb_ctrl_facture
                     FROM (
-                        SELECT DISTINCT idcontrole, idfacture
-                        FROM controles_factures
+                        -- Keep the count logic consistent with the main join (see above).
+                        SELECT DISTINCT cf2.idcontrole, cf2.idfacture
+                        FROM controles_factures cf2
+                        INNER JOIN ({$facturesLatestSql}) f2 ON f2.idfacture = cf2.idfacture
+                        WHERE f2.type_facture IN ('F','A','D')
+                          AND (
+                            f2.type_facture <> 'D'
+                            OR NOT EXISTS (
+                                SELECT 1
+                                FROM controles_factures cf3
+                                INNER JOIN ({$facturesLatestSql}) f3 ON f3.idfacture = cf3.idfacture
+                                WHERE cf3.idcontrole = cf2.idcontrole
+                                  AND f3.type_facture = 'F'
+                            )
+                          )
                     ) cf2
                     GROUP BY idfacture
                 ) t ON t.idfacture = fa.idfacture

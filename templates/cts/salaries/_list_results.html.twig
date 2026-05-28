@@ -1,66 +1,162 @@
-<table class="salaries-list">
-    <thead>
-    <tr>
-        <th>Société</th>
-        <th class="td-centres-selectlike">Centres</th>
-        <th>Agr</th>
-        <th>Agr CL</th>
-        <th>Nom</th>
-        <th>Prénom</th>
-        <th>Date de naissance</th>
-        <th>Email</th>
-        <th>Téléphone</th>
-        <th>Échelons</th>
-        <th>Salaire</th>
-        <th>Heures</th>
-        <th>Veste</th>
-        <th>Polaire</th>
-        <th>Pantalon</th>
-        <th>Tee-shirt</th>
-        <th>Polo</th>
-        <th>Chaussures</th>
-        <th>Actif</th>
-        <th>Action</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for salarie in salaries %}
-        {% set formId = 'salarie-form-' ~ salarie.id %}
+<form id="salaries-bulk-form"
+      method="post"
+      data-turbo="false"
+      action="{{ path('app_salaries_bulk_update', {
+          'q': app.request.query.get('q'),
+          'active': app.request.query.get('active'),
+          'inactive': app.request.query.get('inactive')
+      }) }}">
+    <input type="hidden" name="_token" value="{{ csrf_token('salaries_bulk') }}">
 
+<table class="salaries-list" data-bulk-edit="1">
+        <thead>
         <tr>
-            <td>{{ form_widget(forms[salarie.id].societe, {'attr': {'form': formId}}) }}</td>
-            <td class="td-centres-selectlike">{{ form_widget(forms[salarie.id].centres, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[salarie.id].agrControleur, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[salarie.id].agrClControleur, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[salarie.id].nom, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[salarie.id].prenom, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[salarie.id].dateNaissance, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[salarie.id].email, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[salarie.id].telephone, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[salarie.id].echelons, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[salarie.id].salaireBrut, {'attr': {'form': formId}}) }} €</td>
-            <td>{{ form_widget(forms[salarie.id].nbHeures, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[salarie.id].vesteMancheAmovible, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[salarie.id].polaire, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[salarie.id].pantalon, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[salarie.id].teeShirts, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[salarie.id].polo, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[salarie.id].chaussures, {'attr': {'form': formId}}) }}</td>
-            <td>{{ form_widget(forms[salarie.id].isActive, {'attr': {'form': formId}}) }}</td>
-            <td>
-                {{ form_start(forms[salarie.id], {
-                    'action': path('app_salaries_update', {'id': salarie.id, 'page': pagination.page|default(1), 'q': app.request.query.get('q'), 'active': app.request.query.get('active'), 'inactive': app.request.query.get('inactive')}),
-                    'method': 'POST',
-                    'attr': {'data-turbo': 'false', 'id': formId}
-                }) }}
-                {{ form_errors(forms[salarie.id]) }}
-                <button type="submit" disabled form="{{ formId }}" data-row-save-button="1">Enregistrer</button>
-                <div class="inline-form-rest" hidden>
-                    {{ form_rest(forms[salarie.id]) }}
-                </div>
-                {{ form_end(forms[salarie.id], { render_rest: false }) }}
-            </td>
+            <th>Société</th>
+            <th class="td-centres-selectlike">Centres</th>
+            <th>Agr</th>
+            <th>Agr CL</th>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Date de naissance</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Échelons</th>
+            <th>Salaire</th>
+            <th>Heures</th>
+            <th>Veste</th>
+            <th>Polaire</th>
+            <th>Pantalon</th>
+            <th>Tee-shirt</th>
+            <th>Polo</th>
+            <th>Chaussures</th>
+            <th>Actif</th>
         </tr>
-    {% endfor %}
-    </tbody>
+        </thead>
+        <tbody>
+        {% for salarie in salaries %}
+            {% set rowId = salarie.id %}
+            {% set selectedCentreIds = [] %}
+            {% for sc in salarie.centres %}
+                {% if sc.id is not null %}
+                    {% set selectedCentreIds = selectedCentreIds|merge([sc.id]) %}
+                {% endif %}
+            {% endfor %}
+            <tr>
+                <td>
+                    <select name="changes[{{ rowId }}][societe]">
+                        <option value="">- Choisir -</option>
+                        {% for so in societes %}
+                            <option
+                                value="{{ so.id }}" {{ so.id == salarie.societe.id ? 'selected' : '' }}>{{ so.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td class="td-centres-selectlike">
+                    <select name="changes[{{ rowId }}][centres][]" multiple data-centres-selectlike="1" size="1">
+                        {% set currentGroup = null %}
+                        {% for c in centres %}
+                        {% set group = c.reseauNom ?? '' %}
+                        {% if group != currentGroup %}
+                        {% if currentGroup is not null %}</optgroup>{% endif %}
+                        <optgroup label="{{ group }}">
+                            {% set currentGroup = group %}
+                            {% endif %}
+                            {% set ville = c.ville ?? '' %}
+                            {% set agr = c.agrCentre ?? '' %}
+                            {% set label = agr ? (ville ~ ' (' ~ agr ~ ')') : ville %}
+                            <option
+                                value="{{ c.id }}" {{ c.id in selectedCentreIds ? 'selected' : '' }}>{{ label }}</option>
+                            {% endfor %}
+                            {% if currentGroup is not null %}</optgroup>{% endif %}
+                    </select>
+                </td>
+                <td><input type="text" name="changes[{{ rowId }}][agrControleur]" value="{{ salarie.agrControleur }}">
+                </td>
+                <td><input type="text" name="changes[{{ rowId }}][agrClControleur]"
+                           value="{{ salarie.agrClControleur }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][nom]" value="{{ salarie.nom }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][prenom]" value="{{ salarie.prenom }}"></td>
+                <td><input type="date" name="changes[{{ rowId }}][dateNaissance]"
+                           value="{{ salarie.dateNaissance ? salarie.dateNaissance|date('Y-m-d') : '' }}"></td>
+                <td><input type="email" name="changes[{{ rowId }}][email]" value="{{ salarie.email }}"></td>
+                <td><input type="text" name="changes[{{ rowId }}][telephone]" value="{{ salarie.telephone }}"></td>
+                <td>
+                    <select name="changes[{{ rowId }}][echelons]">
+                        <option value="">- Choisir -</option>
+                        {% for i in 1..12 %}
+                            <option value="{{ i }}" {{ salarie.echelons == i ? 'selected' : '' }}>{{ i }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td><input type="number" step="0.01" name="changes[{{ rowId }}][salaireBrut]"
+                           value="{{ salarie.salaireBrut }}"> €
+                </td>
+                <td><input type="number" step="0.01" name="changes[{{ rowId }}][nbHeures]"
+                           value="{{ salarie.nbHeures }}"></td>
+                <td>
+                    <select name="changes[{{ rowId }}][vesteMancheAmovible]">
+                        <option value="">- Choisir -</option>
+                        {% for v in ['XXS','XS','S','M','L','XL','XXL','XXXL','XXXXL'] %}
+                            <option
+                                value="{{ v }}" {{ salarie.vesteMancheAmovible == v ? 'selected' : '' }}>{{ v }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <select name="changes[{{ rowId }}][polaire]">
+                        <option value="">- Choisir -</option>
+                        {% for v in ['XXS','XS','S','M','L','XL','XXL','XXXL','XXXXL'] %}
+                            <option value="{{ v }}" {{ salarie.polaire == v ? 'selected' : '' }}>{{ v }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <select name="changes[{{ rowId }}][pantalon]">
+                        <option value="">- Choisir -</option>
+                        {% set tailles = [] %}
+                        {% for i in range(36, 52, 2) %}
+                            {% set tailles = tailles|merge([i]) %}
+                            {% if i < 52 %}
+                                {% set tailles = tailles|merge([i ~ '/' ~ (i+2)]) %}
+                            {% endif %}
+                        {% endfor %}
+                        {% for t in tailles %}
+                            <option value="{{ t }}" {{ salarie.pantalon == t ? 'selected' : '' }}>{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <select name="changes[{{ rowId }}][teeShirts]">
+                        <option value="">- Choisir -</option>
+                        {% for v in ['XXS','XS','S','M','L','XL','XXL','XXXL','XXXXL'] %}
+                            <option value="{{ v }}" {{ salarie.teeShirts == v ? 'selected' : '' }}>{{ v }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <select name="changes[{{ rowId }}][polo]">
+                        <option value="">- Choisir -</option>
+                        {% for v in ['XXS','XS','S','M','L','XL','XXL','XXXL','XXXXL'] %}
+                            <option value="{{ v }}" {{ salarie.polo == v ? 'selected' : '' }}>{{ v }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <select name="changes[{{ rowId }}][chaussures]">
+                        <option value="">- Choisir -</option>
+                        {% for i in 36..50 %}
+                            <option value="{{ i }}" {{ salarie.chaussures == i ? 'selected' : '' }}>{{ i }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td class="centered">
+                    <input type="hidden" name="changes[{{ rowId }}][isActive]" value="0">
+                    <input type="checkbox" name="changes[{{ rowId }}][isActive]"
+                           value="1" {{ salarie.isActive ? 'checked' : '' }}>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
 </table>
+
+</form>

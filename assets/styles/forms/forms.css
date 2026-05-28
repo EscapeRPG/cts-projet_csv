@@ -33,6 +33,12 @@
             align-items: center;
             gap: 20px;
 
+            label {
+                flex: 1;
+                min-width: calc(40% - 20px);
+                text-align: left;
+            }
+
             input, select, textarea {
                 border: 1px solid var(--cts-main);
                 color: var(--main-text);
@@ -447,7 +453,6 @@ input, textarea, select, option, optgroup {
 }
 
 table input {
-    width: 100%;
     border: 1px solid var(--cts-main);
     border-radius: 10px;
     padding: 5px 10px;

@@ -44,7 +44,7 @@ final class BirthdayNotificationGenerator
     ): array
     {
         $today = ($referenceDate ?? new \DateTimeImmutable('today'))->setTime(0, 0);
-        $users = $this->userRepository->findActiveUsers();
+        $users = $this->userRepository->findActiveUsersWithScope();
 
         if ($users === []) {
             return [
@@ -60,6 +60,19 @@ final class BirthdayNotificationGenerator
         $matched = 0;
         $notificationsCreated = 0;
         $recipientsCreated = 0;
+
+        // Pre-compute each user's allowed centre scope once.
+        // - null means unrestricted (ROLE_ADMIN)
+        // - [] means "no allowed centres" -> sees nothing (same semantics as list pages)
+        /** @var array<int, list<int>|null> $userAllowedCentreIdsByUserId */
+        $userAllowedCentreIdsByUserId = [];
+        foreach ($users as $user) {
+            $id = $user->getId();
+            if ($id === null) {
+                continue;
+            }
+            $userAllowedCentreIdsByUserId[$id] = $this->computeUserCentreScopeIds($user);
+        }
 
         foreach ($employees as $employee) {
             $birthDate = $employee->getDateNaissance();
@@ -88,7 +101,34 @@ final class BirthdayNotificationGenerator
                 }
             }
 
+            // Employee visibility is centre-scoped.
+            $employeeCentreIds = [];
+            foreach ($employee->getCentres() as $centre) {
+                $centreId = $centre->getId();
+                if ($centreId !== null) {
+                    $employeeCentreIds[] = $centreId;
+                }
+            }
+            $employeeCentreIds = array_values(array_unique($employeeCentreIds));
+
             foreach ($users as $user) {
+                $userId = $user->getId();
+                $allowedCentreIds = $userId !== null ? ($userAllowedCentreIdsByUserId[$userId] ?? []) : [];
+
+                if ($allowedCentreIds !== null) {
+                    if ($allowedCentreIds === []) {
+                        // Scoped user but no allowed centres: sees nothing.
+                        continue;
+                    }
+                    if ($employeeCentreIds === []) {
+                        // Employee without centres is not visible to scoped users (list pages use an inner join).
+                        continue;
+                    }
+                    if (!$this->intersects($employeeCentreIds, $allowedCentreIds)) {
+                        continue;
+                    }
+                }
+
                 if ($this->hasRecipient($notification, $user)) {
                     continue;
                 }
@@ -184,6 +224,72 @@ final class BirthdayNotificationGenerator
     {
         foreach ($notification->getUserNotifications() as $userNotification) {
             if ($userNotification->getUser() === $user) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Mirrors ListsController::getCurrentUserCentreScopeIds(), but for an arbitrary user entity.
+     *
+     * @return list<int>|null Null means unrestricted (ROLE_ADMIN).
+     */
+    private function computeUserCentreScopeIds(User $user): ?array
+    {
+        if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            return null;
+        }
+
+        $ids = [];
+
+        // Prefer societes scope (covers encours + centres) when defined.
+        if ($user->getSocietes()->count() > 0) {
+            foreach ($user->getSocietes() as $societe) {
+                if (!$societe instanceof \App\Entity\Societe) {
+                    continue;
+                }
+                foreach ($societe->getCentre() as $centre) {
+                    if (!$centre instanceof \App\Entity\Centre) {
+                        continue;
+                    }
+                    $id = $centre->getId();
+                    if ($id !== null) {
+                        $ids[] = $id;
+                    }
+                }
+            }
+        } else {
+            // Backward compat: old scope stored as explicit centres.
+            foreach ($user->getCentres() as $centre) {
+                $id = $centre->getId();
+                if ($id !== null) {
+                    $ids[] = $id;
+                }
+            }
+        }
+
+        $ids = array_values(array_unique($ids));
+        sort($ids);
+
+        return $ids;
+    }
+
+    /**
+     * @param list<int> $a
+     * @param list<int> $b
+     */
+    private function intersects(array $a, array $b): bool
+    {
+        // Iterate on the smallest list to keep it cheap.
+        if (count($a) > count($b)) {
+            [$a, $b] = [$b, $a];
+        }
+
+        $set = array_fill_keys($b, true);
+        foreach ($a as $v) {
+            if (isset($set[$v])) {
                 return true;
             }
         }

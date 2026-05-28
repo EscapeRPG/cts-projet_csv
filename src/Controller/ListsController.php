@@ -51,7 +51,8 @@ final class ListsController extends AbstractController
     public function listSalaries(
         Request              $request,
         SalarieRepository    $salarieRepository,
-        FormFactoryInterface $formFactory
+        SocieteRepository    $societeRepository,
+        CentreRepository     $centreRepository,
     ): Response
     {
         $q = trim((string)$request->query->get('q', ''));
@@ -62,18 +63,13 @@ final class ListsController extends AbstractController
             $includeActive = true;
             $includeInactive = true;
         }
-        $perPage = 30;
-        $paginationData = $this->computePagination($request, $perPage, $salarieRepository->countSearch($q, $centreIds, $includeActive, $includeInactive));
 
-        // Temporaire: tri simple par nom pour les modifications manuelles.
-        // $salaries = $salarieRepository->findBy([], ['nom' => 'ASC'], $perPage, $paginationData['offset']);
-        $salaries = $salarieRepository->findPaginatedOrderedBySocieteSearch($perPage, $paginationData['offset'], $q, $centreIds, $includeActive, $includeInactive);
+        // Bulk-edit: load the full result set (no pagination).
+        $salaries = $salarieRepository->findOrderedBySocieteSearch($q, $centreIds, $includeActive, $includeInactive);
+        $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
+        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch(null, $centreIds);
 
-        $forms = $this->buildInlineEditForms($salaries, $formFactory, 'salarie_', CreateSalarieType::class, [
-            'centre_scope_ids' => $centreIds,
-        ]);
-
-        return $this->renderSalariesList($salaries, $forms, $paginationData['view']);
+        return $this->renderSalariesList($salaries, $societes, $centres, null);
     }
 
     #[IsGranted('ROLE_LIST_SALARIES_VIEW')]
@@ -81,7 +77,8 @@ final class ListsController extends AbstractController
     public function listSalariesPartial(
         Request              $request,
         SalarieRepository    $salarieRepository,
-        FormFactoryInterface $formFactory
+        SocieteRepository    $societeRepository,
+        CentreRepository     $centreRepository,
     ): Response
     {
         $q = trim((string)$request->query->get('q', ''));
@@ -92,17 +89,15 @@ final class ListsController extends AbstractController
             $includeActive = true;
             $includeInactive = true;
         }
-        $perPage = 30;
-        $paginationData = $this->computePagination($request, $perPage, $salarieRepository->countSearch($q, $centreIds, $includeActive, $includeInactive));
-        $salaries = $salarieRepository->findPaginatedOrderedBySocieteSearch($perPage, $paginationData['offset'], $q, $centreIds, $includeActive, $includeInactive);
-        $forms = $this->buildInlineEditForms($salaries, $formFactory, 'salarie_', CreateSalarieType::class, [
-            'centre_scope_ids' => $centreIds,
-        ]);
+        $salaries = $salarieRepository->findOrderedBySocieteSearch($q, $centreIds, $includeActive, $includeInactive);
+        $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
+        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch(null, $centreIds);
 
         return $this->render('cts/salaries/_list_results.html.twig', [
             'salaries' => $salaries,
-            'forms' => $forms,
-            'pagination' => $paginationData['view'],
+            'societes' => $societes,
+            'centres' => $centres,
+            'pagination' => null,
         ]);
     }
 
@@ -173,14 +168,14 @@ final class ListsController extends AbstractController
     }
 
     #[IsGranted('ROLE_LIST_SALARIES_EDIT')]
-    #[Route('/cts/salaries/update/{id}', name: 'app_salaries_update', methods: ['POST'])]
-    public function updateSalarie(
-        Salarie                $salarie,
-        Request                $request,
+    #[Route('/cts/salaries/bulk-update', name: 'app_salaries_bulk_update', methods: ['POST'])]
+    public function bulkUpdateSalaries(
+        Request $request,
+        SalarieRepository $salarieRepository,
+        SocieteRepository $societeRepository,
+        CentreRepository $centreRepository,
         EntityManagerInterface $em,
-        FormFactoryInterface   $formFactory
-    ): Response
-    {
+    ): Response {
         $centreIds = $this->getCurrentUserCentreScopeIds();
         $includeActive = $request->query->getInt('active', 1) === 1;
         $includeInactive = $request->query->getInt('inactive', 0) === 1;
@@ -189,26 +184,21 @@ final class ListsController extends AbstractController
             $includeInactive = true;
         }
 
-        $form = $formFactory->createNamed(
-            'salarie_' . $salarie->getId(),
-            CreateSalarieType::class,
-            $salarie,
-            [
-                'csrf_field_name' => '_token',
-                'csrf_token_id' => 'salarie_' . $salarie->getId(),
-                'centre_scope_ids' => $centreIds,
-            ]
-        );
-
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->persist($salarie);
-            $em->flush();
-
-            $this->addFlash('success', "Salarié {$salarie->getNom()} mis à jour.");
-
-            return $this->redirectToRoute('app_salaries_list_uneditable', [
+        $q = trim((string)$request->query->get('q', ''));
+        $salaries = $salarieRepository->findOrderedBySocieteSearch($q, $centreIds, $includeActive, $includeInactive);
+        $payload = $request->request->all('changes');
+        if (!$this->isCsrfTokenValid('salaries_bulk', (string) $request->request->get(self::CSRF_FIELD_NAME, ''))) {
+            $this->addFlash('error', 'Jeton CSRF invalide, rechargez la page.');
+            return $this->redirectToRoute('app_salaries_list', [
+                'page' => max(1, $request->query->getInt('page', 1)),
+                'q' => $request->query->get('q'),
+                'active' => $includeActive ? 1 : 0,
+                'inactive' => $includeInactive ? 1 : 0,
+            ]);
+        }
+        if (!is_array($payload) || $payload === []) {
+            $this->addFlash('warning', 'Aucune modification détectée.');
+            return $this->redirectToRoute('app_salaries_list', [
                 'page' => max(1, $request->query->getInt('page', 1)),
                 'q' => $request->query->get('q'),
                 'active' => $includeActive ? 1 : 0,
@@ -216,28 +206,67 @@ final class ListsController extends AbstractController
             ]);
         }
 
-        /** @var SalarieRepository $repo */
-        $repo = $em->getRepository(Salarie::class);
-        $q = trim((string)$request->query->get('q', ''));
-        $perPage = 30;
-        $paginationData = $this->computePagination($request, $perPage, $repo->countSearch($q, $centreIds, $includeActive, $includeInactive));
+        // Security: only allow updating salaries that are in the current page result set (and already centre-scoped).
+        $allowedById = [];
+        foreach ($salaries as $s) {
+            if (!$s instanceof Salarie) {
+                continue;
+            }
+            $id = $s->getId();
+            if ($id !== null) {
+                $allowedById[(string)$id] = $s;
+            }
+        }
 
-        $salaries = $repo->findPaginatedOrderedBySocieteSearch($perPage, $paginationData['offset'], $q, $centreIds, $includeActive, $includeInactive);
-        $forms = $this->buildInlineEditForms(
-            $salaries,
-            $formFactory,
-            'salarie_',
-            CreateSalarieType::class,
-            [
-                'centre_scope_ids' => $centreIds,
-            ],
-            $salarie->getId(),
-            $form->createView()
-        );
+        $errors = [];
+        $changedCount = 0;
 
-        $this->addFlash('error', 'Erreur dans le formulaire, vérifiez les champs.');
+        foreach ($payload as $id => $fields) {
+            $id = trim((string)$id);
+            if ($id === '' || !isset($allowedById[$id])) {
+                continue;
+            }
+            if (!is_array($fields)) {
+                continue;
+            }
 
-        return $this->renderSalariesList($salaries, $forms, $paginationData['view']);
+            $salarie = $allowedById[$id];
+            $rowErrors = $this->applyManualSalarieUpdate($salarie, $fields, $centreIds, $em);
+            if ($rowErrors !== []) {
+                $errors[] = sprintf('[%s %s] %s', (string)$salarie->getNom(), (string)$salarie->getPrenom(), implode(' | ', $rowErrors));
+                continue;
+            }
+
+            ++$changedCount;
+        }
+
+        if ($errors !== []) {
+            foreach ($errors as $msg) {
+                $this->addFlash('error', $msg);
+            }
+            $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
+            $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch(null, $centreIds);
+            return $this->renderSalariesList($salaries, $societes, $centres, null);
+        }
+
+        if ($changedCount === 0) {
+            $this->addFlash('warning', 'Aucune modification appliquée.');
+            return $this->redirectToRoute('app_salaries_list', [
+                'page' => max(1, $request->query->getInt('page', 1)),
+                'q' => $request->query->get('q'),
+                'active' => $includeActive ? 1 : 0,
+                'inactive' => $includeInactive ? 1 : 0,
+            ]);
+        }
+
+        $em->flush();
+        $this->addFlash('success', 'Modifications enregistrées.');
+
+        return $this->redirectToRoute('app_salaries_list_uneditable', [
+            'q' => $request->query->get('q'),
+            'active' => $includeActive ? 1 : 0,
+            'inactive' => $includeInactive ? 1 : 0,
+        ]);
     }
 
     /**
@@ -245,29 +274,25 @@ final class ListsController extends AbstractController
      */
     #[IsGranted('ROLE_LIST_SOCIETES_VIEW')]
     #[Route('/cts/societes/list', name: 'app_societes_list')]
-    public function listSocietes(Request $request, SocieteRepository $societeRepository, FormFactoryInterface $formFactory): Response
+    public function listSocietes(Request $request, SocieteRepository $societeRepository): Response
     {
         $q = trim((string)$request->query->get('q', ''));
         $societes = $societeRepository->findOrderedByNomSearch($q, $this->getCurrentUserCentreScopeIds());
-        $forms = $this->buildInlineEditForms($societes, $formFactory, 'societe_', CreateSocieteType::class);
 
         return $this->render('cts/societes/list.html.twig', [
             'societes' => $societes,
-            'forms' => $forms,
         ]);
     }
 
     #[IsGranted('ROLE_LIST_SOCIETES_VIEW')]
     #[Route('/cts/societes/list/partial', name: 'app_societes_list_partial')]
-    public function listSocietesPartial(Request $request, SocieteRepository $societeRepository, FormFactoryInterface $formFactory): Response
+    public function listSocietesPartial(Request $request, SocieteRepository $societeRepository): Response
     {
         $q = trim((string)$request->query->get('q', ''));
         $societes = $societeRepository->findOrderedByNomSearch($q, $this->getCurrentUserCentreScopeIds());
-        $forms = $this->buildInlineEditForms($societes, $formFactory, 'societe_', CreateSocieteType::class);
 
         return $this->render('cts/societes/_list_results.html.twig', [
             'societes' => $societes,
-            'forms' => $forms,
         ]);
     }
 
@@ -322,56 +347,80 @@ final class ListsController extends AbstractController
     }
 
     #[IsGranted('ROLE_LIST_SOCIETES_EDIT')]
-    #[Route('/cts/societes/update/{id}', name: 'app_societes_update', methods: ['POST'])]
-    public function updateSociete(
-        Societe                $societe,
-        Request                $request,
+    #[Route('/cts/societes/bulk-update', name: 'app_societes_bulk_update', methods: ['POST'])]
+    public function bulkUpdateSocietes(
+        Request $request,
+        SocieteRepository $societeRepository,
         EntityManagerInterface $em,
-        FormFactoryInterface   $formFactory
-    ): Response
-    {
-        $form = $formFactory->createNamed(
-            'societe_' . $societe->getId(),
-            CreateSocieteType::class,
-            $societe,
-            [
-                'csrf_field_name' => '_token',
-                'csrf_token_id' => 'societe_' . $societe->getId(),
-            ]
-        );
-
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->persist($societe);
-            $em->flush();
-
-            $this->addFlash('success', "Société {$societe->getNom()} mise à jour.");
-
-            return $this->redirectToRoute('app_societes_list_uneditable', [
+    ): Response {
+        if (!$this->isCsrfTokenValid('societes_bulk', (string) $request->request->get(self::CSRF_FIELD_NAME, ''))) {
+            $this->addFlash('error', 'Jeton CSRF invalide, rechargez la page.');
+            return $this->redirectToRoute('app_societes_list', [
                 'q' => $request->query->get('q'),
             ]);
         }
 
-        /** @var SocieteRepository $repo */
-        $repo = $em->getRepository(Societe::class);
         $q = trim((string)$request->query->get('q', ''));
-        $societes = $repo->findOrderedByNomSearch($q);
-        $forms = $this->buildInlineEditForms(
-            $societes,
-            $formFactory,
-            'societe_',
-            CreateSocieteType::class,
-            [],
-            $societe->getId(),
-            $form->createView()
-        );
+        $centreIds = $this->getCurrentUserCentreScopeIds();
+        $societes = $societeRepository->findOrderedByNomSearch($q, $centreIds);
 
-        $this->addFlash('error', 'Erreur dans le formulaire, vérifiez les champs.');
+        $allowedById = [];
+        foreach ($societes as $s) {
+            $id = $s->getId();
+            if ($id !== null) {
+                $allowedById[(string)$id] = $s;
+            }
+        }
 
-        return $this->render('cts/societes/list.html.twig', [
-            'societes' => $societes,
-            'forms' => $forms,
+        $payload = $request->request->all('changes');
+        if (!is_array($payload) || $payload === []) {
+            $this->addFlash('warning', 'Aucune modification détectée.');
+            return $this->redirectToRoute('app_societes_list', [
+                'q' => $request->query->get('q'),
+            ]);
+        }
+
+        $errors = [];
+        $changed = 0;
+        foreach ($payload as $id => $fields) {
+            $id = trim((string)$id);
+            if ($id === '' || !isset($allowedById[$id])) {
+                continue;
+            }
+            if (!is_array($fields)) {
+                continue;
+            }
+
+            $societe = $allowedById[$id];
+            $rowErrors = $this->applyManualSocieteUpdate($societe, $fields);
+            if ($rowErrors !== []) {
+                $errors[] = sprintf('[%s] %s', (string)$societe->getNom(), implode(' | ', $rowErrors));
+                continue;
+            }
+            ++$changed;
+        }
+
+        if ($errors !== []) {
+            foreach ($errors as $msg) {
+                $this->addFlash('error', $msg);
+            }
+            return $this->render('cts/societes/list.html.twig', [
+                'societes' => $societes,
+            ]);
+        }
+
+        if ($changed === 0) {
+            $this->addFlash('warning', 'Aucune modification appliquée.');
+            return $this->redirectToRoute('app_societes_list', [
+                'q' => $request->query->get('q'),
+            ]);
+        }
+
+        $em->flush();
+        $this->addFlash('success', 'Modifications enregistrées.');
+
+        return $this->redirectToRoute('app_societes_list_uneditable', [
+            'q' => $request->query->get('q'),
         ]);
     }
 
@@ -380,36 +429,45 @@ final class ListsController extends AbstractController
      */
     #[IsGranted('ROLE_LIST_CENTRES_VIEW')]
     #[Route("/cts/centres/list", name: 'app_centres_list')]
-    public function listCentres(Request $request, CentreRepository $centreRepository, FormFactoryInterface $formFactory): Response
+    public function listCentres(
+        Request $request,
+        CentreRepository $centreRepository,
+        SocieteRepository $societeRepository,
+        \App\Repository\ReseauRepository $reseauRepository,
+    ): Response
     {
         $q = trim((string)$request->query->get('q', ''));
         $centreIds = $this->getCurrentUserCentreScopeIds();
         $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch($q, $centreIds);
-
-        $forms = $this->buildInlineEditForms($centres, $formFactory, 'centre_', CreateCentreType::class, [
-            'centre_scope_ids' => $centreIds,
-        ]);
+        $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
+        $reseaux = $this->findReseauxForCentreScope($reseauRepository, $centreIds);
 
         return $this->render('cts/centres/list.html.twig', [
             'centres' => $centres,
-            'forms' => $forms,
+            'societes' => $societes,
+            'reseaux' => $reseaux,
         ]);
     }
 
     #[IsGranted('ROLE_LIST_CENTRES_VIEW')]
     #[Route("/cts/centres/list/partial", name: 'app_centres_list_partial')]
-    public function listCentresPartial(Request $request, CentreRepository $centreRepository, FormFactoryInterface $formFactory): Response
+    public function listCentresPartial(
+        Request $request,
+        CentreRepository $centreRepository,
+        SocieteRepository $societeRepository,
+        \App\Repository\ReseauRepository $reseauRepository,
+    ): Response
     {
         $q = trim((string)$request->query->get('q', ''));
         $centreIds = $this->getCurrentUserCentreScopeIds();
         $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch($q, $centreIds);
-        $forms = $this->buildInlineEditForms($centres, $formFactory, 'centre_', CreateCentreType::class, [
-            'centre_scope_ids' => $centreIds,
-        ]);
+        $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
+        $reseaux = $this->findReseauxForCentreScope($reseauRepository, $centreIds);
 
         return $this->render('cts/centres/_list_results.html.twig', [
             'centres' => $centres,
-            'forms' => $forms,
+            'societes' => $societes,
+            'reseaux' => $reseaux,
         ]);
     }
 
@@ -472,81 +530,97 @@ final class ListsController extends AbstractController
     }
 
     #[IsGranted('ROLE_LIST_CENTRES_EDIT')]
-    #[Route('/cts/centres/update/{id}', name: 'app_centres_update', methods: ['POST'])]
-    public function updateCentre(
-        Centre                 $centre,
-        Request                $request,
+    #[Route('/cts/centres/bulk-update', name: 'app_centres_bulk_update', methods: ['POST'])]
+    public function bulkUpdateCentres(
+        Request $request,
+        CentreRepository $centreRepository,
+        SocieteRepository $societeRepository,
+        \App\Repository\ReseauRepository $reseauRepository,
         EntityManagerInterface $em,
-        FormFactoryInterface   $formFactory,
-        LoggerInterface        $logger
-    ): Response
-    {
-        try {
-            $centreIds = $this->getCurrentUserCentreScopeIds();
-            if ($centreIds !== null && !in_array($centre->getId(), $centreIds, true)) {
-                throw $this->createNotFoundException();
+    ): Response {
+        if (!$this->isCsrfTokenValid('centres_bulk', (string) $request->request->get(self::CSRF_FIELD_NAME, ''))) {
+            $this->addFlash('error', 'Jeton CSRF invalide, rechargez la page.');
+            return $this->redirectToRoute('app_centres_list', [
+                'q' => $request->query->get('q'),
+            ]);
+        }
+
+        $q = trim((string)$request->query->get('q', ''));
+        $centreIds = $this->getCurrentUserCentreScopeIds();
+        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch($q, $centreIds);
+        $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
+        $reseaux = $this->findReseauxForCentreScope($reseauRepository, $centreIds);
+
+        $allowedById = [];
+        foreach ($centres as $c) {
+            $id = $c->getId();
+            if ($id !== null) {
+                $allowedById[(string)$id] = $c;
+            }
+        }
+
+        $payload = $request->request->all('changes');
+        if (!is_array($payload) || $payload === []) {
+            $this->addFlash('warning', 'Aucune modification détectée.');
+            return $this->redirectToRoute('app_centres_list', [
+                'q' => $request->query->get('q'),
+            ]);
+        }
+
+        $societeIds = array_fill_keys(array_filter(array_map(static fn($s) => $s->getId(), $societes)), true);
+        $reseauIds = array_fill_keys(array_filter(array_map(static fn($r) => $r->getId(), $reseaux)), true);
+
+        $errors = [];
+        $changed = 0;
+        foreach ($payload as $id => $fields) {
+            $id = trim((string)$id);
+            if ($id === '' || !isset($allowedById[$id])) {
+                continue;
+            }
+            if (!is_array($fields)) {
+                continue;
             }
 
-            $form = $formFactory->createNamed(
-                'centre_' . $centre->getId(),
-                CreateCentreType::class,
+            $centre = $allowedById[$id];
+            $rowErrors = $this->applyManualCentreUpdate(
                 $centre,
-                [
-                    'csrf_field_name' => '_token',
-                    'csrf_token_id' => 'centre_' . $centre->getId(),
-                    'centre_scope_ids' => $centreIds,
-                ]
+                $fields,
+                $societeRepository,
+                $reseauRepository,
+                $societeIds,
+                $reseauIds
             );
-
-            $form->handleRequest($request);
-
-            if ($form->isSubmitted() && $form->isValid()) {
-                if ($centre->getReseau() !== null) {
-                    $centre->setReseauNom($form->get('reseauNom')->getData());
-                }
-
-                $em->persist($centre);
-                $em->flush();
-
-                $this->addFlash('success', "Centre {$centre->getVille()} mis à jour.");
-
-                return $this->redirectToRoute('app_centres_list_uneditable', [
-                    'q' => $request->query->get('q'),
-                ]);
+            if ($rowErrors !== []) {
+                $errors[] = sprintf('[%s] %s', (string)$centre->getVille(), implode(' | ', $rowErrors));
+                continue;
             }
+            ++$changed;
+        }
 
-            /** @var CentreRepository $repo */
-            $repo = $em->getRepository(Centre::class);
-            $q = trim((string)$request->query->get('q', ''));
-            $centres = $repo->findOrderedBySocieteVilleAgrSearch($q, $centreIds);
-            $forms = $this->buildInlineEditForms(
-                $centres,
-                $formFactory,
-                'centre_',
-                CreateCentreType::class,
-                [
-                    'centre_scope_ids' => $centreIds,
-                ],
-                $centre->getId(),
-                $form->createView()
-            );
-
-            $this->addFlash('error', 'Erreur dans le formulaire, vérifiez les champs.');
-
+        if ($errors !== []) {
+            foreach ($errors as $msg) {
+                $this->addFlash('error', $msg);
+            }
             return $this->render('cts/centres/list.html.twig', [
                 'centres' => $centres,
-                'forms' => $forms,
+                'societes' => $societes,
+                'reseaux' => $reseaux,
             ]);
-        } catch (DbalDriverException $e) {
-            $logger->error('DB collation error while editing centre', [
-                'route' => 'app_centres_update',
-                'centreId' => $centre->getId(),
-                'sqlState' => $e->getSQLState(),
-                'query' => $e->getQuery(),
-                'message' => $e->getMessage(),
-            ]);
-            throw $e;
         }
+
+        if ($changed === 0) {
+            $this->addFlash('warning', 'Aucune modification appliquée.');
+            return $this->redirectToRoute('app_centres_list', [
+                'q' => $request->query->get('q'),
+            ]);
+        }
+
+        $em->flush();
+        $this->addFlash('success', 'Modifications enregistrées.');
+
+        return $this->redirectToRoute('app_centres_list_uneditable', [
+            'q' => $request->query->get('q'),
+        ]);
     }
 
     /**
@@ -596,7 +670,8 @@ final class ListsController extends AbstractController
     public function listVoitures(
         Request              $request,
         VoitureRepository    $voitureRepository,
-        FormFactoryInterface $formFactory
+        SocieteRepository    $societeRepository,
+        CentreRepository     $centreRepository,
     ): Response
     {
         $q = trim((string)$request->query->get('q', ''));
@@ -607,19 +682,15 @@ final class ListsController extends AbstractController
             $includeActive = true;
             $includeInactive = true;
         }
-        // One form per row: keep the page size small to avoid dev profiler OOMs.
-        $perPage = 20;
-        $paginationData = $this->computePagination($request, $perPage, $voitureRepository->countSearch($q, $centreIds, $includeActive, $includeInactive));
-
-        $voitures = $voitureRepository->findPaginatedOrderedBySocieteSearch($perPage, $paginationData['offset'], $q, $centreIds, $includeActive, $includeInactive);
-        $forms = $this->buildInlineEditForms($voitures, $formFactory, 'voiture_', CreateVoitureType::class, [
-            'centre_scope_ids' => $centreIds,
-        ]);
+        $voitures = $voitureRepository->findOrderedBySocieteSearch($q, $centreIds, $includeActive, $includeInactive);
+        $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
+        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch(null, $centreIds);
 
         return $this->render('cts/voitures/list.html.twig', [
             'voitures' => $voitures,
-            'forms' => $forms,
-            'pagination' => $paginationData['view'],
+            'societes' => $societes,
+            'centres' => $centres,
+            'pagination' => null,
         ]);
     }
 
@@ -628,7 +699,8 @@ final class ListsController extends AbstractController
     public function listVoituresPartial(
         Request              $request,
         VoitureRepository    $voitureRepository,
-        FormFactoryInterface $formFactory
+        SocieteRepository    $societeRepository,
+        CentreRepository     $centreRepository,
     ): Response
     {
         $q = trim((string)$request->query->get('q', ''));
@@ -639,17 +711,15 @@ final class ListsController extends AbstractController
             $includeActive = true;
             $includeInactive = true;
         }
-        $perPage = 20;
-        $paginationData = $this->computePagination($request, $perPage, $voitureRepository->countSearch($q, $centreIds, $includeActive, $includeInactive));
-        $voitures = $voitureRepository->findPaginatedOrderedBySocieteSearch($perPage, $paginationData['offset'], $q, $centreIds, $includeActive, $includeInactive);
-        $forms = $this->buildInlineEditForms($voitures, $formFactory, 'voiture_', CreateVoitureType::class, [
-            'centre_scope_ids' => $centreIds,
-        ]);
+        $voitures = $voitureRepository->findOrderedBySocieteSearch($q, $centreIds, $includeActive, $includeInactive);
+        $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
+        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch(null, $centreIds);
 
         return $this->render('cts/voitures/_list_results.html.twig', [
             'voitures' => $voitures,
-            'forms' => $forms,
-            'pagination' => $paginationData['view'],
+            'societes' => $societes,
+            'centres' => $centres,
+            'pagination' => null,
         ]);
     }
 
@@ -717,16 +787,23 @@ final class ListsController extends AbstractController
     }
 
     #[IsGranted('ROLE_LIST_VOITURES_EDIT')]
-    #[Route('/cts/voitures/update/{id}', name: 'app_voitures_update', methods: ['POST'])]
-    public function updateVoiture(
-        Voiture                         $voiture,
-        Request                         $request,
-        EntityManagerInterface          $em,
-        FormFactoryInterface            $formFactory,
-        VoitureRepository               $voitureRepository,
-        VoitureCertificatCessionStorage $storage,
-    ): Response
-    {
+    #[Route('/cts/voitures/bulk-update', name: 'app_voitures_bulk_update', methods: ['POST'])]
+    public function bulkUpdateVoitures(
+        Request $request,
+        VoitureRepository $voitureRepository,
+        SocieteRepository $societeRepository,
+        CentreRepository $centreRepository,
+        EntityManagerInterface $em,
+    ): Response {
+        if (!$this->isCsrfTokenValid('voitures_bulk', (string) $request->request->get(self::CSRF_FIELD_NAME, ''))) {
+            $this->addFlash('error', 'Jeton CSRF invalide, rechargez la page.');
+            return $this->redirectToRoute('app_voitures_list', [
+                'q' => $request->query->get('q'),
+                'active' => $request->query->getInt('active', 1),
+                'inactive' => $request->query->getInt('inactive', 0),
+            ]);
+        }
+
         $centreIds = $this->getCurrentUserCentreScopeIds();
         $includeActive = $request->query->getInt('active', 1) === 1;
         $includeInactive = $request->query->getInt('inactive', 0) === 1;
@@ -734,109 +811,82 @@ final class ListsController extends AbstractController
             $includeActive = true;
             $includeInactive = true;
         }
-        $voitureCentreId = $voiture->getCentre()?->getId();
-        if ($centreIds !== null && ($voitureCentreId === null || !in_array($voitureCentreId, $centreIds, true))) {
-            throw $this->createNotFoundException();
-        }
 
-        $form = $formFactory->createNamed(
-            'voiture_' . $voiture->getId(),
-            CreateVoitureType::class,
-            $voiture,
-            [
-                'csrf_field_name' => '_token',
-                'csrf_token_id' => 'voiture_' . $voiture->getId(),
-                'centre_scope_ids' => $centreIds,
-            ]
-        );
+        $q = trim((string)$request->query->get('q', ''));
+        $voitures = $voitureRepository->findOrderedBySocieteSearch($q, $centreIds, $includeActive, $includeInactive);
 
-        $form->handleRequest($request);
+        $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
+        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch(null, $centreIds);
 
-        if ($form->isSubmitted()) {
-            try {
-                if (!$form->isValid()) {
-                    throw new \RuntimeException('Formulaire invalide.');
-                }
-            } catch (\Symfony\Component\HttpFoundation\File\Exception\FileException $e) {
-                $this->addFlash('error', self::formatUploadRuntimeException($e));
-                return $this->redirectToRoute('app_voitures_list_uneditable', [
-                    'page' => $request->query->getInt('page', 1),
-                    'q' => $request->query->get('q'),
-                    'active' => $includeActive ? 1 : 0,
-                    'inactive' => $includeInactive ? 1 : 0,
-                ]);
-            } catch (\RuntimeException) {
-                // fall through to the existing invalid form rendering below
+        $allowedById = [];
+        foreach ($voitures as $v) {
+            $id = $v->getId();
+            if ($id !== null) {
+                $allowedById[(string)$id] = $v;
             }
         }
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $oldPath = $voiture->getCertificatCessionPath();
-            $uploaded = $form->get('certificatCessionFile')->getData();
-            if ($uploaded instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
-                if (!$uploaded->isValid()) {
-                    $this->addFlash('error', self::formatUploadErrorMessage($uploaded->getError()));
-                    return $this->redirectToRoute('app_voitures_list_uneditable', [
-                        'page' => $request->query->getInt('page', 1),
-                        'q' => $request->query->get('q'),
-                        'active' => $includeActive ? 1 : 0,
-                        'inactive' => $includeInactive ? 1 : 0,
-                    ]);
-                }
-
-                // Read metadata before move(): after moving, the tmp file no longer exists.
-                $originalName = $uploaded->getClientOriginalName();
-                $mime = (string)($uploaded->getMimeType() ?? '');
-                $size = $uploaded->getSize();
-
-                $relativePath = $storage->storeCertificat($voiture, $uploaded);
-                $voiture->setCertificatCessionPath($relativePath);
-                $voiture->setCertificatCessionOriginalName($originalName);
-                $voiture->setCertificatCessionMime($mime !== '' ? $mime : null);
-                $voiture->setCertificatCessionSize($size);
-                $voiture->setCertificatCessionUploadedAt(new \DateTimeImmutable());
-            }
-
-            $em->persist($voiture);
-            $em->flush();
-
-            if ($uploaded instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
-                $storage->deleteIfExists($oldPath);
-            }
-
-            $this->addFlash('success', "Voiture {$voiture->getImmatriculation()} mise à jour.");
-
-            return $this->redirectToRoute('app_voitures_list_uneditable', [
-                'page' => $request->query->getInt('page', 1),
+        $payload = $request->request->all('changes');
+        if (!is_array($payload) || $payload === []) {
+            $this->addFlash('warning', 'Aucune modification détectée.');
+            return $this->redirectToRoute('app_voitures_list', [
                 'q' => $request->query->get('q'),
                 'active' => $includeActive ? 1 : 0,
                 'inactive' => $includeInactive ? 1 : 0,
             ]);
         }
 
-        $this->addFlash('error', 'Erreur dans le formulaire, vérifiez les champs.');
+        $societeIds = array_fill_keys(array_filter(array_map(static fn($s) => $s->getId(), $societes)), true);
+        $centreAllowedIds = array_fill_keys(array_filter(array_map(static fn($c) => $c->getId(), $centres)), true);
 
-        $q = trim((string)$request->query->get('q', ''));
-        $perPage = 20;
-        $paginationData = $this->computePagination($request, $perPage, $voitureRepository->countSearch($q, $centreIds, $includeActive, $includeInactive));
+        $errors = [];
+        $changed = 0;
+        foreach ($payload as $id => $fields) {
+            $id = trim((string)$id);
+            if ($id === '' || !isset($allowedById[$id])) {
+                continue;
+            }
+            if (!is_array($fields)) {
+                continue;
+            }
 
-        $voitures = $voitureRepository->findPaginatedOrderedBySocieteSearch($perPage, $paginationData['offset'], $q, $centreIds, $includeActive, $includeInactive);
-        $forms = $this->buildInlineEditForms(
-            $voitures,
-            $formFactory,
-            'voiture_',
-            CreateVoitureType::class,
-            [
-                'centre_scope_ids' => $centreIds,
-            ],
-            $voiture->getId(),
-            $form->createView()
-        );
+            $voiture = $allowedById[$id];
+            $rowErrors = $this->applyManualVoitureUpdate($voiture, $fields, $societeRepository, $centreRepository, $societeIds, $centreAllowedIds);
+            if ($rowErrors !== []) {
+                $errors[] = sprintf('[%s] %s', (string)$voiture->getImmatriculation(), implode(' | ', $rowErrors));
+                continue;
+            }
+            ++$changed;
+        }
 
-        return $this->render('cts/voitures/list.html.twig', [
-            'voitures' => $voitures,
-            'forms' => $forms,
-            'pagination' => $paginationData['view'],
+        if ($errors !== []) {
+            foreach ($errors as $msg) {
+                $this->addFlash('error', $msg);
+            }
+            return $this->render('cts/voitures/list.html.twig', [
+                'voitures' => $voitures,
+                'societes' => $societes,
+                'centres' => $centres,
+                'pagination' => null,
+            ]);
+        }
+
+        if ($changed === 0) {
+            $this->addFlash('warning', 'Aucune modification appliquée.');
+            return $this->redirectToRoute('app_voitures_list', [
+                'q' => $request->query->get('q'),
+                'active' => $includeActive ? 1 : 0,
+                'inactive' => $includeInactive ? 1 : 0,
+            ]);
+        }
+
+        $em->flush();
+        $this->addFlash('success', 'Modifications enregistrées.');
+
+        return $this->redirectToRoute('app_voitures_list_uneditable', [
+            'q' => $request->query->get('q'),
+            'active' => $includeActive ? 1 : 0,
+            'inactive' => $includeInactive ? 1 : 0,
         ]);
     }
 
@@ -1187,14 +1237,465 @@ final class ListsController extends AbstractController
         ]);
     }
 
-    private function renderSalariesList(array $salaries, array $forms, array $paginationView): Response
+    private function renderSalariesList(array $salaries, array $societes, array $centres, ?array $paginationView): Response
     {
         return $this->render('cts/salaries/list.html.twig', [
             'salaries' => $salaries,
-            'forms' => $forms,
+            'societes' => $societes,
+            'centres' => $centres,
             'pagination' => $paginationView,
         ]);
     }
+
+    /**
+     * @param array<int, mixed> $fields
+     * @return list<string> Row errors.
+     */
+    private function applyManualSocieteUpdate(Societe $societe, array $fields): array
+    {
+        $errors = [];
+
+        $trimOrNull = static function ($v): ?string {
+            if ($v === null) return null;
+            $s = trim((string)$v);
+            return $s === '' ? null : $s;
+        };
+
+        $nom = $trimOrNull($fields['nom'] ?? null);
+        $siege = $trimOrNull($fields['siegeSocial'] ?? null);
+        $siren = $trimOrNull($fields['siren'] ?? null);
+        $numTva = $trimOrNull($fields['numTva'] ?? null);
+
+        if ($nom === null) $errors[] = 'Nom requis.';
+        if ($siege === null) $errors[] = 'Siège social requis.';
+        if ($siren === null) $errors[] = 'SIREN requis.';
+
+        if ($nom !== null) $societe->setNom($nom);
+        if ($siege !== null) $societe->setSiegeSocial($siege);
+        if ($siren !== null) $societe->setSiren($siren);
+        $societe->setNumTva($numTva);
+
+        return $errors;
+    }
+
+    /**
+     * @return array<int, \App\Entity\Reseau>
+     */
+    private function findReseauxForCentreScope(\App\Repository\ReseauRepository $reseauRepository, ?array $centreScopeIds): array
+    {
+        $qb = $reseauRepository->createQueryBuilder('r')
+            ->orderBy('r.nom', 'ASC');
+
+        if ($centreScopeIds !== null) {
+            $qb->distinct();
+            if ($centreScopeIds === []) {
+                $qb->andWhere('1=0');
+            } else {
+                $qb
+                    ->innerJoin('r.centres', 'c_scope')
+                    ->andWhere('c_scope.id IN (:centreIds)')
+                    ->setParameter('centreIds', $centreScopeIds);
+            }
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param array<int, mixed> $fields
+     * @param array<int, true> $allowedSocieteIds
+     * @param array<int, true> $allowedReseauIds
+     * @return list<string> Row errors.
+     */
+    private function applyManualCentreUpdate(
+        Centre $centre,
+        array $fields,
+        SocieteRepository $societeRepository,
+        \App\Repository\ReseauRepository $reseauRepository,
+        array $allowedSocieteIds,
+        array $allowedReseauIds,
+    ): array {
+        $errors = [];
+
+        $trimOrNull = static function ($v): ?string {
+            if ($v === null) return null;
+            $s = trim((string)$v);
+            return $s === '' ? null : $s;
+        };
+
+        $societeId = $trimOrNull($fields['societe'] ?? null);
+        if ($societeId === null || !ctype_digit($societeId)) {
+            $errors[] = 'Société invalide.';
+        } else {
+            $sid = (int)$societeId;
+            if (!isset($allowedSocieteIds[$sid])) {
+                $errors[] = 'Société hors scope.';
+            } else {
+                $societe = $societeRepository->find($sid);
+                if (!$societe instanceof \App\Entity\Societe) {
+                    $errors[] = 'Société introuvable.';
+                } else {
+                    $centre->setSociete($societe);
+                }
+            }
+        }
+
+        $reseauId = $trimOrNull($fields['reseau'] ?? null);
+        if ($reseauId === null || !ctype_digit($reseauId)) {
+            $errors[] = 'Réseau invalide.';
+        } else {
+            $rid = (int)$reseauId;
+            if (!isset($allowedReseauIds[$rid])) {
+                $errors[] = 'Réseau hors scope.';
+            } else {
+                $reseau = $reseauRepository->find($rid);
+                if (!$reseau instanceof \App\Entity\Reseau) {
+                    $errors[] = 'Réseau introuvable.';
+                } else {
+                    $centre->setReseau($reseau);
+                }
+            }
+        }
+
+        $reseauNom = $trimOrNull($fields['reseauNom'] ?? null);
+        if ($reseauNom === null) {
+            $errors[] = 'Enseigne requise.';
+        } else {
+            $centre->setReseauNom($reseauNom);
+        }
+
+        $agrCentre = $trimOrNull($fields['agrCentre'] ?? null);
+        if ($agrCentre === null) {
+            $errors[] = 'Agrément VL requis.';
+        } else {
+            $centre->setAgrCentre($agrCentre);
+        }
+
+        $centre->setAgrClCentre($trimOrNull($fields['agrClCentre'] ?? null));
+        $centre->setCoordonnees($trimOrNull($fields['coordonnees'] ?? null));
+
+        $cp = $trimOrNull($fields['cp'] ?? null);
+        if ($cp === null) {
+            $errors[] = 'CP requis.';
+        } else {
+            $centre->setCp($cp);
+        }
+
+        $ville = $trimOrNull($fields['ville'] ?? null);
+        if ($ville === null) {
+            $errors[] = 'Ville requise.';
+        } else {
+            $centre->setVille($ville);
+        }
+
+        $tel = $trimOrNull($fields['telephone'] ?? null);
+        if ($tel !== null) {
+            $regex = '/^((0[1-9])|(\\+33))[ .-]?((?:[ .-]?\\d{2}){4}|\\d{8})$/';
+            if (preg_match($regex, $tel) !== 1) {
+                $errors[] = 'Téléphone invalide.';
+            } else {
+                $centre->setTelephone($tel);
+            }
+        } else {
+            $centre->setTelephone(null);
+        }
+
+        $email = $trimOrNull($fields['email'] ?? null);
+        if ($email !== null && filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            $errors[] = 'Email invalide.';
+        } else {
+            $centre->setEmail($email);
+        }
+
+        $centre->setMailPassword($trimOrNull($fields['mailPassword'] ?? null));
+        $centre->setSiteWeb($trimOrNull($fields['siteWeb'] ?? null));
+        $centre->setNumSiret($trimOrNull($fields['numSiret'] ?? null) ?? '');
+        $centre->setDateReprise($trimOrNull($fields['dateReprise'] ?? null));
+
+        return $errors;
+    }
+
+    /**
+     * @param array<int, mixed> $fields
+     * @param array<int, true> $allowedSocieteIds
+     * @param array<int, true> $allowedCentreIds
+     * @return list<string> Row errors.
+     */
+    private function applyManualVoitureUpdate(
+        Voiture $voiture,
+        array $fields,
+        SocieteRepository $societeRepository,
+        CentreRepository $centreRepository,
+        array $allowedSocieteIds,
+        array $allowedCentreIds,
+    ): array {
+        $errors = [];
+
+        $trimOrNull = static function ($v): ?string {
+            if ($v === null) return null;
+            $s = trim((string)$v);
+            return $s === '' ? null : $s;
+        };
+
+        $societeId = $trimOrNull($fields['societe'] ?? null);
+        if ($societeId === null || !ctype_digit($societeId)) {
+            $errors[] = 'Société invalide.';
+        } else {
+            $sid = (int)$societeId;
+            if (!isset($allowedSocieteIds[$sid])) {
+                $errors[] = 'Société hors scope.';
+            } else {
+                $societe = $societeRepository->find($sid);
+                if (!$societe instanceof \App\Entity\Societe) {
+                    $errors[] = 'Société introuvable.';
+                } else {
+                    $voiture->setSociete($societe);
+                }
+            }
+        }
+
+        $centreId = $trimOrNull($fields['centre'] ?? null);
+        if ($centreId === null || !ctype_digit($centreId)) {
+            $errors[] = 'Centre invalide.';
+        } else {
+            $cid = (int)$centreId;
+            if (!isset($allowedCentreIds[$cid])) {
+                $errors[] = 'Centre hors scope.';
+            } else {
+                $centre = $centreRepository->find($cid);
+                if (!$centre instanceof \App\Entity\Centre) {
+                    $errors[] = 'Centre introuvable.';
+                } else {
+                    $voiture->setCentre($centre);
+                }
+            }
+        }
+
+        // Non-nullable in DB: keep empty strings if not provided.
+        $voiture->setImmatriculation((string)($trimOrNull($fields['immatriculation'] ?? null) ?? ''));
+        $voiture->setMarque((string)($trimOrNull($fields['marque'] ?? null) ?? ''));
+        $voiture->setCouleur($trimOrNull($fields['couleur'] ?? null));
+        $voiture->setModele($trimOrNull($fields['modele'] ?? null));
+
+        $flocable = $fields['flocable'] ?? null;
+        if (is_array($flocable)) {
+            $voiture->setFlocable(in_array('1', array_map('strval', $flocable), true));
+        } else {
+            $voiture->setFlocable((bool)($flocable === '1' || $flocable === 1 || $flocable === true || $flocable === 'on'));
+        }
+
+        $annee = $trimOrNull($fields['annee'] ?? null);
+        if ($annee !== null) {
+            if (!ctype_digit($annee) || strlen($annee) !== 4) {
+                $errors[] = 'Année invalide.';
+            } else {
+                $voiture->setAnnee($annee);
+            }
+        } else {
+            $voiture->setAnnee(null);
+        }
+
+        $ct = $trimOrNull($fields['controleTechnique'] ?? null);
+        if ($ct !== null) {
+            $dt = \DateTimeImmutable::createFromFormat('Y-m-d', $ct);
+            if (!$dt instanceof \DateTimeImmutable || $dt->format('Y-m-d') !== $ct) {
+                $errors[] = 'Date contrôle technique invalide.';
+            } else {
+                $voiture->setControleTechnique($dt);
+            }
+        } else {
+            $voiture->setControleTechnique(null);
+        }
+
+        $voiture->setKm($trimOrNull($fields['km'] ?? null));
+
+        $prix = $trimOrNull($fields['prix'] ?? null);
+        if ($prix !== null) {
+            $prix = str_replace(',', '.', $prix);
+            if (!is_numeric($prix)) {
+                $errors[] = 'Prix invalide.';
+            } else {
+                $voiture->setPrix((string)$prix);
+            }
+        } else {
+            $voiture->setPrix(null);
+        }
+
+        $voiture->setCarteGrise($trimOrNull($fields['carteGrise'] ?? null));
+        $voiture->setLieu($trimOrNull($fields['lieu'] ?? null));
+        $voiture->setUtilisateur($trimOrNull($fields['utilisateur'] ?? null));
+        $voiture->setRemarques($trimOrNull($fields['remarques'] ?? null));
+
+        $active = $fields['active'] ?? null;
+        if (is_array($active)) {
+            $voiture->setActive(in_array('1', array_map('strval', $active), true));
+        } else {
+            $voiture->setActive((bool)($active === '1' || $active === 1 || $active === true || $active === 'on'));
+        }
+
+        return $errors;
+    }
+
+    /**
+     * @param array<int, mixed> $fields
+     * @return list<string> Row errors.
+     */
+    private function applyManualSalarieUpdate(Salarie $salarie, array $fields, ?array $centreScopeIds, EntityManagerInterface $em): array
+    {
+        $errors = [];
+
+        $trimOrNull = static function ($v): ?string {
+            if ($v === null) return null;
+            $s = trim((string)$v);
+            return $s === '' ? null : $s;
+        };
+
+        // Required: societe, nom, prenom.
+        $societeId = $trimOrNull($fields['societe'] ?? null);
+        if ($societeId === null || !ctype_digit($societeId)) {
+            $errors[] = 'Société invalide.';
+        } else {
+            /** @var \App\Repository\SocieteRepository $societeRepo */
+            $societeRepo = $em->getRepository(\App\Entity\Societe::class);
+            $societe = $societeRepo->find((int)$societeId);
+            if (!$societe instanceof \App\Entity\Societe) {
+                $errors[] = 'Société introuvable.';
+            } else {
+                $salarie->setSociete($societe);
+            }
+        }
+
+        $nom = $trimOrNull($fields['nom'] ?? null);
+        $prenom = $trimOrNull($fields['prenom'] ?? null);
+        if ($nom === null) $errors[] = 'Nom requis.';
+        if ($prenom === null) $errors[] = 'Prénom requis.';
+        if ($nom !== null) $salarie->setNom($nom);
+        if ($prenom !== null) $salarie->setPrenom($prenom);
+
+        $salarie->setAgrControleur($trimOrNull($fields['agrControleur'] ?? null));
+        $salarie->setAgrClControleur($trimOrNull($fields['agrClControleur'] ?? null));
+        $salarie->setEmail($trimOrNull($fields['email'] ?? null) ?? '');
+        // Email in entity is nullable=false currently; keep empty string if null.
+        $tel = $trimOrNull($fields['telephone'] ?? null);
+        if ($tel !== null) {
+            $regex = '/^((0[1-9])|(\\+33))[ .-]?((?:[ .-]?\\d{2}){4}|\\d{8})$/';
+            if (preg_match($regex, $tel) !== 1) {
+                $errors[] = 'Téléphone invalide.';
+            } else {
+                $salarie->setTelephone($tel);
+            }
+        } else {
+            $salarie->setTelephone(null);
+        }
+
+        $date = $trimOrNull($fields['dateNaissance'] ?? null);
+        if ($date !== null) {
+            $dt = \DateTimeImmutable::createFromFormat('Y-m-d', $date);
+            if (!$dt instanceof \DateTimeImmutable || $dt->format('Y-m-d') !== $date) {
+                $errors[] = 'Date de naissance invalide.';
+            } else {
+                $salarie->setDateNaissance($dt);
+            }
+        } else {
+            $salarie->setDateNaissance(null);
+        }
+
+        $echelons = $trimOrNull($fields['echelons'] ?? null);
+        if ($echelons !== null) {
+            if (!ctype_digit($echelons) || (int)$echelons < 1 || (int)$echelons > 12) {
+                $errors[] = 'Échelons invalide.';
+            } else {
+                $salarie->setEchelons((int)$echelons);
+            }
+        } else {
+            $salarie->setEchelons(null);
+        }
+
+        $salaire = $trimOrNull($fields['salaireBrut'] ?? null);
+        if ($salaire !== null) {
+            $salaire = str_replace(',', '.', $salaire);
+            if (!is_numeric($salaire)) {
+                $errors[] = 'Salaire invalide.';
+            } else {
+                $salarie->setSalaireBrut((string)$salaire);
+            }
+        } else {
+            $salarie->setSalaireBrut(null);
+        }
+
+        $heures = $trimOrNull($fields['nbHeures'] ?? null);
+        if ($heures !== null) {
+            $heures = str_replace(',', '.', $heures);
+            if (!is_numeric($heures)) {
+                $errors[] = 'Heures invalide.';
+            } else {
+                $salarie->setNbHeures((string)$heures);
+            }
+        } else {
+            $salarie->setNbHeures(null);
+        }
+
+        $salarie->setVesteMancheAmovible($trimOrNull($fields['vesteMancheAmovible'] ?? null));
+        $salarie->setPolaire($trimOrNull($fields['polaire'] ?? null));
+        $salarie->setPantalon($trimOrNull($fields['pantalon'] ?? null));
+        $salarie->setTeeShirts($trimOrNull($fields['teeShirts'] ?? null));
+        $salarie->setPolo($trimOrNull($fields['polo'] ?? null));
+
+        $chaussures = $trimOrNull($fields['chaussures'] ?? null);
+        if ($chaussures !== null) {
+            if (!ctype_digit($chaussures) || (int)$chaussures < 36 || (int)$chaussures > 50) {
+                $errors[] = 'Chaussures invalide.';
+            } else {
+                $salarie->setChaussures((int)$chaussures);
+            }
+        } else {
+            $salarie->setChaussures(null);
+        }
+
+        $isActive = $fields['isActive'] ?? null;
+        if (is_array($isActive)) {
+            $salarie->setIsActive(in_array('1', array_map('strval', $isActive), true));
+        } else {
+            $salarie->setIsActive((bool)($isActive === '1' || $isActive === 1 || $isActive === true || $isActive === 'on'));
+        }
+
+        // Centres (many-to-many). Enforce scope on ids.
+        $centreIds = $fields['centres'] ?? [];
+        if (!is_array($centreIds)) {
+            $centreIds = [];
+        }
+        $centreIds = array_values(array_unique(array_filter(array_map(static fn($v) => ctype_digit((string)$v) ? (int)$v : null, $centreIds))));
+
+        if ($centreScopeIds !== null) {
+            // Restrict to allowed ids only.
+            $allowed = array_fill_keys($centreScopeIds, true);
+            $centreIds = array_values(array_filter($centreIds, static fn(int $id): bool => isset($allowed[$id])));
+        }
+
+        /** @var \App\Repository\CentreRepository $centreRepo */
+        $centreRepo = $em->getRepository(\App\Entity\Centre::class);
+        $wanted = [];
+        if ($centreIds !== []) {
+            $wanted = $centreRepo->createQueryBuilder('c')
+                ->andWhere('c.id IN (:ids)')
+                ->setParameter('ids', $centreIds)
+                ->getQuery()
+                ->getResult();
+        }
+
+        // Replace collection.
+        foreach ($salarie->getCentres() as $existing) {
+            $salarie->removeCentre($existing);
+        }
+        foreach ($wanted as $c) {
+            if ($c instanceof \App\Entity\Centre) {
+                $salarie->addCentre($c);
+            }
+        }
+
+        return $errors;
+    }
+
 
     /**
      * Displays bank balances.
