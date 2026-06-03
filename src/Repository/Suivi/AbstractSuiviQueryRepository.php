@@ -159,6 +159,13 @@ abstract readonly class AbstractSuiviQueryRepository
      */
     protected function resolveYears(array $filters): array
     {
+        if (!empty($filters['annees']) && is_array($filters['annees'])) {
+            $years = array_values(array_unique(array_map('intval', $filters['annees'])));
+            sort($years);
+
+            return $years;
+        }
+
         if (!empty($filters['annee'])) {
             return [(int)$filters['annee']];
         }

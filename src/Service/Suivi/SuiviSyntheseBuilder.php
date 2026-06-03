@@ -149,9 +149,10 @@ class SuiviSyntheseBuilder
                 'prenom' => $this->safeUcfirst((string)$row['salarie_prenom']),
                 'agr' => $row['salarie_agr'],
                 'agr_cl' => $row['salarie_agr_cl'] ?? '',
-                // Recomputed below from per-type metrics to avoid relying on precomputed / stale / mismatched totals.
-                'nb_controles' => 0,
-                'nb_controles_factures' => 0,
+                // The repository already provides the correct distinct total for the selected scope.
+                // Rebuilding it from subtype columns can overcount controls present in two families.
+                'nb_controles' => (int)($row['nb_controles'] ?? 0),
+                'nb_controles_factures' => (int)($row['nb_controles_factures'] ?? 0),
                 'nb_auto' => (int)($row['nb_auto'] ?? 0),
                 'nb_auto_factures' => (int)($row['nb_auto_factures'] ?? 0),
                 'nb_moto' => (int)($row['nb_moto'] ?? 0),
@@ -180,16 +181,6 @@ class SuiviSyntheseBuilder
                 $salarieData[$caCol] = $ca;
                 $salarieData['prix_moyen_' . $type] = $nb ? $ca / $nb : 0;
             }
-
-            // Keep "Total" columns consistent with the per-type columns displayed in the activity table.
-            $salarieData['nb_controles'] = array_sum(array_map(
-                fn (string $type): int => (int)($salarieData['nb_' . $type] ?? 0),
-                $this->types
-            ));
-            $salarieData['nb_controles_factures'] = array_sum(array_map(
-                fn (string $type): int => (int)($salarieData['nb_' . $type . '_factures'] ?? 0),
-                $this->types
-            ));
 
             $data[$societe][$centre]['salaries'][] = $salarieData;
 

@@ -26,11 +26,16 @@
     min-width: 0;
 }
 
-[data-ajax-results].panel-focus-mode > .panel-isolated.panel-inner-focus-mode > :not(.panel-inner-isolated):not(.panel-tools) {
+[data-ajax-results].panel-focus-mode > .panel-isolated.panel-inner-focus-mode > :not(.panel-inner-isolated):not(.panel-inner-focus-ancestor):not(.panel-tools) {
     display: none;
 }
 
-[data-ajax-results].panel-focus-mode > .panel-isolated.panel-inner-focus-mode > .panel-inner-isolated {
+[data-ajax-results].panel-focus-mode > .panel-isolated.panel-inner-focus-mode .panel-inner-focus-ancestor > :not(.panel-inner-isolated):not(.panel-inner-focus-ancestor):not(.panel-tools) {
+    display: none;
+}
+
+[data-ajax-results].panel-focus-mode > .panel-isolated.panel-inner-focus-mode .panel-inner-focus-ancestor,
+[data-ajax-results].panel-focus-mode > .panel-isolated.panel-inner-focus-mode .panel-inner-isolated {
     display: flex;
     flex-direction: column;
     width: 100%;

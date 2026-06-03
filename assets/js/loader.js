@@ -6,6 +6,8 @@
 function loadContent() {
     const loader = document.getElementById('loader');
     const wrapper = document.getElementById('loadingContent');
+    if (!loader || !wrapper) return;
+
     loader.classList.add('hidden');
     wrapper.classList.add('visible');
 

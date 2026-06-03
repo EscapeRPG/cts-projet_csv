@@ -145,5 +145,7 @@ export function applyActivityTableColumnVisibility(table, selectedTypes, selecte
         cell.hidden = !(matchesType && matchesVehicle);
     });
 
-    recalculateActivityTotals(table);
+    if (hasTypeSelection || hasVehicleSelection) {
+        recalculateActivityTotals(table);
+    }
 }

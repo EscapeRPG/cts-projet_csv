@@ -7,6 +7,21 @@ namespace App\Service\Suivi;
  */
 final class SuiviCentresAnalyticsService
 {
+    private const array MONTH_LABELS = [
+        1 => 'Jan',
+        2 => 'Fev',
+        3 => 'Mar',
+        4 => 'Avr',
+        5 => 'Mai',
+        6 => 'Juin',
+        7 => 'Juil',
+        8 => 'Aout',
+        9 => 'Sep',
+        10 => 'Oct',
+        11 => 'Nov',
+        12 => 'Dec',
+    ];
+
     /**
      * Builds center rows with year-over-year metrics and split counts/revenues.
      *
@@ -160,5 +175,106 @@ final class SuiviCentresAnalyticsService
         }
 
         return $summary;
+    }
+
+    /**
+     * Builds monthly CA/control matrices by controller.
+     *
+     * @param array<int, array<string, mixed>> $rows Monthly controller rows.
+     *
+     * @return array{
+     *     months: array<int, string>,
+     *     salaries: array<int, array{name: string, ca: array<int, float>, volumes: array<int, int>, ca_total: float, volumes_total: int}>,
+     *     max_ca: float,
+     *     max_volumes: int
+     * }
+     */
+    public function buildMonthlySalarieBreakdown(array $rows): array
+    {
+        $salaries = [];
+        $maxCa = 0.0;
+        $maxVolumes = 0;
+
+        foreach ($rows as $row) {
+            $id = (string) ($row['salarie_id'] ?? '');
+            if ($id === '') {
+                continue;
+            }
+
+            if (!isset($salaries[$id])) {
+                $name = trim(sprintf(
+                    '%s %s',
+                    $this->safeUpper((string) ($row['salarie_nom'] ?? '')),
+                    $this->safeUcfirst((string) ($row['salarie_prenom'] ?? ''))
+                ));
+
+                $salaries[$id] = [
+                    'name' => $name !== '' ? $name : 'Salarié inconnu',
+                    'ca' => array_fill(1, 12, 0.0),
+                    'volumes' => array_fill(1, 12, 0),
+                    'ca_total' => 0.0,
+                    'volumes_total' => 0,
+                ];
+            }
+
+            $month = (int) ($row['mois'] ?? 0);
+            if ($month < 1 || $month > 12) {
+                continue;
+            }
+
+            $ca = (float) ($row['ca_total_ht'] ?? 0);
+            $volumes = (int) ($row['nb_controles'] ?? 0);
+
+            $salaries[$id]['ca'][$month] += $ca;
+            $salaries[$id]['volumes'][$month] += $volumes;
+            $salaries[$id]['ca_total'] += $ca;
+            $salaries[$id]['volumes_total'] += $volumes;
+
+            $maxCa = max($maxCa, $salaries[$id]['ca'][$month]);
+            $maxVolumes = max($maxVolumes, $salaries[$id]['volumes'][$month]);
+        }
+
+        $salaries = array_values($salaries);
+        usort($salaries, static fn (array $a, array $b): int => $a['name'] <=> $b['name']);
+
+        return [
+            'months' => self::MONTH_LABELS,
+            'salaries' => $salaries,
+            'max_ca' => $maxCa,
+            'max_volumes' => $maxVolumes,
+        ];
+    }
+
+    /**
+     * Uppercases text using multibyte support when available.
+     */
+    private function safeUpper(string $value): string
+    {
+        if (function_exists('mb_strtoupper')) {
+            return mb_strtoupper($value);
+        }
+
+        return strtoupper($value);
+    }
+
+    /**
+     * Capitalizes text using multibyte support when available.
+     */
+    private function safeUcfirst(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+
+        if (function_exists('mb_ucfirst')) {
+            return mb_ucfirst($value);
+        }
+
+        if (function_exists('mb_strtoupper') && function_exists('mb_substr')) {
+            return mb_strtoupper(mb_substr($value, 0, 1)) . mb_substr($value, 1);
+        }
+
+        return ucfirst($value);
     }
 }

@@ -82,8 +82,8 @@ final readonly class SuiviCentresRepository extends AbstractSuiviQueryRepository
         ";
 
         return $this->cachedRows(
-            // v2: cache key bump (COALESCE fix for NULL-propagation in arithmetic expressions).
-            'suivi_centres_v2',
+            // v3: exclusive VOL/VTP synthesis mapping.
+            'suivi_centres_v3',
             ['filters' => $filters, 'types' => $selectedTypeFamilies, 'vehicle' => $selectedVehicleTypes],
             fn() => $this->connection->executeQuery($sql, $params, $types)->fetchAllAssociative()
         );

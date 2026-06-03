@@ -41,6 +41,12 @@ class PopulateSyntheseCommand extends Command
                 null,
                 InputOption::VALUE_REQUIRED,
                 'Force le recalcul d’une periode unique (format YYYY-MM), sans tenir compte de last_run_at.'
+            )
+            ->addOption(
+                'full',
+                null,
+                InputOption::VALUE_NONE,
+                'Force le recalcul de toutes les périodes disponibles.'
             );
     }
 
@@ -57,6 +63,7 @@ class PopulateSyntheseCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $this->forcePeriod = $input->getOption('period');
+        $this->forceFullRefresh = (bool) $input->getOption('full');
 
         $io->title('[synthese-summary] Démarrage de la mise à jour incrémentale de synthese_controles.');
 
@@ -551,10 +558,10 @@ class PopulateSyntheseCommand extends Command
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_vtc_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_vtc_particuliers,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_vtc_professionnels,
-                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT','VLVP','VLVT'), ctrl.idcontrole, NULL)) AS nb_vol,
-                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT','VLVP','VLVT') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_vol_factures,
-                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT','VLVP','VLVT') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_vol_particuliers,
-                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT','VLVP','VLVT') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_vol_professionnels,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT'), ctrl.idcontrole, NULL)) AS nb_vol,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_vol_factures,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_vol_particuliers,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_vol_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT'), ctrl.idcontrole, NULL)) AS nb_clvol,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_clvol_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_clvol_particuliers,
@@ -581,9 +588,9 @@ class PopulateSyntheseCommand extends Command
                 SUM(IF(ctrl.type_ctrl IN ('VTC','VLCTC'), {$controlAmountExpr}, 0)) AS total_ht_vtc,
                 SUM(IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND COALESCE(cc.has_pro_client, 0) = 0, {$controlAmountExpr}, 0)) AS total_ht_vtc_particuliers,
                 SUM(IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND COALESCE(cc.has_pro_client, 0) = 1, {$controlAmountExpr}, 0)) AS total_ht_vtc_professionnels,
-                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT','VLVP','VLVT'), {$controlAmountExpr}, 0)) AS total_ht_vol,
-                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT','VLVP','VLVT') AND COALESCE(cc.has_pro_client, 0) = 0, {$controlAmountExpr}, 0)) AS total_ht_vol_particuliers,
-                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT','VLVP','VLVT') AND COALESCE(cc.has_pro_client, 0) = 1, {$controlAmountExpr}, 0)) AS total_ht_vol_professionnels,
+                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT'), {$controlAmountExpr}, 0)) AS total_ht_vol,
+                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND COALESCE(cc.has_pro_client, 0) = 0, {$controlAmountExpr}, 0)) AS total_ht_vol_particuliers,
+                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND COALESCE(cc.has_pro_client, 0) = 1, {$controlAmountExpr}, 0)) AS total_ht_vol_professionnels,
                 SUM(IF(ctrl.type_ctrl IN ('CLVP','CLVT'), {$controlAmountExpr}, 0)) AS total_ht_clvol,
                 SUM(IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND COALESCE(cc.has_pro_client, 0) = 0, {$controlAmountExpr}, 0)) AS total_ht_clvol_particuliers,
                 SUM(IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND COALESCE(cc.has_pro_client, 0) = 1, {$controlAmountExpr}, 0)) AS total_ht_clvol_professionnels,
@@ -595,7 +602,7 @@ class PopulateSyntheseCommand extends Command
                 SUM(IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC'), ctrl.temps_ctrl, 0)) AS temps_total_cv,
                 SUM(IF(ctrl.type_ctrl IN ('CLCV'), ctrl.temps_ctrl, 0)) AS temps_total_clcv,
                 SUM(IF(ctrl.type_ctrl IN ('VTC','VLCTC'), ctrl.temps_ctrl, 0)) AS temps_total_vtc,
-                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT','VLVP','VLVT'), ctrl.temps_ctrl, 0)) AS temps_total_vol,
+                SUM(IF(ctrl.type_ctrl IN ('VOL','VP','VT'), ctrl.temps_ctrl, 0)) AS temps_total_vol,
                 SUM(IF(ctrl.type_ctrl IN ('CLVP','CLVT'), ctrl.temps_ctrl, 0)) AS temps_total_clvol,
                 COUNT(DISTINCT IF(ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS taux_refus,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP','CV','VLCV','VLCVC','VTC','VLCTC','VOL', 'VP', 'VT') AND ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS refus_auto,
@@ -605,7 +612,7 @@ class PopulateSyntheseCommand extends Command
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CV','VLCV','VLCVC') AND ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS refus_cv,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLCV') AND ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS refus_clcv,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS refus_vtc,
-                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT','VLVP','VLVT') AND ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS refus_vol,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS refus_vol,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND ctrl.res_ctrl IN ('S','R','SP'), ctrl.idcontrole, NULL)) AS refus_clvol,
                 COUNT(DISTINCT IF(COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_particuliers,
                 COUNT(DISTINCT IF(COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_professionnels,

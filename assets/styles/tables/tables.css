@@ -1,7 +1,7 @@
 .table-wrapper,
 .pro-table-wrapper {
     width: 100%;
-    min-height: 200px;
+    min-height: 250px;
     height: fit-content;
     max-height: 100%;
     overflow: auto;

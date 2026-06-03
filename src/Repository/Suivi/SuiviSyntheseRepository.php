@@ -73,6 +73,57 @@ final readonly class SuiviSyntheseRepository extends AbstractSuiviQueryRepositor
     }
 
     /**
+     * Returns monthly synthesized rows grouped by controller for selected filters.
+     *
+     * @param array<string, mixed> $filters Selected filters.
+     *
+     * @return array<int, array<string, mixed>> Monthly controller rows.
+     *
+     * @throws Exception
+     */
+    public function fetchMonthlySalarieRows(array $filters = []): array
+    {
+        $selectedTypeFamilies = $this->normalizeTypeFamilies($filters['type'] ?? []);
+        $selectedVehicleTypes = $this->normalizeVehicleTypes($filters['vehicule'] ?? []);
+
+        $hasTypeFilter = !empty($filters['type']) && !$this->isAllTypeFamiliesSelected($selectedTypeFamilies);
+        $hasVehicleFilter = !$this->isAllVehicleTypesSelected($selectedVehicleTypes);
+
+        $where = [];
+        $params = [];
+        $types = [];
+        $this->applySyntheseDimensionFilters($filters, $where, $params, $types, uniqueMonths: true);
+
+        $metricsSelect = ($hasTypeFilter || $hasVehicleFilter)
+            ? $this->getMonthlyFilteredMetricsSelect($selectedTypeFamilies, $selectedVehicleTypes)
+            : "
+                SUM(nb_controles) AS nb_controles,
+                SUM(total_presta_ht) AS ca_total_ht
+            ";
+
+        $sql = "
+            SELECT
+                salarie_id,
+                MIN(salarie_nom) AS salarie_nom,
+                MIN(salarie_prenom) AS salarie_prenom,
+                mois,
+                {$metricsSelect}
+            FROM synthese_controles
+        ";
+
+        if ($where !== []) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
+        }
+
+        $sql .= "
+            GROUP BY salarie_id, mois
+            ORDER BY salarie_nom, salarie_prenom, mois
+        ";
+
+        return $this->connection->executeQuery($sql, $params, $types)->fetchAllAssociative();
+    }
+
+    /**
      * Builds a filtered metrics projection from `synthese_controles`.
      *
      * @param array<int, string> $selectedTypeFamilies Selected type families.
@@ -144,6 +195,39 @@ final readonly class SuiviSyntheseRepository extends AbstractSuiviQueryRepositor
                 "SUM(" . $this->buildAdditionExpression($selectedSubtypes, 'nb_', $selectedSubtypes, '_professionnels') . ") AS nb_professionnels",
             ]
         ));
+    }
+
+    /**
+     * Builds monthly filtered totals from selected synthetic subtype columns.
+     *
+     * @param array<int, string> $selectedTypeFamilies Selected type families.
+     * @param array<int, string> $selectedVehicleTypes Selected vehicle categories.
+     *
+     * @return string SQL projection fragment.
+     */
+    private function getMonthlyFilteredMetricsSelect(array $selectedTypeFamilies, array $selectedVehicleTypes): string
+    {
+        $selectedSubtypes = [];
+        foreach (self::SYNTHESIS_TYPE_METRICS as $subtype => $config) {
+            if (
+                in_array($config['family'], $selectedTypeFamilies, true)
+                && in_array($config['vehicle'], $selectedVehicleTypes, true)
+            ) {
+                $selectedSubtypes[] = $subtype;
+            }
+        }
+
+        if ($selectedSubtypes === []) {
+            return "
+                SUM(0) AS nb_controles,
+                SUM(0) AS ca_total_ht
+            ";
+        }
+
+        return "
+            SUM(" . $this->buildAdditionExpression($selectedSubtypes, 'nb_') . ") AS nb_controles,
+            SUM(" . $this->buildAdditionExpression($selectedSubtypes, 'total_ht_') . ") AS ca_total_ht
+        ";
     }
 
     /**
@@ -259,26 +343,10 @@ final readonly class SuiviSyntheseRepository extends AbstractSuiviQueryRepositor
     private function getSyntheseDefaultMetricsSelect(): string
     {
         return "
-            -- Derive totals from subtype columns to avoid relying on precomputed nb_controles
-            -- (which may be stale/mismatched when the ETL changes).
-            SUM(
-                COALESCE(nb_vtp, 0)
-                + COALESCE(nb_clvtp, 0)
-                + COALESCE(nb_cv, 0)
-                + COALESCE(nb_clcv, 0)
-                + COALESCE(nb_vtc, 0)
-                + COALESCE(nb_vol, 0)
-                + COALESCE(nb_clvol, 0)
-            ) AS nb_controles,
-            SUM(
-                COALESCE(nb_vtp_factures, 0)
-                + COALESCE(nb_clvtp_factures, 0)
-                + COALESCE(nb_cv_factures, 0)
-                + COALESCE(nb_clcv_factures, 0)
-                + COALESCE(nb_vtc_factures, 0)
-                + COALESCE(nb_vol_factures, 0)
-                + COALESCE(nb_clvol_factures, 0)
-            ) AS nb_controles_factures,
+            -- Keep the ETL-level distinct totals as the reference total. The
+            -- synthesized subtype columns are expected to be mutually exclusive.
+            SUM(nb_controles) AS nb_controles,
+            SUM(nb_controles_factures) AS nb_controles_factures,
             SUM(nb_vtp) AS nb_vtp,
             SUM(nb_vtp_factures) AS nb_vtp_factures,
             SUM(nb_clvtp) AS nb_clvtp,

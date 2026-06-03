@@ -41,6 +41,20 @@ readonly class SuiviActiviteRepository
     }
 
     /**
+     * Returns monthly synthesized activity rows grouped by controller.
+     *
+     * @param array<string, mixed> $filters Selected filters.
+     *
+     * @return array<int, array<string, mixed>> Monthly controller rows.
+     *
+     * @throws Exception
+     */
+    public function fetchMonthlySalarieRows(array $filters = []): array
+    {
+        return $this->syntheseRepository->fetchMonthlySalarieRows($filters);
+    }
+
+    /**
      * Returns professional-client rows for the selected filters.
      *
      * @param array<string, mixed> $filters Selected filters.

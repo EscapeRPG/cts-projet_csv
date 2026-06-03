@@ -67,7 +67,7 @@ final readonly class SuiviProsRepository extends AbstractSuiviQueryRepository
         $sql .= " ORDER BY {$selectCa} DESC";
 
         return $this->cachedRows(
-            'suivi_pros_synthese',
+            'suivi_pros_synthese_v2',
             ['filters' => $filters, 'types' => $selectedTypeFamilies, 'vehicle' => $selectedVehicleTypes],
             fn() => $this->connection->executeQuery($sql, $params, $types)->fetchAllAssociative()
         );
@@ -218,7 +218,7 @@ final readonly class SuiviProsRepository extends AbstractSuiviQueryRepository
         ";
 
         return $this->cachedRows(
-            'suivi_raw_pros',
+            'suivi_raw_pros_v2',
             ['filters' => $filters, 'types' => $selectedTypeFamilies, 'vehicle' => $selectedVehicleTypes],
             fn() => $this->connection->executeQuery($sql, $params, $types)->fetchAllAssociative()
         );

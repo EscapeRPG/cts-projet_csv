@@ -1,7 +1,7 @@
 <div class="sidenav">
     {% set route = app.request.attributes.get('_route') %}
 
-        <div class="onglets">
+    <div class="onglets">
         <a href="{{ path('app_suivi_activite') }}"
            data-keep-filters="1"
            data-keep-filters-base-href="{{ path('app_suivi_activite') }}"
@@ -9,11 +9,15 @@
         <a href="{{ path('app_suivi_centres') }}"
            data-keep-filters="1"
            data-keep-filters-base-href="{{ path('app_suivi_centres') }}"
-           class="{{ route == 'app_suivi_centres' ? 'active' : '' }}">Centres</a>
+           class="{{ route == 'app_suivi_centres' ? 'active' : '' }}">Tous les centres</a>
+        <a href="{{ path('app_suivi_centres') }}"
+           data-keep-filters="1"
+           data-keep-filters-base-href="{{ path('app_suivi_centre_details') }}"
+           class="{{ route == 'app_suivi_centre_details' ? 'active' : '' }}">Détails par centre</a>
         <a href="{{ path('app_suivi_focus_pro') }}"
            data-keep-filters="1"
            data-keep-filters-base-href="{{ path('app_suivi_focus_pro') }}"
-           class="{{ route == 'app_suivi_focus_pro' ? 'active' : '' }}">Professionnels</a>
+           class="{{ route == 'app_suivi_focus_pro' ? 'active' : '' }}">Clients pros</a>
         <a href="{{ path('app_suivi_controleurs') }}"
            data-keep-filters="1"
            data-keep-filters-base-href="{{ path('app_suivi_controleurs') }}"
@@ -53,46 +57,51 @@
                 </div>
             </div>
 
-            <div class="filter-dropdown">
-                <button type="button" class="dropdown-toggle">
-                    Réseaux
-                </button>
+            {% if route != 'app_suivi_centre_details' %}
+                <div class="filter-dropdown">
+                    <button type="button" class="dropdown-toggle">
+                        Réseaux
+                    </button>
 
-                <div class="dropdown-menu">
-                    {% for r in reseaux %}
-                        {% set value = r is iterable ? (attribute(r, 'id') is defined ? attribute(r, 'id') : (attribute(r, 'nom') is defined ? attribute(r, 'nom') : '')) : r %}
-                        {% set label = r is iterable ? (attribute(r, 'nom') is defined ? attribute(r, 'nom') : value) : r %}
-                        {% if value != '' %}
+                    <div class="dropdown-menu">
+                        {% for r in reseaux %}
+                            {% set value = r is iterable ? (attribute(r, 'id') is defined ? attribute(r, 'id') : (attribute(r, 'nom') is defined ? attribute(r, 'nom') : '')) : r %}
+                            {% set label = r is iterable ? (attribute(r, 'nom') is defined ? attribute(r, 'nom') : value) : r %}
+                            {% if value != '' %}
+                                <label>
+                                    <input type="checkbox"
+                                           name="reseau[]"
+                                           value="{{ value }}"
+                                           {% if value in selected.reseau %}checked{% endif %}>
+                                    {{ label|capitalize }}
+                                </label>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if route != 'app_suivi_centre_details' %}
+                <div class="filter-dropdown">
+                    <button type="button" class="dropdown-toggle">
+                        Sociétés
+                    </button>
+
+                    <div class="dropdown-menu">
+                        {% for societe in societes %}
                             <label>
                                 <input type="checkbox"
-                                       name="reseau[]"
-                                       value="{{ value }}"
-                                       {% if value in selected.reseau %}checked{% endif %}>
-                                {{ label|capitalize }}
+                                       name="societe[]"
+                                       value="{{ societe }}"
+                                       {% if societe in selected.societe %}checked{% endif %}>
+                                {{ societe }}
                             </label>
-                        {% endif %}
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
+            {% endif %}
 
-            <div class="filter-dropdown">
-                <button type="button" class="dropdown-toggle">
-                    Sociétés
-                </button>
-
-                <div class="dropdown-menu">
-                    {% for societe in societes %}
-                        <label>
-                            <input type="checkbox"
-                                   name="societe[]"
-                                   value="{{ societe }}"
-                                   {% if societe in selected.societe %}checked{% endif %}>
-                            {{ societe }}
-                        </label>
-                    {% endfor %}
-                </div>
-            </div>
-
+            {% if route != 'app_suivi_centre_details' %}
             <div class="filter-dropdown">
                 <button type="button" class="dropdown-toggle">
                     Centres
@@ -108,8 +117,25 @@
                     {% endfor %}
                 </div>
             </div>
+            {% else %}
+                <div class="filter-dropdown">
+                    <button type="button" class="dropdown-toggle">
+                        Centres
+                    </button>
 
-            {% if route != 'app_suivi_focus_pro' %}
+                    <div class="dropdown-menu" data-filter-list="centre">
+                        {% for centre in centres %}
+                            <label>
+                                <input type="radio" name="centre[]" value="{{ centre.agr_centre }}"
+                                       {% if centre.agr_centre in selected.centre %}checked{% endif %}>
+                                {{ centre.label }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if route != 'app_suivi_focus_pro' and route != 'app_suivi_centre_details' %}
                 <div class="filter-dropdown">
                     <button type="button" class="dropdown-toggle">
                         Contrôleurs

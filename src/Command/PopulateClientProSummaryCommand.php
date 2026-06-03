@@ -7,6 +7,7 @@ use Doctrine\DBAL\Exception;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -32,6 +33,16 @@ class PopulateClientProSummaryCommand extends Command
         parent::__construct();
     }
 
+    protected function configure(): void
+    {
+        $this->addOption(
+            'full',
+            null,
+            InputOption::VALUE_NONE,
+            'Force le recalcul de toutes les périodes de la fenêtre glissante N..N-2.'
+        );
+    }
+
     /**
      * Runs the incremental rolling refresh for professional summary data.
      *
@@ -44,6 +55,7 @@ class PopulateClientProSummaryCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+        $this->forceFullRefresh = (bool) $input->getOption('full');
 
         $io->title('[synthese-pros] Démarrage de la mise à jour glissante de synthese_pros.');
 
@@ -226,7 +238,7 @@ class PopulateClientProSummaryCommand extends Command
                     ) AS ca_vtc,
                     SUM(
                         IF(
-                            c.type_ctrl IN ('VOL','VP','VT','VLVP','VLVT'),
+                            c.type_ctrl IN ('VOL','VP','VT'),
                             COALESCE(fa.montant_presta_ht, fa.total_ht) / t.nb_ctrl_facture,
                             0
                         )
@@ -243,7 +255,7 @@ class PopulateClientProSummaryCommand extends Command
                     COUNT(DISTINCT IF(c.type_ctrl IN ('CV','VLCV','VLCVC'), c.idcontrole, NULL)) AS nb_cv,
                     COUNT(DISTINCT IF(c.type_ctrl IN ('CLCV'), c.idcontrole, NULL)) AS nb_clcv,
                     COUNT(DISTINCT IF(c.type_ctrl IN ('VTC','VLCTC'), c.idcontrole, NULL)) AS nb_vtc,
-                    COUNT(DISTINCT IF(c.type_ctrl IN ('VOL','VP','VT','VLVP','VLVT'), c.idcontrole, NULL)) AS nb_vol,
+                    COUNT(DISTINCT IF(c.type_ctrl IN ('VOL','VP','VT'), c.idcontrole, NULL)) AS nb_vol,
                     COUNT(DISTINCT IF(c.type_ctrl IN ('CLVP','CLVT'), c.idcontrole, NULL)) AS nb_clvol,
                     COALESCE(cc.agr_centre, 'Centre inconnu') AS agr_centre,
                     COALESCE(so.nom, 'Société inconnue') AS societe_nom,

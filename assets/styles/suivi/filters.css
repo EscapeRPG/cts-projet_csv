@@ -65,6 +65,7 @@
     align-items: flex-end;
     justify-content: flex-start;
     gap: 20px;
+    min-width: 150px;
     margin: 20px auto;
     flex: 1;
 
@@ -76,20 +77,21 @@
         gap: 10px;
 
         a {
-            width: calc(100% - 60px);
+            width: calc(100% - 20px);
             border-radius: 10px 0 0 10px;
             margin-right: 0;
             padding: 5px 10px;
             border-right: none;
+            box-sizing: border-box;
             transition: all .4s ease;
 
             &:hover {
-                width: calc(100% - 40px);
+                width: 100%;
             }
         }
 
         .active {
-            width: calc(100% - 40px);
+            width: 100%;
         }
     }
 }

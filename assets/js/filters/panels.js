@@ -11,7 +11,9 @@ const PANEL_FOCUS_STORAGE_PREFIX = 'suivi.panel_focus.';
 function getFocusPanels(container) {
     if (!(container instanceof HTMLElement)) return [];
 
-    return Array.from(container.querySelectorAll(':scope > .stats-wrapper, :scope > .table-wrapper, :scope > .pro-stats-panel .graphique'))
+    const panels = container.querySelectorAll(':scope > .stats-wrapper, :scope > .table-wrapper, :scope > .pro-stats-panel .graphique, [data-panel-focus-target="1"]');
+
+    return Array.from(new Set(Array.from(panels)))
         .filter((el) => el instanceof HTMLElement);
 }
 
@@ -128,20 +130,29 @@ function setPanelFocus(container, panel) {
         if (!isTopLevelTarget) {
             current.classList.remove('panel-inner-focus-mode');
             current.querySelectorAll('.panel-inner-isolated').forEach((el) => el.classList.remove('panel-inner-isolated'));
+            current.querySelectorAll('.panel-inner-focus-ancestor').forEach((el) => el.classList.remove('panel-inner-focus-ancestor'));
             return;
         }
 
+        current.querySelectorAll('.panel-inner-focus-ancestor').forEach((el) => el.classList.remove('panel-inner-focus-ancestor'));
         if (panel !== topLevelTarget) {
             current.classList.add('panel-inner-focus-mode');
-            current.querySelectorAll(':scope > .panel-inner-isolated').forEach((el) => {
+            current.querySelectorAll('.panel-inner-isolated').forEach((el) => {
                 if (el !== panel) {
                     el.classList.remove('panel-inner-isolated');
                 }
             });
+
+            let ancestor = panel.parentElement;
+            while (ancestor instanceof HTMLElement && ancestor !== current) {
+                ancestor.classList.add('panel-inner-focus-ancestor');
+                ancestor = ancestor.parentElement;
+            }
+
             panel.classList.add('panel-inner-isolated');
         } else {
             current.classList.remove('panel-inner-focus-mode');
-            current.querySelectorAll(':scope > .panel-inner-isolated').forEach((el) => el.classList.remove('panel-inner-isolated'));
+            current.querySelectorAll('.panel-inner-isolated').forEach((el) => el.classList.remove('panel-inner-isolated'));
         }
     });
 
@@ -176,6 +187,7 @@ function clearPanelFocus(container, emitEvent = true) {
         panel.classList.remove('panel-isolated', 'panel-hidden', 'panel-inner-focus-mode');
     });
     container.querySelectorAll('.panel-inner-isolated').forEach((el) => el.classList.remove('panel-inner-isolated'));
+    container.querySelectorAll('.panel-inner-focus-ancestor').forEach((el) => el.classList.remove('panel-inner-focus-ancestor'));
 
     panels.forEach((panel) => {
         const tools = panel.querySelector(':scope > .panel-tools');
@@ -280,4 +292,3 @@ export function initPanelTools() {
         restorePanelFocus(container);
     });
 }
-
