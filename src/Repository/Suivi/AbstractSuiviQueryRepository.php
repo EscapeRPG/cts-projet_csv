@@ -17,7 +17,7 @@ abstract readonly class AbstractSuiviQueryRepository
 
     protected const array TYPE_CTRL_MAP = [
         'VTP' => ['VTP', 'VLCTP', 'VLVT', 'VLVP', 'CLVTP', 'CLCTP'],
-        'CV' => ['CV', 'VLCV', 'VLCVC', 'CLCV'],
+        'CV' => ['CV', 'CVC', 'VLCV', 'VLCVC', 'CLCV'],
         'VTC' => ['VTC', 'VLCTC'],
         'VOL' => ['VOL', 'VP', 'VT', 'CLVP', 'CLVT'],
     ];

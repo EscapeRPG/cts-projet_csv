@@ -76,7 +76,7 @@ class ImportFacturesService extends \App\Service\Import\AbstractCsvImportService
             'montant_presta_ht' => ['montant_presta_ht', 'montant_prestation_ht'],
             'montant_presta_ttc' => ['montant_presta_ttc', 'montant_prestation_ttc'],
             'pourcentage_tva_presta' => ['pourcentage_tva_presta', 'pourcentage_tva_prestation'],
-            'montant_tva_presta' => ['montant_tva_presta', 'montant_tva_prestation'],
+            'montant_tva_presta' => ['montant_tva_presta', 'montant_tva_prestation', 'montant_tva_prestatation'],
             'montant_remise' => ['montant_remise'],
             'pourcentage_remise' => ['pourcentage_remise'],
             'total_ht' => ['total_ht'],

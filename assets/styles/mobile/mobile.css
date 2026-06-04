@@ -80,6 +80,9 @@
     }
 
     .annees-filter {
+        position: static;
+        bottom: auto;
+        left: auto;
         margin: 10px 0;
         width: 100%;
         flex-wrap: wrap;

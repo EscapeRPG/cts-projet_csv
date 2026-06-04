@@ -71,7 +71,7 @@ class ImportPrestasNonFactureesService extends \App\Service\Import\AbstractCsvIm
             'pourcentage_remise' => ['pourcentage_remise'],
             'total_ht' => ['total_ht'],
             'total_ttc' => ['total_ttc'],
-            'pourcentage_tva' => ['pourcentage_tva'],
+            'pourcentage_tva' => ['pourcentage_tva', 'pourcentage_tva_total'],
             'montant_tva' => ['montant_tva'],
         ];
     }

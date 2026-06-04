@@ -11,7 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
- * Base implementation for CSV import services with batching and deduplication.
+ * Base implementation for CSV import services with batching.
  */
 abstract class AbstractCsvImportService implements CsvImportInterface
 {
@@ -227,13 +227,10 @@ abstract class AbstractCsvImportService implements CsvImportInterface
      */
     protected function shouldSkipFile(UploadedFile $file, Reseau $reseau): bool
     {
-        $hash = $this->getFileHash($file);
-
         return (bool)$this->em->getConnection()->fetchOne(
-            'SELECT 1 FROM imported_files WHERE filename = :name AND file_hash = :hash AND reseau_id = :reseau',
+            'SELECT 1 FROM imported_files WHERE filename = :name AND reseau_id = :reseau',
             [
                 'name' => $file->getClientOriginalName(),
-                'hash' => $hash,
                 'reseau' => $reseau->getId(),
             ]
         );
@@ -241,15 +238,11 @@ abstract class AbstractCsvImportService implements CsvImportInterface
 
 
     /**
-     * Inserts one batch using an UPSERT statement.
-     *
-     * We rely on UNIQUE indexes on the business identifiers (see getUniqueKeys()).
-     * Without those UNIQUE keys, imports would create duplicates and later aggregates
-     * (syntheses) would multiply amounts.
+     * Inserts one batch without deduplicating business identifiers.
      *
      * @param array<int, array<int, mixed>> $batch Prepared rows batch.
      *
-     * @return int Number of affected rows as returned by the driver. (Not equal to inserted rows for upserts.)
+     * @return int Number of inserted rows as returned by the driver.
      *
      * @throws Exception
      */
@@ -257,7 +250,6 @@ abstract class AbstractCsvImportService implements CsvImportInterface
     {
         $columns = static::getColumns();
         $table = static::getTableName();
-        $uniqueKeys = static::getUniqueKeys();
         $values = [];
 
         foreach ($batch as $row) {
@@ -272,24 +264,11 @@ abstract class AbstractCsvImportService implements CsvImportInterface
             $values[] = '(' . implode(',', $rowSql) . ')';
         }
 
-        // Build "col = VALUES(col)" for every non-unique column (MySQL upsert).
-        // If no unique keys are declared for this importer, fallback to plain insert to keep behavior explicit.
-        $updatableColumns = array_values(array_diff($columns, $uniqueKeys));
-        $updateSql = '';
-        if ($updatableColumns !== []) {
-            $assignments = array_map(
-                static fn(string $col) => sprintf('%s = VALUES(%s)', $col, $col),
-                $updatableColumns
-            );
-            $updateSql = ' ON DUPLICATE KEY UPDATE ' . implode(', ', $assignments);
-        }
-
         $sql = sprintf(
-            'INSERT INTO %s (%s) VALUES %s%s',
+            'INSERT INTO %s (%s) VALUES %s',
             $table,
             implode(',', $columns),
-            implode(',', $values),
-            $updateSql
+            implode(',', $values)
         );
 
         $inserted = (int)$this->em->getConnection()->executeStatement($sql);

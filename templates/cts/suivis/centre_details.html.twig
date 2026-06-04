@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Suivi centres{% endblock %}
+{% block title %}Suivi détails centre{% endblock %}
 
 {% block body %}
     <div class="suivi-container">
@@ -167,17 +167,6 @@
                                         </thead>
                                         <tbody>
                                         <tr>
-                                            <td class="left">Contrôles</td>
-                                            <td>{{ activityTotals.nb_vtp|number_format(0, ',', ' ') }}</td>
-                                            <td>{{ activityTotals.nb_clvtp|number_format(0, ',', ' ') }}</td>
-                                            <td>{{ activityTotals.nb_cv|number_format(0, ',', ' ') }}</td>
-                                            <td>{{ activityTotals.nb_clcv|number_format(0, ',', ' ') }}</td>
-                                            <td>{{ activityTotals.nb_vtc|number_format(0, ',', ' ') }}</td>
-                                            <td>{{ activityTotals.nb_vol|number_format(0, ',', ' ') }}</td>
-                                            <td>{{ activityTotals.nb_clvol|number_format(0, ',', ' ') }}</td>
-                                            <td class="total">{{ activityTotals.nb_controles|number_format(0, ',', ' ') }}</td>
-                                        </tr>
-                                        <tr>
                                             <td class="left">CA HT</td>
                                             <td>{{ activityTotals.ca_total_ht_vtp|number_format(2, ',', ' ') }} €</td>
                                             <td>{{ activityTotals.ca_total_ht_clvtp|number_format(2, ',', ' ') }} €</td>
@@ -189,6 +178,17 @@
                                             <td class="total">{{ activityTotals.ca_total_ht|number_format(2, ',', ' ') }}
                                                 €
                                             </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left">Contrôles</td>
+                                            <td>{{ activityTotals.nb_vtp|number_format(0, ',', ' ') }}</td>
+                                            <td>{{ activityTotals.nb_clvtp|number_format(0, ',', ' ') }}</td>
+                                            <td>{{ activityTotals.nb_cv|number_format(0, ',', ' ') }}</td>
+                                            <td>{{ activityTotals.nb_clcv|number_format(0, ',', ' ') }}</td>
+                                            <td>{{ activityTotals.nb_vtc|number_format(0, ',', ' ') }}</td>
+                                            <td>{{ activityTotals.nb_vol|number_format(0, ',', ' ') }}</td>
+                                            <td>{{ activityTotals.nb_clvol|number_format(0, ',', ' ') }}</td>
+                                            <td class="total">{{ activityTotals.nb_controles|number_format(0, ',', ' ') }}</td>
                                         </tr>
                                         <tr>
                                             <td class="left">Prix moyen</td>

@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -20,6 +21,27 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 class EnsureIndexesCommand extends Command
 {
+    /**
+     * Source import tables must accept repeated business identifiers while comparing
+     * exported CSV totals. Primary keys stay untouched; only secondary UNIQUE indexes
+     * on these raw import tables are removed.
+     *
+     * @var array<int, string>
+     */
+    private const array DUPLICATE_FRIENDLY_TABLES = [
+        'centres_clients',
+        'clients',
+        'clients_controles',
+        'controles',
+        'controles_factures',
+        'controles_non_factures',
+        'factures',
+        'factures_reglements',
+        'imported_files',
+        'prestas_non_facturees',
+        'reglements',
+    ];
+
     /**
      * @var array<int, array{table:string,name:string,signature:string,sql:string}>
      */
@@ -114,6 +136,17 @@ class EnsureIndexesCommand extends Command
             $dryRun ? 'simulation' : 'exécution'
         ));
 
+        try {
+            $droppedUniqueIndexes = $this->dropImportUniqueIndexes($dryRun);
+        } catch (\Throwable $e) {
+            $io->error(sprintf('<error>ERREUR suppression des contraintes UNIQUE import: %s</error>', $e->getMessage()));
+            return Command::FAILURE;
+        }
+
+        foreach ($droppedUniqueIndexes as $droppedUniqueIndex) {
+            $io->writeln($droppedUniqueIndex);
+        }
+
         foreach (self::INDEX_SPECS as $spec) {
             try {
                 $status = $this->ensureIndex(
@@ -148,6 +181,65 @@ class EnsureIndexesCommand extends Command
         ));
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Drops secondary UNIQUE indexes from raw CSV import tables.
+     *
+     * @param bool $dryRun Whether to simulate index drops.
+     *
+     * @return array<int, string> Operation status lines.
+     *
+     * @throws Exception
+     */
+    private function dropImportUniqueIndexes(bool $dryRun): array
+    {
+        $rows = $this->connection->fetchAllAssociative(
+            '
+                SELECT DISTINCT table_name, index_name
+                FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                  AND non_unique = 0
+                  AND index_name <> "PRIMARY"
+                  AND table_name IN (:tables)
+                ORDER BY table_name, index_name
+            ',
+            ['tables' => self::DUPLICATE_FRIENDLY_TABLES],
+            ['tables' => ArrayParameterType::STRING]
+        );
+
+        if ($rows === []) {
+            return ['<comment>IGNORÉ:</comment> contraintes UNIQUE import <comment>(aucune à supprimer)</comment>'];
+        }
+
+        $messages = [];
+        foreach ($rows as $row) {
+            $tableName = (string) ($row['table_name'] ?? $row['TABLE_NAME'] ?? '');
+            $indexName = (string) ($row['index_name'] ?? $row['INDEX_NAME'] ?? '');
+
+            if ($tableName === '' || $indexName === '') {
+                continue;
+            }
+
+            if ($dryRun) {
+                $messages[] = sprintf(
+                    '<info>SUPPRIMÉ:</info> %s.%s <comment>(simulation UNIQUE import)</comment>',
+                    $tableName,
+                    $indexName
+                );
+                continue;
+            }
+
+            $this->connection->executeStatement(sprintf(
+                'ALTER TABLE `%s` DROP INDEX `%s`',
+                str_replace('`', '``', $tableName),
+                str_replace('`', '``', $indexName)
+            ));
+
+            $messages[] = sprintf('<info>SUPPRIMÉ:</info> %s.%s <comment>(UNIQUE import)</comment>', $tableName, $indexName);
+        }
+
+        return $messages;
     }
 
     /**
