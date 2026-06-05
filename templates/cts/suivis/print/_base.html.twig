@@ -30,7 +30,7 @@
 </div>
 
 {# Needed for rendering the charts (canvas) before we convert them to images. #}
-{% if printVariant|default('') in ['centres-recap', 'pros-recap'] %}
+{% if printVariant|default('') in ['centres-recap', 'pros-recap', 'centre-details-recap'] %}
     <script src="{{ asset('js/clients_pros.js') }}" type="module"></script>
 {% endif %}
 <script src="{{ asset('js/print_suivi.js') }}" type="module"></script>

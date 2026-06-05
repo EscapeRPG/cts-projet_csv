@@ -1,3 +1,12 @@
+{% macro format_control_duration(value) -%}
+    {%- set totalSeconds = ((value|default(0)) * 60)|round(0, 'common') -%}
+    {%- set minutes = (totalSeconds / 60)|round(0, 'floor') -%}
+    {%- set seconds = totalSeconds - (minutes * 60) -%}
+    {{- "%d'%02d"|format(minutes, seconds) -}}
+{%- endmacro %}
+
+{% import _self as controleursFormat %}
+
 <div class="stats-container" data-ajax-results>
     {% set stats = {
         'nb_controles': 'Nombre de contrôles',
@@ -54,7 +63,7 @@
                                         {% elseif key == 'prix_moyen' or key == 'ca' %}
                                             {{ salarie[keyAuto]|number_format(2, ',', ' ') }} €
                                         {% elseif key == 'temps_moyen' %}
-                                            {{ salarie[keyAuto]|number_format(2, '\'', '') }}
+                                            {{ controleursFormat.format_control_duration(salarie[keyAuto]) }}
                                         {% else %}
                                             {{ salarie[keyAuto]|number_format(2, ',', ' ') }}%
                                         {% endif %}
@@ -82,7 +91,7 @@
                                     {% elseif key == 'prix_moyen' or key == 'ca' %}
                                         {{ moyenneAuto|number_format(2, ',', ' ') }} €
                                     {% elseif key == 'temps_moyen' %}
-                                        {{ moyenneAuto|number_format(2, '\'', '') }}
+                                        {{ controleursFormat.format_control_duration(moyenneAuto) }}
                                     {% else %}
                                         {{ moyenneAuto|number_format(2, ',', ' ') }}%
                                     {% endif %}
@@ -102,7 +111,7 @@
                                         {% elseif key == 'prix_moyen' or key == 'ca' %}
                                             {{ salarie[keyMoto]|number_format(2, ',', ' ') }} €
                                         {% elseif key == 'temps_moyen' %}
-                                            {{ salarie[keyMoto]|number_format(2, '\'', '') }}
+                                            {{ controleursFormat.format_control_duration(salarie[keyMoto]) }}
                                         {% else %}
                                             {{ salarie[keyMoto]|number_format(2, ',', ' ') }}%
                                         {% endif %}
@@ -130,7 +139,7 @@
                                     {% elseif key == 'prix_moyen' or key == 'ca' %}
                                         {{ moyenneMoto|number_format(2, ',', ' ') }} €
                                     {% elseif key == 'temps_moyen' %}
-                                        {{ moyenneMoto|number_format(2, '\'', '') }}
+                                        {{ controleursFormat.format_control_duration(moyenneMoto) }}
                                     {% else %}
                                         {{ moyenneMoto|number_format(2, ',', ' ') }}%
                                     {% endif %}

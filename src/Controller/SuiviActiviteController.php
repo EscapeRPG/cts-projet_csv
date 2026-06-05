@@ -527,25 +527,63 @@ final class SuiviActiviteController extends AbstractController
                 $this->filtersResolver->resolveFromRequest($request)
             )
         );
-        $filters['annee'] = null;
+        $selectedCentreCount = is_array($filters['centre'] ?? null) ? count($filters['centre']) : 0;
+
         $filters = $this->centresScope->apply($filters);
         $referenceYear = $this->resolveReferenceYear($filters);
 
-        $rows = $this->repo->fetchCentres($filters);
+        $comparisonFilters = $filters;
+        $comparisonFilters['annee'] = null;
+        $comparisonFilters['annees'] = [$referenceYear - 2, $referenceYear - 1, $referenceYear];
+
+        $rows = $this->repo->fetchCentres($comparisonFilters);
         $centres = $this->centresAnalyticsService->buildCentresRows($rows, $referenceYear);
         $summary = $this->proAnalyticsService->buildSummary($centres);
         $splitSummary = $this->centresAnalyticsService->buildRevenueSplitSummary($centres);
         $proCharts = $this->proAnalyticsService->buildMonthlyCharts($rows, $referenceYear);
+        $centreActivity = null;
+        $monthlySalaries = [
+            'months' => [],
+            'salaries' => [],
+            'max_ca' => 0.0,
+            'max_volumes' => 0,
+        ];
+
+        if ($selectedCentreCount === 1) {
+            $activityFilters = $filters;
+            $activityFilters['annee'] = $referenceYear;
+
+            $activityRows = $this->repo->fetchSyntheseRows($activityFilters);
+            $activitySynthese = $this->syntheseBuilder->buildSynthese($activityRows);
+            foreach ($activitySynthese as $societe => $centresData) {
+                foreach ($centresData as $agrCentre => $centreData) {
+                    $centreActivity = [
+                        'societe' => $societe,
+                        'agrement' => $agrCentre,
+                        'centre' => $centreData['centre'],
+                        'totaux' => $centreData['totaux'],
+                    ];
+                    break 2;
+                }
+            }
+
+            $monthlyRows = $this->repo->fetchMonthlySalarieRows($activityFilters);
+            $monthlySalaries = $this->centresAnalyticsService->buildMonthlySalarieBreakdown($monthlyRows);
+        }
 
         $view = $this->commonViewDataBuilder->build($filters);
         $view['printFilters'] = $this->buildPrintFilters($filters, $view);
 
-        return $this->render('cts/suivis/print/centres_recap.html.twig', array_merge(
+        return $this->render('cts/suivis/print/centre_details_recap.html.twig', array_merge(
             $view,
             [
                 'summary' => $summary,
                 'splitSummary' => $splitSummary,
                 'proCharts' => $proCharts,
+                'selectedCentreCount' => $selectedCentreCount,
+                'referenceYear' => $referenceYear,
+                'centreActivity' => $centreActivity,
+                'monthlySalaries' => $monthlySalaries,
             ]
         ));
     }

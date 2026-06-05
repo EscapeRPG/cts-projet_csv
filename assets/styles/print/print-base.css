@@ -95,6 +95,7 @@ html:not(.print-ready) body.print-page .print-content {
 .print-content table {
     width: 100%;
     border-collapse: collapse;
+    min-height: unset;
 }
 
 .print-content th,
@@ -104,16 +105,16 @@ html:not(.print-ready) body.print-page .print-content {
     vertical-align: top;
 }
 
-td.decreased,
-td.increased {
+.decreased,
+.increased {
     font-weight: bold;
 }
 
-td.decreased {
+.decreased {
     color: red;
 }
 
-td.increased {
+.increased {
     color: #12ba12;
 }
 
@@ -197,14 +198,16 @@ td.increased {
 
 /* Variant: Centres recap and Pros recap need the pro-stats styles but without the blue container background. */
 .print-variant-centres-recap .print-content .pro-stats-container,
-.print-variant-pros-recap .print-content .pro-stats-container {
+.print-variant-pros-recap .print-content .pro-stats-container,
+.print-variant-centre-details-recap .print-content .pro-stats-container {
     background: transparent !important;
     box-shadow: none !important;
     padding: 0 !important;
 }
 
 .print-variant-centres-recap .print-content .pro-stats-panel,
-.print-variant-pros-recap .print-content .pro-stats-panel {
+.print-variant-pros-recap .print-content .pro-stats-panel,
+.print-variant-centre-details-recap .print-content .pro-stats-panel {
     background: transparent !important;
     box-shadow: none !important;
 }
@@ -212,89 +215,131 @@ td.increased {
 /* Panels: remove colored backgrounds and use a subtle border instead. */
 .print-variant-centres-recap .print-content .ca-summary,
 .print-variant-pros-recap .print-content .ca-summary,
+.print-variant-centre-details-recap .print-content .ca-summary,
 .print-variant-centres-recap .print-content .pro-part-panel,
 .print-variant-pros-recap .print-content .pro-part-panel,
+.print-variant-centre-details-recap .print-content .pro-part-panel,
 .print-variant-centres-recap .print-content .stats-wrapper.graphique,
-.print-variant-pros-recap .print-content .stats-wrapper.graphique {
+.print-variant-pros-recap .print-content .stats-wrapper.graphique,
+.print-variant-centre-details-recap .print-content .stats-wrapper.graphique {
     background: #fff !important;
     border: 1px solid #d7d7d7 !important;
     box-shadow: none !important;
 }
 
 .print-variant-centres-recap .print-content .panel-tools,
-.print-variant-pros-recap .print-content .panel-tools {
+.print-variant-pros-recap .print-content .panel-tools,
+.print-variant-centre-details-recap .print-content .panel-tools {
     background: #fff !important;
 }
 
 /* Recap layout: summaries in a row, chart below. */
 .print-variant-centres-recap .print-content .pro-stats-panel,
-.print-variant-pros-recap .print-content .pro-stats-panel {
+.print-variant-pros-recap .print-content .pro-stats-panel,
+.print-variant-centre-details-recap .print-content .pro-stats-panel {
     flex-wrap: wrap !important;
     align-items: stretch !important;
 }
 
 .print-variant-centres-recap .print-content .pro-stats-panel > .summary,
-.print-variant-pros-recap .print-content .pro-stats-panel > .summary {
+.print-variant-pros-recap .print-content .pro-stats-panel > .summary,
+.print-variant-centre-details-recap .print-content .pro-stats-panel > .summary {
     flex: 1 1 0 !important;
     min-width: 0 !important;
     flex-direction: row;
 }
 
 .print-variant-centres-recap .print-content .pro-stats-panel > .stats-wrapper.graphique,
-.print-variant-pros-recap .print-content .pro-stats-panel > .stats-wrapper.graphique {
+.print-variant-pros-recap .print-content .pro-stats-panel > .stats-wrapper.graphique,
+.print-variant-centre-details-recap .print-content .pro-stats-panel > .stats-wrapper.graphique {
     flex: 1 1 100% !important;
     order: 10 !important;
 }
 
 .print-variant-centres-recap .print-content .chart-canvas-wrap,
-.print-variant-pros-recap .print-content .chart-canvas-wrap {
+.print-variant-pros-recap .print-content .chart-canvas-wrap,
+.print-variant-centre-details-recap .print-content .chart-canvas-wrap {
     height: 180px !important;
     min-height: 180px !important;
 }
 
 .print-variant-centres-recap .print-content .stats-wrapper.graphique,
-.print-variant-pros-recap .print-content .stats-wrapper.graphique {
+.print-variant-pros-recap .print-content .stats-wrapper.graphique,
+.print-variant-centre-details-recap .print-content .stats-wrapper.graphique {
     min-height: 0 !important;
 }
 
 /* Light compaction so the whole recap fits on a single page. */
 .print-variant-centres-recap .print-content,
-.print-variant-pros-recap .print-content {
+.print-variant-pros-recap .print-content,
+.print-variant-centre-details-recap .print-content {
     font-size: 11px;
 }
 
 .print-variant-centres-recap .print-content .ca-summary,
-.print-variant-pros-recap .print-content .ca-summary {
+.print-variant-pros-recap .print-content .ca-summary,
+.print-variant-centre-details-recap .print-content .ca-summary {
     padding: 6px !important;
 }
 
 .print-variant-centres-recap .print-content .ca-summary strong,
-.print-variant-pros-recap .print-content .ca-summary strong {
+.print-variant-pros-recap .print-content .ca-summary strong,
+.print-variant-centre-details-recap .print-content .ca-summary strong {
     font-size: 1.6em !important;
 }
 
 .print-variant-centres-recap .print-content .ca-summary .previous,
-.print-variant-pros-recap .print-content .ca-summary .previous {
+.print-variant-pros-recap .print-content .ca-summary .previous,
+.print-variant-centre-details-recap .print-content .ca-summary .previous {
     padding-top: 10px !important;
     margin: 6px auto !important;
 }
 
 .print-variant-centres-recap .print-content .pro-part-panel,
-.print-variant-pros-recap .print-content .pro-part-panel {
+.print-variant-pros-recap .print-content .pro-part-panel,
+.print-variant-centre-details-recap .print-content .pro-part-panel {
     padding: 6px !important;
 }
 
 .print-variant-centres-recap .print-content .stats-wrapper.graphique,
-.print-variant-pros-recap .print-content .stats-wrapper.graphique {
+.print-variant-pros-recap .print-content .stats-wrapper.graphique,
+.print-variant-centre-details-recap .print-content .stats-wrapper.graphique {
     padding: 6px !important;
 }
 
 /* Variant: Centres recap (keep panel content + colored bars, remove heavy outer chrome). */
 .print-variant-centres-recap .print-content .pro-stats-panel,
 .print-variant-centres-recap .print-content .stats-wrapper,
-.print-variant-centres-recap .print-content .stats-panel {
+.print-variant-centres-recap .print-content .stats-panel,
+.print-variant-centre-details-recap .print-content .pro-stats-panel,
+.print-variant-centre-details-recap .print-content .stats-wrapper,
+.print-variant-centre-details-recap .print-content .stats-panel {
     border: none !important;
     box-shadow: none !important;
+}
+
+/* Variant: Centre details recap. Keep the recap visual first, then print data tables together. */
+.print-variant-centre-details-recap .print-centre-tables-page {
+    break-before: page;
+    page-break-before: always;
+    display: flex;
+    flex-direction: column;
+    gap: 6mm;
+}
+
+.print-variant-centre-details-recap .print-content .table-panel {
+    border: 1px solid #d7d7d7 !important;
+    background: #fff !important;
+    padding: 4mm !important;
+}
+
+.print-variant-centre-details-recap .print-salaries-table table {
+    font-size: 9px;
+}
+
+.print-variant-centre-details-recap .print-content td.total,
+.print-variant-centre-details-recap .print-content th.total {
+    font-weight: 700;
 }
 
 /* Variant: Controleurs (no blue backgrounds; each wrapper like a focused panel). */

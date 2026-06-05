@@ -28,6 +28,19 @@ function applyActivityColumnVisibility(form) {
     applyActivityTableColumnVisibility(table, selectedTypes, selectedVehicles);
 }
 
+function updateCentreDetailsPrintAction(form) {
+    const actions = document.querySelectorAll('[data-centre-details-print-action]');
+    if (!actions.length) return;
+
+    const selectedCentreCount = form.querySelectorAll('input[name="centre[]"]:checked').length;
+    actions.forEach((action) => {
+        if (action instanceof HTMLElement) {
+            if (selectedCentreCount === 1) action.classList.remove('hidden');
+            else action.classList.add('hidden');
+        }
+    });
+}
+
 function renderCheckboxList(container, inputName, values, checkedValues, labelBuilder) {
     container.innerHTML = '';
 
@@ -207,9 +220,18 @@ export function initSuiviFilters(form, currentRoute) {
     applyActivityColumnVisibility(form);
     document.addEventListener('suivi:results-updated', () => applyActivityColumnVisibility(form));
 
+    if (currentRoute === 'app_suivi_centre_details') {
+        updateCentreDetailsPrintAction(form);
+        document.addEventListener('suivi:results-updated', () => updateCentreDetailsPrintAction(form));
+    }
+
     form.addEventListener('change', async (event) => {
         const target = event.target;
         if (!(target instanceof HTMLInputElement)) return;
+
+        if (currentRoute === 'app_suivi_centre_details') {
+            updateCentreDetailsPrintAction(form);
+        }
 
         const isActivityLocalColumnFilter = currentRoute === 'app_suivi_activite'
             && (target.name === 'type[]' || target.name === 'vehicule[]');
@@ -309,6 +331,10 @@ export function initSuiviFilters(form, currentRoute) {
                     allToggle.checked = true;
                     allToggle.indeterminate = false;
                 }
+            }
+
+            if (currentRoute === 'app_suivi_centre_details') {
+                updateCentreDetailsPrintAction(form);
             }
 
             await refreshDependentFilters(form, true, preserveCentreOnClear);

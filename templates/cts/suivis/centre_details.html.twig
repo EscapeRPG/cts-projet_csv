@@ -213,7 +213,8 @@
                                  data-pro-charts='{{ proCharts|json_encode|e('html_attr') }}'>
                                 <div class="chart-toolbar">
                                     <button type="button" class="chart-toggle active" data-chart-kind="ca">CA</button>
-                                    <button type="button" class="chart-toggle" data-chart-kind="volumes">Contrôles</button>
+                                    <button type="button" class="chart-toggle" data-chart-kind="volumes">Contrôles
+                                    </button>
                                 </div>
                                 <div class="chart-canvas-wrap">
                                     <canvas class="pro-chart-canvas"
@@ -222,65 +223,66 @@
                             </div>
 
                             <div class="grid-cell">
-                            {% for metric in [
-                                {'key': 'ca', 'title': 'CA mensuel par salarié', 'max': monthlySalaries.max_ca, 'total': 'ca_total', 'currency': true},
-                                {'key': 'volumes', 'title': 'Contrôles mensuels par salarié', 'max': monthlySalaries.max_volumes, 'total': 'volumes_total', 'currency': false},
-                            ] %}
-                                <div class="stats-wrapper" data-panel-focus-target="1">
-                                    <div class="stats-panel grid-panel">
-                                        <h2>{{ metric.title }} {{ referenceYear }}</h2>
-                                        <table class="grid-panel-table">
-                                            <thead>
-                                            <tr>
-                                                <th>Salarié</th>
-                                                {% for month in monthlySalaries.months %}
-                                                    <th>{{ month }}</th>
-                                                {% endfor %}
-                                                <th>Total</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {% for salarie in monthlySalaries.salaries %}
+                                {% for metric in [
+                                    {'key': 'ca', 'title': 'CA mensuel par salarié', 'max': monthlySalaries.max_ca, 'total': 'ca_total', 'currency': true},
+                                    {'key': 'volumes', 'title': 'Contrôles mensuels par salarié', 'max': monthlySalaries.max_volumes, 'total': 'volumes_total', 'currency': false},
+                                ] %}
+                                    <div class="stats-wrapper" data-panel-focus-target="1">
+                                        <div class="stats-panel grid-panel">
+                                            <h2>{{ metric.title }} {{ referenceYear }}</h2>
+                                            <table class="grid-panel-table">
+                                                <thead>
                                                 <tr>
-                                                    <td class="left wrap">{{ salarie.name }}</td>
-                                                    {% for monthNumber, month in monthlySalaries.months %}
-                                                        {% set value = salarie[metric.key][monthNumber] %}
-                                                        {% set percent = metric.max > 0 ? (value * 100 / metric.max) : 0 %}
-                                                        <td>
+                                                    <th>Salarié</th>
+                                                    {% for month in monthlySalaries.months %}
+                                                        <th>{{ month }}</th>
+                                                    {% endfor %}
+                                                    <th>Total</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {% for salarie in monthlySalaries.salaries %}
+                                                    <tr>
+                                                        <td class="left wrap">{{ salarie.name }}</td>
+                                                        {% for monthNumber, month in monthlySalaries.months %}
+                                                            {% set value = salarie[metric.key][monthNumber] %}
+                                                            {% set percent = metric.max > 0 ? (value * 100 / metric.max) : 0 %}
+                                                            <td>
+                                                                {% if metric.currency %}
+                                                                    {{ value|number_format(2, ',', ' ') }} €
+                                                                {% else %}
+                                                                    {{ value|number_format(0, ',', ' ') }}
+                                                                {% endif %}
+                                                            </td>
+                                                        {% endfor %}
+                                                        <td class="total">
                                                             {% if metric.currency %}
-                                                                {{ value|number_format(2, ',', ' ') }} €
+                                                                {{ salarie[metric.total]|number_format(2, ',', ' ') }} €
                                                             {% else %}
-                                                                {{ value|number_format(0, ',', ' ') }}
+                                                                {{ salarie[metric.total]|number_format(0, ',', ' ') }}
                                                             {% endif %}
                                                         </td>
-                                                    {% endfor %}
-                                                    <td class="total">
-                                                        {% if metric.currency %}
-                                                            {{ salarie[metric.total]|number_format(2, ',', ' ') }} €
-                                                        {% else %}
-                                                            {{ salarie[metric.total]|number_format(0, ',', ' ') }}
-                                                        {% endif %}
-                                                    </td>
-                                                </tr>
-                                            {% else %}
-                                                <tr>
-                                                    <td colspan="14">Aucune donnée de salarié sur la période
-                                                        sélectionnée.
-                                                    </td>
-                                                </tr>
-                                            {% endfor %}
-                                            </tbody>
-                                        </table>
+                                                    </tr>
+                                                {% else %}
+                                                    <tr>
+                                                        <td colspan="14">Aucune donnée de salarié sur la période
+                                                            sélectionnée.
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
-                                </div>
-                            {% endfor %}
+                                {% endfor %}
                             </div>
                         </div>
                     {% endif %}
                 {% endif %}
             </div>
 
-            <div class="filters-print-actions">
+            <div class="filters-print-actions"
+                 data-centre-details-print-action>
                 <a href="{{ path('app_suivi_centre_details_print_recap') }}"
                    data-print-keep-filters="1"
                    data-print-base-href="{{ path('app_suivi_centre_details_print_recap') }}"

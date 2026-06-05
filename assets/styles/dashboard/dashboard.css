@@ -94,6 +94,6 @@
         color: var(--text);
         transition: all .25s ease;
         border-top: 1px solid var(--blocks);
-        font-size: .8em;
+        font-size: .7em;
     }
 }

@@ -486,6 +486,10 @@ small {
     font-style: italic !important;
 }
 
+.hidden {
+    display: none !important;
+}
+
 .btn-link {
     background: var(--cts-main);
     color: var(--text);

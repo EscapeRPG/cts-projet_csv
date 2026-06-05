@@ -40,7 +40,7 @@ class PopulateSyntheseCommand extends Command
                 'period',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'Force le recalcul d’une periode unique (format YYYY-MM), sans tenir compte de last_run_at.'
+                'Force le recalcul d’une période unique (format YYYY-MM), sans tenir compte de last_run_at.'
             )
             ->addOption(
                 'full',
