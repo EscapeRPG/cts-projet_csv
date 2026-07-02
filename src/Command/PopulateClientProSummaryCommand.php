@@ -166,6 +166,11 @@ class PopulateClientProSummaryCommand extends Command
                 FROM (
                     SELECT
                         f.*,
+                        CASE
+                            WHEN f.type_facture = 'Facture' THEN 'F'
+                            WHEN f.type_facture = 'Avoir' THEN 'A'
+                            ELSE f.type_facture
+                        END AS normalized_type_facture,
                         ROW_NUMBER() OVER (PARTITION BY f.idfacture ORDER BY f.date_export DESC, f.id DESC) AS rn
                     FROM factures f
                 ) ranked_factures
@@ -270,15 +275,15 @@ class PopulateClientProSummaryCommand extends Command
                     SELECT DISTINCT cf.idcontrole, cf.idfacture
                     FROM controles_factures cf
                     INNER JOIN ({$facturesLatestSql}) f ON f.idfacture = cf.idfacture
-                    WHERE f.type_facture IN ('F','A','D')
+                    WHERE f.normalized_type_facture IN ('F','A','D')
                       AND (
-                        f.type_facture <> 'D'
+                        f.normalized_type_facture <> 'D'
                         OR NOT EXISTS (
                             SELECT 1
                             FROM controles_factures cf2
                             INNER JOIN ({$facturesLatestSql}) f2 ON f2.idfacture = cf2.idfacture
                             WHERE cf2.idcontrole = cf.idcontrole
-                              AND f2.type_facture = 'F'
+                              AND f2.normalized_type_facture = 'F'
                         )
                       )
                 ) cf
@@ -319,21 +324,21 @@ class PopulateClientProSummaryCommand extends Command
                         SELECT DISTINCT cf2.idcontrole, cf2.idfacture
                         FROM controles_factures cf2
                         INNER JOIN ({$facturesLatestSql}) f2 ON f2.idfacture = cf2.idfacture
-                        WHERE f2.type_facture IN ('F','A','D')
+                        WHERE f2.normalized_type_facture IN ('F','A','D')
                           AND (
-                            f2.type_facture <> 'D'
+                            f2.normalized_type_facture <> 'D'
                             OR NOT EXISTS (
                                 SELECT 1
                                 FROM controles_factures cf3
                                 INNER JOIN ({$facturesLatestSql}) f3 ON f3.idfacture = cf3.idfacture
                                 WHERE cf3.idcontrole = cf2.idcontrole
-                                  AND f3.type_facture = 'F'
+                                  AND f3.normalized_type_facture = 'F'
                             )
                           )
                     ) cf2
                     GROUP BY idfacture
                 ) t ON t.idfacture = fa.idfacture
-                WHERE fa.type_facture IN ('F','A','D')
+                WHERE fa.normalized_type_facture IN ('F','A','D')
                     AND c.date_ctrl >= :date_from
                     AND c.date_ctrl < :date_to
                     AND c.res_ctrl IN ('A','AP')

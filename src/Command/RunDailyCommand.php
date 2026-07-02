@@ -41,6 +41,10 @@ final class RunDailyCommand extends Command
             'args' => [],
         ],
         [
+            'command' => 'app:imports:health-check',
+            'args' => [],
+        ],
+        [
             'command' => 'app:data:purge-centres',
             'args' => [
                 '--execute' => true,

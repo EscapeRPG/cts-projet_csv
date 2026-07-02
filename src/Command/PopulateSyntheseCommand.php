@@ -145,7 +145,7 @@ class PopulateSyntheseCommand extends Command
                 microtime(true) - $startedAt
             ));
             return Command::SUCCESS;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             if ($this->connection->isTransactionActive()) {
                 $this->connection->rollBack();
             }
@@ -418,6 +418,11 @@ class PopulateSyntheseCommand extends Command
             FROM (
                 SELECT
                     f.*,
+                    CASE
+                        WHEN f.type_facture = 'Facture' THEN 'F'
+                        WHEN f.type_facture = 'Avoir' THEN 'A'
+                        ELSE f.type_facture
+                    END AS normalized_type_facture,
                     ROW_NUMBER() OVER (PARTITION BY f.idfacture ORDER BY f.date_export DESC, f.id DESC) AS rn
                 FROM factures f
             ) ranked_factures
@@ -434,15 +439,15 @@ class PopulateSyntheseCommand extends Command
             SELECT DISTINCT cf.idcontrole, cf.idfacture
             FROM controles_factures cf
             INNER JOIN ({$facturesLatestSql}) f ON f.idfacture = cf.idfacture
-            WHERE f.type_facture IN ('F','A','D')
+            WHERE f.normalized_type_facture IN ('F','A','D')
               AND (
-                f.type_facture <> 'D'
+                f.normalized_type_facture <> 'D'
                 OR NOT EXISTS (
                     SELECT 1
                     FROM controles_factures cf2
                     INNER JOIN ({$facturesLatestSql}) f2 ON f2.idfacture = cf2.idfacture
                     WHERE cf2.idcontrole = cf.idcontrole
-                      AND f2.type_facture = 'F'
+                      AND f2.normalized_type_facture = 'F'
                 )
               )
         ";
@@ -458,7 +463,7 @@ class PopulateSyntheseCommand extends Command
             FROM ({$distinctControleFactureSql}) cf_ref
             INNER JOIN ({$facturesLatestSql}) f_ref ON f_ref.idfacture = cf_ref.idfacture
             INNER JOIN ({$factureControlCountSql}) t_ref ON t_ref.idfacture = f_ref.idfacture
-            WHERE f_ref.type_facture IN ('F', 'D')
+            WHERE f_ref.normalized_type_facture IN ('F', 'D')
               AND COALESCE(f_ref.montant_presta_ht, f_ref.total_ht) > 0
             GROUP BY cf_ref.idcontrole
         ";
@@ -472,7 +477,7 @@ class PopulateSyntheseCommand extends Command
         ";
         $allocatedAmountExpr = "
             CASE
-                WHEN f.type_facture = 'A' THEN
+                WHEN f.normalized_type_facture = 'A' THEN
                     COALESCE(f.montant_presta_ht, f.total_ht) * (
                         CASE
                             WHEN COALESCE(art.total_ref_ca, 0) > 0 THEN COALESCE(cpr.ref_ca, 0) / art.total_ref_ca
@@ -487,7 +492,7 @@ class PopulateSyntheseCommand extends Command
         // When there is no facture row for a control, we fallback to the latest exported total_ht for that control.
         $controlAmountExpr = "
             CASE
-                WHEN f.type_facture IN ('F','A','D') THEN ({$allocatedAmountExpr})
+                WHEN f.normalized_type_facture IN ('F','A','D') THEN ({$allocatedAmountExpr})
                 WHEN f.idfacture IS NULL THEN COALESCE(pnf.total_ht, 0)
                 ELSE 0
             END
@@ -537,39 +542,39 @@ class PopulateSyntheseCommand extends Command
                 YEAR(ctrl.date_ctrl) AS annee,
                 MONTH(ctrl.date_ctrl) AS mois,
                 COUNT(DISTINCT ctrl.idcontrole) AS nb_controles,
-                COUNT(DISTINCT IF(f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_controles_factures,
+                COUNT(DISTINCT IF(f.normalized_type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_controles_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP'), ctrl.idcontrole, NULL)) AS nb_vtp,
-                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_vtp_factures,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND f.normalized_type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_vtp_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_vtp_particuliers,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_vtp_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVTP','CLCTP'), ctrl.idcontrole, NULL)) AS nb_clvtp,
-                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_clvtp_factures,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND f.normalized_type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_clvtp_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_clvtp_particuliers,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVTP','CLCTP') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_clvtp_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CV','CVC','VLCV','VLCVC'), ctrl.idcontrole, NULL)) AS nb_cv,
-                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CV','CVC','VLCV','VLCVC') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_cv_factures,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CV','CVC','VLCV','VLCVC') AND f.normalized_type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_cv_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CV','CVC','VLCV','VLCVC') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_cv_particuliers,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CV','CVC','VLCV','VLCVC') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_cv_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLCV'), ctrl.idcontrole, NULL)) AS nb_clcv,
-                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLCV') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_clcv_factures,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLCV') AND f.normalized_type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_clcv_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLCV') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_clcv_particuliers,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLCV') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_clcv_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTC','VLCTC'), ctrl.idcontrole, NULL)) AS nb_vtc,
-                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_vtc_factures,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND f.normalized_type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_vtc_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_vtc_particuliers,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTC','VLCTC') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_vtc_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT'), ctrl.idcontrole, NULL)) AS nb_vol,
-                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_vol_factures,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND f.normalized_type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_vol_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_vol_particuliers,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VOL','VP','VT') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_vol_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT'), ctrl.idcontrole, NULL)) AS nb_clvol,
-                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_clvol_factures,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND f.normalized_type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_clvol_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND COALESCE(cc.has_pro_client, 0) = 0, ctrl.idcontrole, NULL)) AS nb_clvol_particuliers,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('CLVP','CLVT') AND COALESCE(cc.has_pro_client, 0) = 1, ctrl.idcontrole, NULL)) AS nb_clvol_professionnels,
                 COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP','CV','CVC','VLCV','VLCVC','VTC','VLCTC','VOL','VP','VT'), ctrl.idcontrole, NULL)) AS nb_auto,
-                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP','CV','CVC','VLCV','VLCVC','VTC','VLCTC','VOL','VP','VT') AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_auto_factures,
+                COUNT(DISTINCT IF(ctrl.type_ctrl IN ('VTP','VLCTP','VLVT','VLVP','CV','CVC','VLCV','VLCVC','VTC','VLCTC','VOL','VP','VT') AND f.normalized_type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_auto_factures,
                 COUNT(DISTINCT IF(ctrl.type_ctrl LIKE 'CL%', ctrl.idcontrole, NULL)) AS nb_moto,
-                COUNT(DISTINCT IF(ctrl.type_ctrl LIKE 'CL%' AND f.type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_moto_factures,
+                COUNT(DISTINCT IF(ctrl.type_ctrl LIKE 'CL%' AND f.normalized_type_facture IN ('F','A','D'), ctrl.idcontrole, NULL)) AS nb_moto_factures,
                 SUM({$controlAmountExpr}) AS total_presta_ht,
                 SUM(IF(COALESCE(cc.has_pro_client, 0) = 0, {$controlAmountExpr}, 0)) AS total_presta_ht_particuliers,
                 SUM(IF(COALESCE(cc.has_pro_client, 0) = 1, {$controlAmountExpr}, 0)) AS total_presta_ht_professionnels,

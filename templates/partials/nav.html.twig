@@ -303,6 +303,14 @@
         <button class="theme-btn">&#9790</button>
     </div>
 
+    {% if is_granted('ROLE_ADMIN') %}
+        <div class="notifications">
+            <a href="{{ path('app_import_health') }}" class="import-health-link">
+                <img src="{{ asset('img/rapport_csv.png') }}" alt="rapport csv">
+            </a>
+        </div>
+    {% endif %}
+
     <div class="notifications">
         <img src="{{ asset('img/cloche.png') }}"
              class="{{ unread_notifications_count > 0 ? 'unread-alert' : '' }}"

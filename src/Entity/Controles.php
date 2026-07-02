@@ -24,56 +24,56 @@ class Controles
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 50, nullable: true)]
     private ?string $idcontrole = null;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $dateExport = null;
 
-    #[ORM\Column(length: 20)]
+    #[ORM\Column(length: 20, nullable: true)]
     private ?string $numPvCtrl = null;
 
-    #[ORM\Column(length: 20)]
+    #[ORM\Column(length: 20, nullable: true)]
     private ?string $numLiaCtrl = null;
 
-    #[ORM\Column(length: 12)]
+    #[ORM\Column(length: 12, nullable: true)]
     private ?string $immatVehicule = null;
 
-    #[ORM\Column(length: 12)]
+    #[ORM\Column(length: 50, nullable: true)]
     private ?string $numSerieVehicule = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $datePriseRdv = null;
 
-    #[ORM\Column(length: 1)]
+    #[ORM\Column(length: 1, nullable: true)]
     private ?string $typeRdv = null;
 
-    #[ORM\Column(type: Types::TIME_IMMUTABLE)]
+    #[ORM\Column(type: Types::TIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $debCtrl = null;
 
-    #[ORM\Column(type: Types::TIME_IMMUTABLE)]
+    #[ORM\Column(type: Types::TIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $finCtrl = null;
 
-    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $dateCtrl = null;
 
-    #[ORM\Column(type: Types::SMALLINT)]
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
     private ?int $tempsCtrl = null;
 
-    #[ORM\Column(type: Types::SMALLINT)]
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
     private ?int $refTemps = null;
 
-    #[ORM\Column(length: 2)]
+    #[ORM\Column(length: 2, nullable: true)]
     private ?string $resCtrl = null;
 
-    #[ORM\Column(length: 5)]
+    #[ORM\Column(length: 5, nullable: true)]
     private ?string $typeCtrl = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $modeleVehicule = null;
 
-    #[ORM\Column]
-    private ?int $anneeCirculation = null;
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $anneeCirculation = null;
 
     #[ORM\ManyToOne]
     private ?Reseau $reseau = null;
@@ -275,12 +275,12 @@ class Controles
         return $this;
     }
 
-    public function getAnneeCirculation(): ?int
+    public function getAnneeCirculation(): ?string
     {
         return $this->anneeCirculation;
     }
 
-    public function setAnneeCirculation(int $anneeCirculation): static
+    public function setAnneeCirculation(string $anneeCirculation): static
     {
         $this->anneeCirculation = $anneeCirculation;
 

@@ -84,9 +84,7 @@ class SuiviControleursService
         unset($c);
 
         $sumNbAuto = (float)array_sum(array_column($controleursStats, 'nb_controles_auto'));
-        $sumNbAutoFactures = (float)array_sum(array_column($controleursStats, 'nb_controles_auto_factures'));
         $sumNbMoto = (float)array_sum(array_column($controleursStats, 'nb_controles_moto'));
-        $sumNbMotoFactures = (float)array_sum(array_column($controleursStats, 'nb_controles_moto_factures'));
         $sumCaAuto = (float)array_sum(array_column($controleursStats, 'ca_auto'));
         $sumCaMoto = (float)array_sum(array_column($controleursStats, 'ca_moto'));
         $sumTempsAuto = (float)array_sum(array_column($controleursStats, 'temps_total_auto'));
@@ -102,8 +100,8 @@ class SuiviControleursService
             // Average revenue per active controller (with at least one control in the filtered dataset).
             'ca_auto' => $nbControleursAutoActifs > 0 ? $sumCaAuto / $nbControleursAutoActifs : 0.0,
             'ca_moto' => $nbControleursMotoActifs > 0 ? $sumCaMoto / $nbControleursMotoActifs : 0.0,
-            'prix_moyen_auto' => $sumNbAutoFactures > 0 ? $sumCaAuto / $sumNbAutoFactures : 0.0,
-            'prix_moyen_moto' => $sumNbMotoFactures > 0 ? $sumCaMoto / $sumNbMotoFactures : 0.0,
+            'prix_moyen_auto' => $sumNbAuto > 0 ? $sumCaAuto / $sumNbAuto : 0.0,
+            'prix_moyen_moto' => $sumNbMoto > 0 ? $sumCaMoto / $sumNbMoto : 0.0,
             'temps_moyen_auto' => $sumNbAuto > 0 ? $sumTempsAuto / $sumNbAuto : 0.0,
             'temps_moyen_moto' => $sumNbMoto > 0 ? $sumTempsMoto / $sumNbMoto : 0.0,
             'taux_refus_auto' => $sumNbAuto > 0 ? ($sumRefusAuto / $sumNbAuto) * 100 : 0.0,

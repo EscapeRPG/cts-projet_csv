@@ -41,8 +41,10 @@
                 {% set maxMoto = valuesMoto ? max(valuesMoto) : 0 %}
                 {% set moyenneAuto = valuesAuto ? moyennesGlobales[keyAuto] : 0 %}
                 {% set moyenneMoto = valuesMoto ? moyennesGlobales[keyMoto] : 0 %}
-                {% set moyennePercentAuto = maxAuto > 0 ? (moyenneAuto / maxAuto) * 100 : 0 %}
-                {% set moyennePercentMoto = maxMoto > 0 ? (moyenneMoto / maxMoto) * 100 : 0 %}
+                {% set moyennePercentAutoRaw = maxAuto > 0 ? (moyenneAuto / maxAuto) * 100 : 0 %}
+                {% set moyennePercentMotoRaw = maxMoto > 0 ? (moyenneMoto / maxMoto) * 100 : 0 %}
+                {% set moyennePercentAuto = moyennePercentAutoRaw < 0 ? 0 : (moyennePercentAutoRaw > 100 ? 100 : moyennePercentAutoRaw) %}
+                {% set moyennePercentMoto = moyennePercentMotoRaw < 0 ? 0 : (moyennePercentMotoRaw > 100 ? 100 : moyennePercentMotoRaw) %}
 
                 <div class="salaries-chart">
                     <div class="chart-cols names">

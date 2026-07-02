@@ -206,7 +206,8 @@ abstract class AbstractCsvImportService implements CsvImportInterface
 
             // conversion décimales
             if ($value !== null && in_array($column, $decimalColumns, true)) {
-                $value = str_replace(',', '.', $value);
+                $value = trim((string) $value);
+                $value = $value === '' ? null : str_replace(',', '.', $value);
             }
 
             $row[] = $value;

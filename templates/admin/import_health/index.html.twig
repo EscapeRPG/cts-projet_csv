@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Suivi des imports{% endblock %}
+
+{% block body %}
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>Date export</th>
+                <th>Réseau</th>
+                <th>Statut</th>
+                <th>Fichiers</th>
+                <th>Contrôles</th>
+                <th>Dernier import</th>
+                <th>Anomalies</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in rows %}
+                <tr class="import-health import-health-{{ row.status }}" style="{{ row.reseau_name == 'sgs' ? 'border-bottom: 5px solid var(--cts-main)' : '' }}">
+                    <td>{{ row.check_date|date('d/m/Y') }}</td>
+                    <td>{{ row.reseau_name|capitalize }}</td>
+
+                    {% if row.status == 'ok' %}
+                        <td class="increased centered">OK</td>
+                    {% elseif row.status == 'warning' %}
+                        <td class="partially centered">ALERTE</td>
+                    {% else %}
+                        <td class="decreased centered">CRITIQUE</td>
+                    {% endif %}
+
+                    <td class="right">{{ row.files_imported }} / {{ row.expected_files }}</td>
+                    <td class="right">{{ row.controles_files }}</td>
+                    <td class="centered">
+                        {% if row.latest_imported_at %}
+                            {{ row.latest_imported_at|date('d/m/Y H:i') }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if row.issues_list is empty %}
+                            -
+                        {% else %}
+                            {{ row.issues_list|join(' ; ') }}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7">Aucun contrôle d'import enregistré.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <style>
+        .import-health-ok td {
+            background: rgba(46, 125, 50, 0.08);
+        }
+
+        .import-health-warning td {
+            background: rgba(245, 124, 0, 0.12);
+        }
+
+        .import-health-error td {
+            background: rgba(198, 40, 40, 0.12);
+        }
+    </style>
+{% endblock %}

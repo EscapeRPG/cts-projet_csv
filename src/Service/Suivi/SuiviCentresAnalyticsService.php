@@ -130,7 +130,7 @@ final class SuiviCentresAnalyticsService
         }
         unset($centre);
 
-        usort($centres, static fn (array $a, array $b) => $a['agrement'] <=> $b['agrement']);
+        usort($centres, static fn (array $a, array $b) => $b['ca_now'] <=> $a['ca_now']);
 
         return $centres;
     }
