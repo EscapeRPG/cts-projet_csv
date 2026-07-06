@@ -398,9 +398,8 @@ class PopulateSyntheseCommand extends Command
      */
     private function insertAggregatesForPeriods(): void
     {
-        // Base tables can contain multiple rows per business identifier (idcontrole / idfacture)
-        // because imports rely on ON DUPLICATE KEY UPDATE but the DB doesn't enforce those
-        // business keys as UNIQUE. If we join raw tables, amounts get multiplied.
+        // Base tables can contain multiple rows per business identifier (idcontrole / idfacture).
+        // If we join raw tables directly, amounts get multiplied.
         // Dedupe here by keeping only the latest exported row per identifier.
         $controlesLatestSql = "
             SELECT *

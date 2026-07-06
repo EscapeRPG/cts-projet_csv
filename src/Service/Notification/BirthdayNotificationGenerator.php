@@ -44,7 +44,7 @@ final class BirthdayNotificationGenerator
     ): array
     {
         $today = ($referenceDate ?? new \DateTimeImmutable('today'))->setTime(0, 0);
-        $users = $this->userRepository->findActiveUsersWithScope();
+        $users = $this->userRepository->findActiveUsers();
 
         if ($users === []) {
             return [
@@ -113,7 +113,9 @@ final class BirthdayNotificationGenerator
 
             foreach ($users as $user) {
                 $userId = $user->getId();
-                $allowedCentreIds = $userId !== null ? ($userAllowedCentreIdsByUserId[$userId] ?? []) : [];
+                $allowedCentreIds = $userId !== null && array_key_exists($userId, $userAllowedCentreIdsByUserId)
+                    ? $userAllowedCentreIdsByUserId[$userId]
+                    : [];
 
                 if ($allowedCentreIds !== null) {
                     if ($allowedCentreIds === []) {
@@ -222,8 +224,13 @@ final class BirthdayNotificationGenerator
 
     private function hasRecipient(Notification $notification, User $user): bool
     {
+        $userId = $user->getId();
+        if ($userId === null) {
+            return false;
+        }
+
         foreach ($notification->getUserNotifications() as $userNotification) {
-            if ($userNotification->getUser() === $user) {
+            if ($userNotification->getUser()?->getId() === $userId) {
                 return true;
             }
         }

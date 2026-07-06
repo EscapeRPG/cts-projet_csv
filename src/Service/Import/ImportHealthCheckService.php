@@ -11,6 +11,7 @@ final readonly class ImportHealthCheckService
     private const int HISTORY_DAYS = 14;
     private const int BASELINE_DAYS = 45;
     private const float WARNING_RATIO = 0.80;
+    private const array NO_NOTIFICATION_WEEKDAYS = [1, 7];
 
     public function __construct(
         private Connection $connection,
@@ -67,7 +68,11 @@ final readonly class ImportHealthCheckService
                     ++$warnings;
                 }
 
-                if ($status !== 'ok' && $this->shouldNotifyForDate($checkDate, $referenceDate)) {
+                if (
+                    $status !== 'ok'
+                    && $this->shouldNotifyForDate($checkDate, $referenceDate)
+                    && !$this->shouldIgnoreNotificationForDate($checkDate)
+                ) {
                     $alerts[] = sprintf(
                         '%s %s: %s',
                         $reseauName,
@@ -271,6 +276,11 @@ final readonly class ImportHealthCheckService
         $ageDays = (int)$checkDate->diff($referenceDate)->format('%a');
 
         return $ageDays <= 1;
+    }
+
+    private function shouldIgnoreNotificationForDate(\DateTimeImmutable $checkDate): bool
+    {
+        return in_array((int)$checkDate->format('N'), self::NO_NOTIFICATION_WEEKDAYS, true);
     }
 
     /**

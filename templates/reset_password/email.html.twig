@@ -3,6 +3,8 @@
 <p>Vous avez effectué une demande de réinitialisation de mot de passe. Pour ce fairee, veuillez cliquer sur le lien
     suivant :</p>
 
+<p>Votre identifiant de connexion est : <strong>{{ username }}</strong></p>
+
 <a href="{{ url('app_reset_password', {token: resetToken.token}) }}">{{ url('app_reset_password', {token: resetToken.token}) }}</a>
 
 <p>Ce lien expirera

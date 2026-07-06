@@ -14,7 +14,7 @@
     <div class="form-wrapper profile-form">
         <h3>Changer le mot de passe</h3>
 
-        {{ form_start(password_form) }}
+        {{ form_start(password_form, {'attr': {'data-turbo': 'false'}}) }}
         <div>
             {{ form_label(password_form.plainPassword.first) }}
             {{ form_widget(password_form.plainPassword.first) }}

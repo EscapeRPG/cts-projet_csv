@@ -43,14 +43,6 @@ class ImportControlesService extends \App\Service\Import\AbstractCsvImportServic
     }
 
     /**
-     * @return array<int, string> Unique key columns.
-     */
-    protected static function getUniqueKeys(): array
-    {
-        return ['idcontrole'];
-    }
-
-    /**
      * @return array<string, array<int, string>> CSV-to-database mapping.
      */
     protected static function getColumnMapping(): array

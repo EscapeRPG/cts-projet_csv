@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Form\ChangePasswordFormType;
 use App\Form\ResetPasswordRequestFormType;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -40,7 +41,8 @@ class ResetPasswordController extends AbstractController
         private readonly ResetPasswordHelperInterface $resetPasswordHelper,
         private readonly EntityManagerInterface       $entityManager,
         private readonly string                       $mailerFromAddress,
-        private readonly string                       $mailerFromName
+        private readonly string                       $mailerFromName,
+        private readonly LoggerInterface              $logger
     )
     {
     }
@@ -208,9 +210,30 @@ class ResetPasswordController extends AbstractController
                     ['context' => 'reset'],
                     UrlGeneratorInterface::ABSOLUTE_URL
                 ),
+                'username' => $user->getUsername(),
             ]);
 
-        $mailer->send($email);
+        try {
+            $mailer->send($email);
+        } catch (TransportExceptionInterface $e) {
+            $this->logger->error('Echec envoi mail reinitialisation mot de passe', [
+                'email' => $user->getEmail(),
+                'exception' => $e->getMessage(),
+            ]);
+
+            try {
+                $this->resetPasswordHelper->removeResetRequest($resetToken->getToken());
+            } catch (ResetPasswordExceptionInterface $removeException) {
+                $this->logger->warning('Impossible de supprimer la demande de reinitialisation apres echec mail', [
+                    'email' => $user->getEmail(),
+                    'exception' => $removeException->getMessage(),
+                ]);
+            }
+
+            $this->addFlash('reset_password_error', 'Le mail de réinitialisation n\'a pas pu être envoyé. Merci de réessayer dans quelques minutes.');
+
+            return $this->redirectToRoute('app_forgot_password_request');
+        }
 
         // Store the token object in session for retrieval in check-email route.
         $this->setTokenObjectInSession($resetToken);

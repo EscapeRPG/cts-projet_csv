@@ -42,14 +42,6 @@ class ImportClientsService extends \App\Service\Import\AbstractCsvImportService
     }
 
     /**
-     * @return array<int, string> Unique key columns.
-     */
-    protected static function getUniqueKeys(): array
-    {
-        return ['idclient'];
-    }
-
-    /**
      * @return array<string, array<int, string>> CSV-to-database mapping.
      */
     protected static function getColumnMapping(): array

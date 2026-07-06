@@ -62,13 +62,6 @@ abstract class AbstractCsvImportService implements CsvImportInterface
     abstract protected static function getColumns(): array;
 
     /**
-     * Returns unique key columns for the target table.
-     *
-     * @return array<int, string> Unique key column names.
-     */
-    abstract protected static function getUniqueKeys(): array;
-
-    /**
      * Returns CSV-to-database column mapping.
      *
      * @return array<string, array<int, string>> Mapping by DB column name.
