@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Repository\Suivi\SuiviCentresRepository;
+use App\Repository\Suivi\SuiviModesReglementRepository;
 use App\Repository\Suivi\SuiviProsRepository;
 use App\Repository\Suivi\SuiviSyntheseRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -21,7 +22,8 @@ readonly class SuiviActiviteRepository
     public function __construct(
         private SuiviSyntheseRepository $syntheseRepository,
         private SuiviProsRepository     $prosRepository,
-        private SuiviCentresRepository  $centresRepository
+        private SuiviCentresRepository  $centresRepository,
+        private SuiviModesReglementRepository $modesReglementRepository
     )
     {
     }
@@ -80,5 +82,10 @@ readonly class SuiviActiviteRepository
     public function fetchCentres(array $filters = []): array
     {
         return $this->centresRepository->fetchCentres($filters);
+    }
+
+    public function fetchModesReglement(array $filters = []): array
+    {
+        return $this->modesReglementRepository->fetchModesReglement($filters);
     }
 }

@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Suivi modes de règlement{% endblock %}
+
+{% block body %}
+    {% macro displayModeValue(value, denominator, data, aggregate, isTotal) %}
+        {% if aggregate == 'repartition' %}
+            {% if data == 'montant' %}
+                {{ denominator > 0 ? (value / denominator)|number_format(2, ',', ' ') : '0,00' }} €
+            {% else %}
+                {{ isTotal and denominator > 0 ? '100,00' : (denominator > 0 ? (value / denominator * 100)|number_format(2, ',', ' ') : '0,00') }} %
+            {% endif %}
+        {% elseif data == 'montant' %}
+            {{ value|number_format(2, ',', ' ') }} €
+        {% else %}
+            {{ value }}
+        {% endif %}
+    {% endmacro %}
+
+    {% import _self as modesDisplay %}
+
+    <div class="suivi-container">
+        {% include 'partials/year-filter.html.twig' %}
+        {% include 'partials/filters.html.twig' %}
+
+        <div class="activite-infos">
+            <p>Tous prix indiqués HT | Marge d'erreur CA < 1,5%</p>
+        </div>
+
+        <div class="container" data-ajax-results>
+            {% set data = selectedModesData|default('nb') %}
+            {% set aggregate = selectedAggregate|default('total') %}
+
+            <div class="table-wrapper" style="background: var(--cts-main-light);">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>{{ entityHeader|default('Centre') }}</th>
+                        {% for mode in modesReglt %}
+                            <th>{{ mode }}</th>
+                        {% endfor %}
+                        <th>Total</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for typeCtrl, typeData in tableByType %}
+                        {% for row in typeData.rows %}
+                            <tr class="{{ row.kind == 'summary' ? 'total-row recap societe' : '' }}">
+                                {% if loop.first %}
+                                    <td rowspan="{{ typeData.rows|length }}"
+                                        style="position: sticky; top: 24.5px;">{{ typeData.label|default(typeCtrl|upper) }}</td>
+                                {% endif %}
+                                <td>
+                                    {{ row.label }}
+                                    {% if row.detail is not empty %}
+                                        <span class="light-info">({{ row.detail }})</span>
+                                    {% endif %}
+                                </td>
+
+                                {% for mode in modesReglt %}
+                                    {% set cell = row.modes[mode]|default({'nb': 0, 'montant': 0}) %}
+                                    {% set value = data == 'montant' ? cell.montant : cell.nb %}
+                                    {% set denominator = data == 'montant' ? cell.nb : row.total.nb %}
+                                    <td class="right">
+                                        {{ modesDisplay.displayModeValue(value, denominator, data, aggregate, false) }}
+                                    </td>
+                                {% endfor %}
+
+                                {% set totalValue = data == 'montant' ? row.total.montant : row.total.nb %}
+                                {% set totalDenominator = row.total.nb %}
+                                <td class="right">
+                                    {{ modesDisplay.displayModeValue(totalValue, totalDenominator, data, aggregate, true) }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="{{ 3 + modesReglt|length }}">Aucune donnée disponible.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

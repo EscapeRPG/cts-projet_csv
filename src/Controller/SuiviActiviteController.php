@@ -12,6 +12,7 @@ use App\Service\Suivi\SuiviCommonViewDataBuilder;
 use App\Service\Suivi\SuiviControleursService;
 use App\Service\Suivi\SuiviFiltersResolver;
 use App\Service\Suivi\SuiviFiltersProvider;
+use App\Service\Suivi\SuiviModesReglementService;
 use App\Service\Suivi\SuiviProAnalyticsService;
 use App\Service\Suivi\SuiviProService;
 use App\Service\Suivi\SuiviSyntheseBuilder;
@@ -104,6 +105,7 @@ final class SuiviActiviteController extends AbstractController
      * @param SuiviCommonViewDataBuilder $commonViewDataBuilder Builds common Twig view payload for filters.
      * @param SuiviProAnalyticsService $proAnalyticsService Computes summary and chart datasets for pro views.
      * @param SuiviCentresAnalyticsService $centresAnalyticsService Computes center-level analytics datasets.
+     * @param SuiviModesReglementService $modesReglementService Builds payment-mode follow-up table structures.
      * @param ArrayPaginator $arrayPaginator Paginates in-memory arrays for listing pages.
      */
     public function __construct(
@@ -117,6 +119,7 @@ final class SuiviActiviteController extends AbstractController
         private readonly SuiviCommonViewDataBuilder $commonViewDataBuilder,
         private readonly SuiviProAnalyticsService $proAnalyticsService,
         private readonly SuiviCentresAnalyticsService $centresAnalyticsService,
+        private readonly SuiviModesReglementService $modesReglementService,
         private readonly ArrayPaginator $arrayPaginator,
     ) {
     }
@@ -584,6 +587,45 @@ final class SuiviActiviteController extends AbstractController
                 'referenceYear' => $referenceYear,
                 'centreActivity' => $centreActivity,
                 'monthlySalaries' => $monthlySalaries,
+            ]
+        ));
+    }
+
+    /**
+     * Renders the payment-mode follow-up page with center or controller breakdowns.
+     *
+     * @param Request $request Current HTTP request containing filters and display options.
+     *
+     * @return Response Rendered HTML response for the payment-mode follow-up page.
+     *
+     * @throws Exception If data retrieval from persistence fails.
+     * @throws InvalidArgumentException If cache keys or cache arguments are invalid.
+     */
+    #[Route('/cts/suivi/modes-reglement', name: 'app_suivi_modes_reglement')]
+    public function suiviModesReglement(Request $request): Response
+    {
+
+        $filters = $this->applyDefaultCurrentYearForYearFilteredPages(
+            $this->filtersResolver->resolveFromRequest($request)
+        );
+        $filters = $this->centresScope->apply($filters);
+        $selectedTable = $request->query->get('table') === 'salaries' ? 'salaries' : 'centres';
+        $selectedData = $request->query->get('data') === 'montant' ? 'montant' : 'nb';
+        $selectedAggregate = $request->query->get('aggregate') === 'repartition' ? 'repartition' : 'total';
+
+        $rows = $this->repo->fetchModesReglement($filters);
+
+        [$modesReglt, $tableByType] = $this->modesReglementService->buildModesReglementRows($rows, $selectedTable);
+
+        return $this->render('cts/suivis/modes_reglement.html.twig', array_merge(
+            $this->commonViewDataBuilder->build($filters),
+            [
+                'modesReglt' => $modesReglt,
+                'tableByType' => $tableByType,
+                'entityHeader' => $selectedTable === 'salaries' ? 'Contrôleur' : 'Centre',
+                'selectedModesTable' => $selectedTable,
+                'selectedModesData' => $selectedData,
+                'selectedAggregate' => $selectedAggregate,
             ]
         ));
     }

@@ -41,14 +41,16 @@ function updateCentreDetailsPrintAction(form) {
     });
 }
 
-function renderCheckboxList(container, inputName, values, checkedValues, labelBuilder) {
+function renderChoiceList(container, inputName, values, checkedValues, labelBuilder) {
     container.innerHTML = '';
+
+    const inputType = container.dataset.filterInputType === 'radio' ? 'radio' : 'checkbox';
 
     values.forEach((value) => {
         const label = document.createElement('label');
         const input = document.createElement('input');
 
-        input.type = 'checkbox';
+        input.type = inputType;
         input.name = inputName;
         input.value = value.value;
         input.checked = checkedValues.has(value.value);
@@ -95,7 +97,7 @@ async function refreshDependentFilters(form, updateCentres = true, includeCentre
 
         const centresContainer = form.querySelector('[data-filter-list="centre"]');
         if (updateCentres && centresContainer instanceof HTMLElement) {
-            renderCheckboxList(
+            renderChoiceList(
                 centresContainer,
                 'centre[]',
                 centres.map((c) => ({value: String(c.agr_centre ?? ''), label: String(c.label ?? '')})).filter((c) => c.value !== ''),
@@ -106,7 +108,7 @@ async function refreshDependentFilters(form, updateCentres = true, includeCentre
 
         const controleursContainer = form.querySelector('[data-filter-list="controleur"]');
         if (controleursContainer instanceof HTMLElement) {
-            renderCheckboxList(
+            renderChoiceList(
                 controleursContainer,
                 'controleur[]',
                 controleurs.map((c) => ({

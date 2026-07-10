@@ -92,6 +92,11 @@
                         <div class="inner-div">Contrôleurs</div>
                     </a>
 
+                    <a href="{{ path('app_suivi_modes_reglement') }}" class="app">
+                        <img src="{{ asset('img/stats-controleurs.png') }}" alt="modes règlement">
+                        <div class="inner-div">Modes règlement</div>
+                    </a>
+
                     {% if is_granted('ROLE_ADMIN') %}
                         <a href="{{ path('app_first_results') }}" class="app">
                             <img src="{{ asset('img/dates-donnees.png') }}" alt="dates des premières données">

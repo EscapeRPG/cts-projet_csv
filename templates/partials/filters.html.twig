@@ -22,6 +22,10 @@
            data-keep-filters="1"
            data-keep-filters-base-href="{{ path('app_suivi_controleurs') }}"
            class="{{ route == 'app_suivi_controleurs' ? 'active' : '' }}">Contrôleurs</a>
+        <a href="{{ path('app_suivi_modes_reglement') }}"
+           data-keep-filters="1"
+           data-keep-filters-base-href="{{ path('app_suivi_modes_reglement') }}"
+           class="{{ route == 'app_suivi_modes_reglement' ? 'active' : '' }}">Modes règlement</a>
     </div>
 
     <form method="get"
@@ -30,6 +34,70 @@
           data-current-route="{{ route }}"
           {% if route == 'app_suivi_centres' %}data-preserve-query-params="annee"{% endif %}
           data-preserve-centre-on-clear="{{ (is_granted('ROLE_CTS') and not is_granted('ROLE_ADMIN')) ? '1' : '0' }}">
+
+        {% if route == 'app_suivi_modes_reglement' %}
+            {% set data = selectedModesData|default('nb') %}
+            {% set tableMode = selectedModesTable|default('centres') %}
+            {% set aggregate = selectedAggregate|default('total') %}
+
+            <fieldset class="filter-radio-group">
+                <legend>Entités</legend>
+
+                <label>
+                    <input type="radio"
+                           name="table"
+                           value="centres"
+                           {% if tableMode == 'centres' %}checked{% endif %}>
+                    Centres
+                </label>
+                <label>
+                    <input type="radio"
+                           name="table"
+                           value="salaries"
+                           {% if tableMode == 'salaries' %}checked{% endif %}>
+                    Contrôleurs
+                </label>
+            </fieldset>
+
+            <fieldset class="filter-radio-group">
+                <legend>Données</legend>
+
+                <label>
+                    <input type="radio"
+                           name="data"
+                           value="nb"
+                           {% if data == 'nb' %}checked{% endif %}>
+                    Nombre
+                </label>
+                <label>
+                    <input type="radio"
+                           name="data"
+                           value="montant"
+                           {% if data == 'montant' %}checked{% endif %}>
+                    Montant
+                </label>
+            </fieldset>
+
+            <fieldset class="filter-radio-group">
+                <legend>Valeurs</legend>
+
+                <label>
+                    <input type="radio"
+                           name="aggregate"
+                           value="total"
+                           {% if aggregate == 'total' %}checked{% endif %}>
+                    Total
+                </label>
+                <label>
+                    <input type="radio"
+                           name="aggregate"
+                           value="repartition"
+                           {% if aggregate == 'repartition' %}checked{% endif %}>
+                    Répartition
+                </label>
+            </fieldset>
+        {% endif %}
+
         <div class="filters-container">
             <div class="filter-dropdown">
                 <button type="button" class="dropdown-toggle">
@@ -102,28 +170,28 @@
             {% endif %}
 
             {% if route != 'app_suivi_centre_details' %}
-            <div class="filter-dropdown">
-                <button type="button" class="dropdown-toggle">
-                    Centres
-                </button>
+                <div class="filter-dropdown">
+                    <button type="button" class="dropdown-toggle">
+                        Centres
+                    </button>
 
-                <div class="dropdown-menu" data-filter-list="centre">
-                    {% for centre in centres %}
-                        <label>
-                            <input type="checkbox" name="centre[]" value="{{ centre.agr_centre }}"
-                                   {% if centre.agr_centre in selected.centre %}checked{% endif %}>
-                            {{ centre.label }}
-                        </label>
-                    {% endfor %}
+                    <div class="dropdown-menu" data-filter-list="centre" data-filter-input-type="checkbox">
+                        {% for centre in centres %}
+                            <label>
+                                <input type="checkbox" name="centre[]" value="{{ centre.agr_centre }}"
+                                       {% if centre.agr_centre in selected.centre %}checked{% endif %}>
+                                {{ centre.label }}
+                            </label>
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
             {% else %}
                 <div class="filter-dropdown">
                     <button type="button" class="dropdown-toggle">
                         Centres
                     </button>
 
-                    <div class="dropdown-menu" data-filter-list="centre">
+                    <div class="dropdown-menu" data-filter-list="centre" data-filter-input-type="radio">
                         {% for centre in centres %}
                             <label>
                                 <input type="radio" name="centre[]" value="{{ centre.agr_centre }}"
@@ -141,7 +209,7 @@
                         Contrôleurs
                     </button>
 
-                    <div class="dropdown-menu" data-filter-list="controleur">
+                    <div class="dropdown-menu" data-filter-list="controleur" data-filter-input-type="checkbox">
                         {% for c in controleurs %}
                             {% set value = c.id %}
                             <label>

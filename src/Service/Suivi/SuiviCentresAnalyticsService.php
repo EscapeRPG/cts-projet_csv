@@ -32,17 +32,17 @@ final class SuiviCentresAnalyticsService
      */
     public function buildCentresRows(array $rows, ?int $referenceYear = null): array
     {
-        $yearNow = $referenceYear ?? (int) date('Y');
+        $yearNow = $referenceYear ?? (int)date('Y');
         $yearN1 = $yearNow - 1;
         $yearN2 = $yearNow - 2;
 
         $centres = [];
 
         foreach ($rows as $row) {
-            $centre = strtoupper((string) ($row['agr_centre'] ?? 'Centre inconnu'));
-            if ($row['agr_centre_cl']) $centre .= ' - ' . strtoupper((string) ($row['agr_centre_cl']));
-            $societe = (string) ($row['societe_nom'] ?? 'Société inconnue');
-            $reseau = (string) ($row['reseau_nom'] ?? '');
+            $centre = strtoupper((string)($row['agr_centre'] ?? 'Centre inconnu'));
+            if ($row['agr_centre_cl']) $centre .= ' - ' . strtoupper((string)($row['agr_centre_cl']));
+            $societe = (string)($row['societe_nom'] ?? 'Société inconnue');
+            $reseau = (string)($row['reseau_nom'] ?? '');
             $key = $societe . '|' . $centre;
 
             if (!isset($centres[$key])) {
@@ -77,13 +77,13 @@ final class SuiviCentresAnalyticsService
                 ];
             }
 
-            $annee = (int) ($row['annee'] ?? 0);
-            $ca = (float) ($row['ca'] ?? 0);
-            $caPro = (float) ($row['ca_pro'] ?? 0);
-            $caPart = (float) ($row['ca_part'] ?? 0);
-            $nbControles = (int) ($row['nb_controles'] ?? 0);
-            $nbPro = (int) ($row['nb_pro'] ?? 0);
-            $nbPart = (int) ($row['nb_part'] ?? 0);
+            $annee = (int)($row['annee'] ?? 0);
+            $ca = (float)($row['ca'] ?? 0);
+            $caPro = (float)($row['ca_pro'] ?? 0);
+            $caPart = (float)($row['ca_part'] ?? 0);
+            $nbControles = (int)($row['nb_controles'] ?? 0);
+            $nbPro = (int)($row['nb_pro'] ?? 0);
+            $nbPart = (int)($row['nb_part'] ?? 0);
 
             if ($annee === $yearNow) {
                 $centres[$key]['ca_now'] += $ca;
@@ -130,7 +130,7 @@ final class SuiviCentresAnalyticsService
         }
         unset($centre);
 
-        usort($centres, static fn (array $a, array $b) => $b['ca_now'] <=> $a['ca_now']);
+        usort($centres, static fn(array $a, array $b) => $b['ca_now'] <=> $a['ca_now']);
 
         return $centres;
     }
@@ -160,18 +160,18 @@ final class SuiviCentresAnalyticsService
         ];
 
         foreach ($centres as $centre) {
-            $summary['ca_pro_now'] += (float) ($centre['ca_pro_now'] ?? 0);
-            $summary['ca_pro_n1'] += (float) ($centre['ca_pro_n1'] ?? 0);
-            $summary['ca_pro_n2'] += (float) ($centre['ca_pro_n2'] ?? 0);
-            $summary['ca_part_now'] += (float) ($centre['ca_part_now'] ?? 0);
-            $summary['ca_part_n1'] += (float) ($centre['ca_part_n1'] ?? 0);
-            $summary['ca_part_n2'] += (float) ($centre['ca_part_n2'] ?? 0);
-            $summary['vol_pro_now'] += (int) ($centre['nb_ctrl_pro_now'] ?? 0);
-            $summary['vol_pro_n1'] += (int) ($centre['nb_ctrl_pro_n1'] ?? 0);
-            $summary['vol_pro_n2'] += (int) ($centre['nb_ctrl_pro_n2'] ?? 0);
-            $summary['vol_part_now'] += (int) ($centre['nb_ctrl_part_now'] ?? 0);
-            $summary['vol_part_n1'] += (int) ($centre['nb_ctrl_part_n1'] ?? 0);
-            $summary['vol_part_n2'] += (int) ($centre['nb_ctrl_part_n2'] ?? 0);
+            $summary['ca_pro_now'] += (float)($centre['ca_pro_now'] ?? 0);
+            $summary['ca_pro_n1'] += (float)($centre['ca_pro_n1'] ?? 0);
+            $summary['ca_pro_n2'] += (float)($centre['ca_pro_n2'] ?? 0);
+            $summary['ca_part_now'] += (float)($centre['ca_part_now'] ?? 0);
+            $summary['ca_part_n1'] += (float)($centre['ca_part_n1'] ?? 0);
+            $summary['ca_part_n2'] += (float)($centre['ca_part_n2'] ?? 0);
+            $summary['vol_pro_now'] += (int)($centre['nb_ctrl_pro_now'] ?? 0);
+            $summary['vol_pro_n1'] += (int)($centre['nb_ctrl_pro_n1'] ?? 0);
+            $summary['vol_pro_n2'] += (int)($centre['nb_ctrl_pro_n2'] ?? 0);
+            $summary['vol_part_now'] += (int)($centre['nb_ctrl_part_now'] ?? 0);
+            $summary['vol_part_n1'] += (int)($centre['nb_ctrl_part_n1'] ?? 0);
+            $summary['vol_part_n2'] += (int)($centre['nb_ctrl_part_n2'] ?? 0);
         }
 
         return $summary;
@@ -196,7 +196,7 @@ final class SuiviCentresAnalyticsService
         $maxVolumes = 0;
 
         foreach ($rows as $row) {
-            $id = (string) ($row['salarie_id'] ?? '');
+            $id = (string)($row['salarie_id'] ?? '');
             if ($id === '') {
                 continue;
             }
@@ -204,8 +204,8 @@ final class SuiviCentresAnalyticsService
             if (!isset($salaries[$id])) {
                 $name = trim(sprintf(
                     '%s %s',
-                    $this->safeUpper((string) ($row['salarie_nom'] ?? '')),
-                    $this->safeUcfirst((string) ($row['salarie_prenom'] ?? ''))
+                    $this->safeUpper((string)($row['salarie_nom'] ?? '')),
+                    $this->safeUcfirst((string)($row['salarie_prenom'] ?? ''))
                 ));
 
                 $salaries[$id] = [
@@ -217,13 +217,13 @@ final class SuiviCentresAnalyticsService
                 ];
             }
 
-            $month = (int) ($row['mois'] ?? 0);
+            $month = (int)($row['mois'] ?? 0);
             if ($month < 1 || $month > 12) {
                 continue;
             }
 
-            $ca = (float) ($row['ca_total_ht'] ?? 0);
-            $volumes = (int) ($row['nb_controles'] ?? 0);
+            $ca = (float)($row['ca_total_ht'] ?? 0);
+            $volumes = (int)($row['nb_controles'] ?? 0);
 
             $salaries[$id]['ca'][$month] += $ca;
             $salaries[$id]['volumes'][$month] += $volumes;
@@ -235,7 +235,7 @@ final class SuiviCentresAnalyticsService
         }
 
         $salaries = array_values($salaries);
-        usort($salaries, static fn (array $a, array $b): int => $a['name'] <=> $b['name']);
+        usort($salaries, static fn(array $a, array $b): int => $a['name'] <=> $b['name']);
 
         return [
             'months' => self::MONTH_LABELS,

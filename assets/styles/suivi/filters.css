@@ -110,6 +110,38 @@
     gap: 10px;
 }
 
+.filter-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+    margin: 0 0 10px;
+    padding: 8px;
+    box-sizing: border-box;
+    border: 1px solid var(--cts-alt);
+    border-radius: 10px;
+    background: var(--blocks);
+
+    legend {
+        padding: 0 4px;
+        color: var(--main-text);
+        font-weight: bold;
+    }
+
+    label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--main-text);
+        cursor: pointer;
+    }
+
+    label:has(input:checked) {
+        font-weight: bold;
+        color: var(--cts-main);
+    }
+}
+
 .filter-dropdown {
     display: flex;
     flex-direction: column;

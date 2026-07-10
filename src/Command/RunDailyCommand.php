@@ -41,6 +41,10 @@ final class RunDailyCommand extends Command
             'args' => [],
         ],
         [
+            'command' => 'app:synthese:reglements',
+            'args' => [],
+        ],
+        [
             'command' => 'app:imports:health-check',
             'args' => [],
         ],
