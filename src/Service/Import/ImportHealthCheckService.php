@@ -12,6 +12,7 @@ final readonly class ImportHealthCheckService
     private const int BASELINE_DAYS = 45;
     private const float WARNING_RATIO = 0.80;
     private const array NO_NOTIFICATION_WEEKDAYS = [1, 7];
+    private const int SECTA_READY_HOUR = 21;
 
     public function __construct(
         private Connection $connection,
@@ -24,7 +25,7 @@ final readonly class ImportHealthCheckService
      */
     public function run(?\DateTimeImmutable $referenceDate = null, bool $notify = true): array
     {
-        $referenceDate ??= new \DateTimeImmutable('today');
+        $referenceDate ??= new \DateTimeImmutable();
         $historyStart = $referenceDate->modify('-' . (self::HISTORY_DAYS - 1) . ' days');
         $baselineStart = $referenceDate->modify('-' . self::BASELINE_DAYS . ' days');
 
@@ -38,6 +39,7 @@ final readonly class ImportHealthCheckService
             $reseauId = (int)$reseau->getId();
             $reseauName = (string)$reseau->getNom();
             $expectedFiles = $this->computeExpectedFiles($dailyStats[$reseauId] ?? []);
+            $latestExpectedFileDate = $this->resolveLatestExpectedFileDate($reseauName, $referenceDate);
 
             if ($expectedFiles <= 0) {
                 continue;
@@ -52,14 +54,16 @@ final readonly class ImportHealthCheckService
                     'latest_imported_at' => null,
                 ];
 
-                $issues = $this->detectIssues(
-                    $dateKey,
-                    (int)$stats['files_imported'],
-                    (int)$stats['controles_files'],
-                    $expectedFiles,
-                    $latestImportDate,
-                    $referenceDate
-                );
+                $issues = $checkDate <= $latestExpectedFileDate
+                    ? $this->detectIssues(
+                        $dateKey,
+                        (int)$stats['files_imported'],
+                        (int)$stats['controles_files'],
+                        $expectedFiles,
+                        $latestImportDate,
+                        $referenceDate
+                    )
+                    : [];
                 $status = $this->statusFromIssues($issues);
 
                 if ($status === 'error') {
@@ -281,6 +285,35 @@ final readonly class ImportHealthCheckService
     private function shouldIgnoreNotificationForDate(\DateTimeImmutable $checkDate): bool
     {
         return in_array((int)$checkDate->format('N'), self::NO_NOTIFICATION_WEEKDAYS, true);
+    }
+
+    private function resolveLatestExpectedFileDate(string $reseauName, \DateTimeImmutable $referenceDate): \DateTimeImmutable
+    {
+        return match ($this->normalizeReseauName($reseauName)) {
+            'secta', 'autosur' => (int)$referenceDate->format('G') >= self::SECTA_READY_HOUR
+                ? $referenceDate
+                : $referenceDate->modify('-1 day'),
+            'autovision' => $referenceDate->modify('-1 day'),
+            'dekra', 'sgs' => $referenceDate,
+            default => $referenceDate,
+        };
+    }
+
+    private function normalizeReseauName(string $value): string
+    {
+        $value = trim($value);
+        $value = str_replace(['_', '-'], ' ', $value);
+
+        if (function_exists('iconv')) {
+            $converted = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+            if ($converted !== false) {
+                $value = $converted;
+            }
+        }
+
+        $value = strtolower($value);
+
+        return preg_replace('/[^a-z0-9]+/', '', $value) ?? '';
     }
 
     /**
