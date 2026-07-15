@@ -91,6 +91,8 @@ final class PurgeCentresDataCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->disableDoctrineDebugMiddlewares();
+
         $io = new SymfonyStyle($input, $output);
 
         $io->title('[purge-centres] Démarrage de la purge des centres non CTS.');
@@ -213,6 +215,16 @@ final class PurgeCentresDataCommand extends Command
             static fn(string $agr) => 'CENTRE INCONNU (' . $agr . ')',
             $agrs
         );
+    }
+
+    /**
+     * Prevents Doctrine debug/profiling middlewares from retaining every SQL statement in memory.
+     *
+     * @return void
+     */
+    private function disableDoctrineDebugMiddlewares(): void
+    {
+        $this->connection->getConfiguration()->setMiddlewares([]);
     }
 
     /**
