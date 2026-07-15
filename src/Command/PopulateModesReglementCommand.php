@@ -13,7 +13,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:synthese:reglements',
-    description: 'Met à jour la table synthese_reglements sur une fenêtre glissante N..N-2.'
+    description: 'Met à jour la table synthese_reglements.'
 )]
 /**
  * Rebuilds monthly payment-mode aggregates into `synthese_reglements`.
@@ -40,7 +40,7 @@ class PopulateModesReglementCommand extends Command
                 'full',
                 null,
                 InputOption::VALUE_NONE,
-                'Force le recalcul de toutes les périodes de la fenêtre glissante N..N-2.'
+                'Force le recalcul de toutes les périodes disponibles.'
             )
             ->addOption(
                 'period',
@@ -51,7 +51,7 @@ class PopulateModesReglementCommand extends Command
     }
 
     /**
-     * Runs the incremental rolling refresh for payment-mode summary data.
+     * Runs the incremental refresh for payment-mode summary data.
      *
      * @param InputInterface $input Console input.
      * @param OutputInterface $output Console output.
@@ -65,7 +65,7 @@ class PopulateModesReglementCommand extends Command
         $this->forceFullRefresh = (bool) $input->getOption('full');
         $this->forcePeriod = $input->getOption('period');
 
-        $io->title('[synthese-reglements] Démarrage de la mise à jour glissante de synthese_reglements.');
+        $io->title('[synthese-reglements] Démarrage de la mise à jour de synthese_reglements.');
 
         try {
             $startedAt = microtime(true);
@@ -83,16 +83,6 @@ class PopulateModesReglementCommand extends Command
             $this->connection->beginTransaction();
             $this->connection->executeStatement('SET SESSION innodb_lock_wait_timeout = 300');
 
-            $yearNow = (int) date('Y');
-            $yearN2 = $yearNow - 2;
-            $dateFrom = sprintf('%d-01-01 00:00:00', $yearN2);
-            $dateTo = sprintf('%d-01-01 00:00:00', $yearNow + 1);
-            $io->writeln(sprintf(
-                '<info>Fenêtre de recalcul :</info> %d à %d, basée sur la date de règlement.',
-                $yearN2,
-                $yearNow
-            ));
-
             $lastRunAt = $this->connection->fetchOne(
                 'SELECT last_run_at FROM synthese_meta WHERE meta_key = :meta_key',
                 ['meta_key' => self::META_KEY]
@@ -102,20 +92,9 @@ class PopulateModesReglementCommand extends Command
                 $lastRunAt ?: 'aucune'
             ));
 
-            $io->writeln('<comment>Purge des années obsolètes...</comment>');
-            $stepStartedAt = microtime(true);
-            $this->connection->executeStatement(
-                'DELETE FROM synthese_reglements WHERE annee < :annee_min',
-                ['annee_min' => $yearN2]
-            );
-            $io->writeln(sprintf(
-                '<info>Purge des années obsolètes terminée.</info> <comment>(%.3f s)</comment>',
-                microtime(true) - $stepStartedAt
-            ));
-
             $io->writeln('<comment>Détection des périodes impactées...</comment>');
             $stepStartedAt = microtime(true);
-            $periods = $this->fetchPeriodsToRefresh($lastRunAt ?: null, $yearN2, $yearNow);
+            $periods = $this->fetchPeriodsToRefresh($lastRunAt ?: null);
             $io->writeln(sprintf(
                 '<info>Périodes impactées détectées :</info> %d. <comment>(%.3f s)</comment>',
                 count($periods),
@@ -155,6 +134,7 @@ class PopulateModesReglementCommand extends Command
 
             $io->writeln('<comment>Recalcul et insertion des agrégats...</comment>');
             $stepStartedAt = microtime(true);
+            [$dateFrom, $dateTo] = $this->buildDateBoundsForPeriods($periods);
             $this->insertAggregates($dateFrom, $dateTo);
             $this->insertUnlinkedInvoiceAggregates($dateFrom, $dateTo);
             $this->insertMissingInvoiceReferenceAggregates($dateFrom, $dateTo);
@@ -796,14 +776,11 @@ class PopulateModesReglementCommand extends Command
      * Returns affected year/month payment periods to refresh.
      *
      * @param string|null $lastRunAt Last successful run timestamp.
-     * @param int $yearMin Minimum year bound (included).
-     * @param int $yearMax Maximum year bound (included).
-     *
      * @return array<int, array{annee:int, mois:int}>
      *
      * @throws Exception
      */
-    private function fetchPeriodsToRefresh(?string $lastRunAt, int $yearMin, int $yearMax): array
+    private function fetchPeriodsToRefresh(?string $lastRunAt): array
     {
         if ($this->forcePeriod !== null && $this->forcePeriod !== '') {
             if (!preg_match('/^\d{4}-\d{2}$/', $this->forcePeriod)) {
@@ -811,12 +788,8 @@ class PopulateModesReglementCommand extends Command
             }
 
             [$year, $month] = array_map('intval', explode('-', $this->forcePeriod));
-            if ($year < $yearMin || $year > $yearMax || $month < 1 || $month > 12) {
-                throw new \InvalidArgumentException(sprintf(
-                    'Option --period invalide. Attendu: une période entre %d-01 et %d-12.',
-                    $yearMin,
-                    $yearMax
-                ));
+            if ($month < 1 || $month > 12) {
+                throw new \InvalidArgumentException('Option --period invalide. Le mois doit être compris entre 01 et 12.');
             }
 
             return [
@@ -830,10 +803,8 @@ class PopulateModesReglementCommand extends Command
                     SELECT DISTINCT YEAR(date_reglt) AS annee, MONTH(date_reglt) AS mois
                     FROM reglements
                     WHERE date_reglt IS NOT NULL
-                      AND YEAR(date_reglt) BETWEEN :year_min AND :year_max
                     ORDER BY annee, mois
-                ",
-                ['year_min' => $yearMin, 'year_max' => $yearMax]
+                "
             );
         }
 
@@ -842,16 +813,52 @@ class PopulateModesReglementCommand extends Command
                 SELECT DISTINCT YEAR(r.date_reglt) AS annee, MONTH(r.date_reglt) AS mois
                 FROM reglements r
                 WHERE r.date_reglt IS NOT NULL
-                  AND YEAR(r.date_reglt) BETWEEN :year_min AND :year_max
                   AND r.date_export > :last_run_at
                 ORDER BY annee, mois
             ",
             [
-                'year_min' => $yearMin,
-                'year_max' => $yearMax,
                 'last_run_at' => $lastRunAt,
             ]
         );
+    }
+
+    /**
+     * Builds inclusive/exclusive date bounds covering all periods to refresh.
+     *
+     * @param array<int, array{annee:int, mois:int}> $periods
+     *
+     * @return array{0:string,1:string}
+     */
+    private function buildDateBoundsForPeriods(array $periods): array
+    {
+        $firstPeriod = null;
+        $lastPeriod = null;
+
+        foreach ($periods as $period) {
+            $year = (int) $period['annee'];
+            $month = (int) $period['mois'];
+            $periodKey = sprintf('%04d-%02d', $year, $month);
+
+            if ($firstPeriod === null || $periodKey < $firstPeriod) {
+                $firstPeriod = $periodKey;
+            }
+
+            if ($lastPeriod === null || $periodKey > $lastPeriod) {
+                $lastPeriod = $periodKey;
+            }
+        }
+
+        if ($firstPeriod === null || $lastPeriod === null) {
+            throw new \InvalidArgumentException('Aucune période à borner.');
+        }
+
+        $dateFrom = $firstPeriod . '-01 00:00:00';
+        [$lastYear, $lastMonth] = array_map('intval', explode('-', $lastPeriod));
+        $nextMonth = $lastMonth === 12 ? 1 : $lastMonth + 1;
+        $nextYear = $lastMonth === 12 ? $lastYear + 1 : $lastYear;
+        $dateTo = sprintf('%04d-%02d-01 00:00:00', $nextYear, $nextMonth);
+
+        return [$dateFrom, $dateTo];
     }
 
     /**
