@@ -107,15 +107,23 @@ final class PurgeCentresDataCommand extends Command
         try {
             $this->connection->beginTransaction();
 
-            $this->prepareTargetControlsTempTable($agrs);
+            $this->prepareTargetScopeTempTables($agrs);
             $stats = $this->collectStats($agrs);
 
             $io->definitionList(
                 ['Mode' => $execute ? 'EXÉCUTION' : 'APERÇU'],
                 ['Source' => $inputAgrs !== [] ? 'Ligne de commande (--agr)' : 'DEFAULT_TARGET_AGRS'],
                 ['Liste agr_centre ciblée' => implode(', ', $agrs)],
+                ['Clients candidats' => $stats['target_clients']],
                 ['Contrôles correspondants' => $stats['target_controls']],
+                ['Factures candidates' => $stats['target_factures']],
+                ['Règlements candidats' => $stats['target_reglements']],
+                ['Lignes centres_clients correspondantes' => $stats['target_centres_clients']],
                 ['Lignes clients_controles correspondantes' => $stats['target_clients_controles']],
+                ['Lignes controles_factures correspondantes' => $stats['target_controles_factures']],
+                ['Lignes controles_non_factures correspondantes' => $stats['target_controles_non_factures']],
+                ['Lignes factures_reglements correspondantes' => $stats['target_factures_reglements']],
+                ['Lignes prestas_non_facturees candidates' => $stats['target_prestas_non_facturees']],
                 ['Lignes synthese_controles à supprimer' => $stats['target_synthese_controles']],
                 ['Lignes synthese_pros à supprimer' => $stats['target_synthese_pros']],
             );
@@ -126,9 +134,17 @@ final class PurgeCentresDataCommand extends Command
                 return Command::SUCCESS;
             }
 
+            $deletedFacturesReglements = $this->deleteTargetFacturesReglements($agrs);
+            $deletedControlesFacturesDirect = $this->deleteTargetControlesFactures($agrs);
+            $deletedControlesNonFacturesDirect = $this->deleteTargetControlesNonFacturesIfExists($agrs);
+            $deletedPrestasNonFacturees = $this->deleteTargetPrestasNonFacturees();
             $deletedClientsControles = $this->deleteTargetClientsControles($agrs);
+            $deletedCentresClients = $this->deleteTargetCentresClients($agrs);
             $deletedControlesFactures = $this->deleteOrphanControlesFactures();
             $deletedControlesNonFactures = $this->deleteOrphanControlesNonFacturesIfExists();
+            $deletedFactures = $this->deleteOrphanFactures();
+            $deletedReglements = $this->deleteOrphanReglements();
+            $deletedClients = $this->deleteOrphanClients();
             $deletedControles = $this->deleteOrphanControles();
             $deletedSyntheseControles = $this->deleteSyntheseControles($agrs);
             $deletedSynthesePros = $this->deleteSynthesePros($agrs);
@@ -136,9 +152,17 @@ final class PurgeCentresDataCommand extends Command
             $this->connection->commit();
 
             $io->definitionList(
+                ['factures_reglements supprimées' => $deletedFacturesReglements],
+                ['controles_factures ciblées supprimées' => $deletedControlesFacturesDirect],
+                ['controles_non_factures ciblées supprimées' => $deletedControlesNonFacturesDirect],
+                ['prestas_non_facturees supprimées' => $deletedPrestasNonFacturees],
                 ['clients_controles supprimées' => $deletedClientsControles],
+                ['centres_clients supprimées' => $deletedCentresClients],
                 ['controles_factures supprimées' => $deletedControlesFactures],
                 ['controles_non_factures supprimées' => $deletedControlesNonFactures],
+                ['factures supprimées' => $deletedFactures],
+                ['reglements supprimés' => $deletedReglements],
+                ['clients supprimés' => $deletedClients],
                 ['controles supprimés' => $deletedControles],
                 ['synthese_controles supprimées' => $deletedSyntheseControles],
                 ['synthese_pros supprimées' => $deletedSynthesePros],
@@ -192,7 +216,29 @@ final class PurgeCentresDataCommand extends Command
     }
 
     /**
-     * Builds temporary table of impacted controls.
+     * Checks whether a table exists in the current database.
+     *
+     * @param string $tableName Table name.
+     *
+     * @return bool True when the table exists.
+     *
+     * @throws Exception
+     */
+    private function tableExists(string $tableName): bool
+    {
+        return (int)$this->connection->fetchOne(
+            "
+                SELECT COUNT(*)
+                FROM information_schema.tables
+                WHERE table_schema = DATABASE()
+                  AND table_name = :table_name
+            ",
+            ['table_name' => $tableName]
+        ) > 0;
+    }
+
+    /**
+     * Builds temporary tables of impacted business identifiers before any deletion.
      *
      * @param array<int, string> $agrs Normalized target approvals.
      *
@@ -200,11 +246,86 @@ final class PurgeCentresDataCommand extends Command
      *
      * @throws Exception
      */
-    private function prepareTargetControlsTempTable(array $agrs): void
+    private function prepareTargetScopeTempTables(array $agrs): void
     {
+        $this->connection->executeStatement('DROP TEMPORARY TABLE IF EXISTS tmp_purge_centres_clients');
         $this->connection->executeStatement('DROP TEMPORARY TABLE IF EXISTS tmp_purge_centres_controls');
+        $this->connection->executeStatement('DROP TEMPORARY TABLE IF EXISTS tmp_purge_centres_factures');
+        $this->connection->executeStatement('DROP TEMPORARY TABLE IF EXISTS tmp_purge_centres_reglements');
+
         $this->connection->executeStatement(
-            'CREATE TEMPORARY TABLE tmp_purge_centres_controls (idcontrole BIGINT PRIMARY KEY)'
+            'CREATE TEMPORARY TABLE tmp_purge_centres_clients (idclient VARCHAR(50) PRIMARY KEY)'
+        );
+        $this->connection->executeStatement(
+            'CREATE TEMPORARY TABLE tmp_purge_centres_controls (idcontrole VARCHAR(50) PRIMARY KEY)'
+        );
+        $this->connection->executeStatement(
+            'CREATE TEMPORARY TABLE tmp_purge_centres_factures (idfacture VARCHAR(50) PRIMARY KEY)'
+        );
+        $this->connection->executeStatement(
+            'CREATE TEMPORARY TABLE tmp_purge_centres_reglements (idreglement VARCHAR(50) PRIMARY KEY)'
+        );
+
+        $this->connection->executeStatement(
+            "
+                INSERT IGNORE INTO tmp_purge_centres_clients (idclient)
+                SELECT DISTINCT cc.idclient
+                FROM centres_clients cc
+                WHERE cc.idclient IS NOT NULL
+                  AND cc.agr_centre IN (:agrs)
+            ",
+            ['agrs' => $agrs],
+            ['agrs' => ArrayParameterType::STRING]
+        );
+
+        $this->connection->executeStatement(
+            "
+                INSERT IGNORE INTO tmp_purge_centres_clients (idclient)
+                SELECT DISTINCT cc.idclient
+                FROM clients_controles cc
+                WHERE cc.idclient IS NOT NULL
+                  AND cc.agr_centre IN (:agrs)
+            ",
+            ['agrs' => $agrs],
+            ['agrs' => ArrayParameterType::STRING]
+        );
+
+        $this->connection->executeStatement(
+            "
+                INSERT IGNORE INTO tmp_purge_centres_clients (idclient)
+                SELECT DISTINCT cf.idclient
+                FROM controles_factures cf
+                WHERE cf.idclient IS NOT NULL
+                  AND cf.agr_centre IN (:agrs)
+            ",
+            ['agrs' => $agrs],
+            ['agrs' => ArrayParameterType::STRING]
+        );
+
+        if ($this->tableExists('controles_non_factures')) {
+            $this->connection->executeStatement(
+                "
+                    INSERT IGNORE INTO tmp_purge_centres_clients (idclient)
+                    SELECT DISTINCT cnf.idclient
+                    FROM controles_non_factures cnf
+                    WHERE cnf.idclient IS NOT NULL
+                      AND cnf.agr_centre IN (:agrs)
+                ",
+                ['agrs' => $agrs],
+                ['agrs' => ArrayParameterType::STRING]
+            );
+        }
+
+        $this->connection->executeStatement(
+            "
+                INSERT IGNORE INTO tmp_purge_centres_clients (idclient)
+                SELECT DISTINCT fr.idclient
+                FROM factures_reglements fr
+                WHERE fr.idclient IS NOT NULL
+                  AND fr.agr_centre IN (:agrs)
+            ",
+            ['agrs' => $agrs],
+            ['agrs' => ArrayParameterType::STRING]
         );
 
         $this->connection->executeStatement(
@@ -212,7 +333,70 @@ final class PurgeCentresDataCommand extends Command
                 INSERT IGNORE INTO tmp_purge_centres_controls (idcontrole)
                 SELECT DISTINCT cc.idcontrole
                 FROM clients_controles cc
-                WHERE UPPER(TRIM(cc.agr_centre)) IN (:agrs)
+                WHERE cc.idcontrole IS NOT NULL
+                  AND cc.agr_centre IN (:agrs)
+            ",
+            ['agrs' => $agrs],
+            ['agrs' => ArrayParameterType::STRING]
+        );
+
+        $this->connection->executeStatement(
+            "
+                INSERT IGNORE INTO tmp_purge_centres_controls (idcontrole)
+                SELECT DISTINCT cf.idcontrole
+                FROM controles_factures cf
+                WHERE cf.idcontrole IS NOT NULL
+                  AND cf.agr_centre IN (:agrs)
+            ",
+            ['agrs' => $agrs],
+            ['agrs' => ArrayParameterType::STRING]
+        );
+
+        if ($this->tableExists('controles_non_factures')) {
+            $this->connection->executeStatement(
+                "
+                    INSERT IGNORE INTO tmp_purge_centres_controls (idcontrole)
+                    SELECT DISTINCT cnf.idcontrole
+                    FROM controles_non_factures cnf
+                    WHERE cnf.idcontrole IS NOT NULL
+                      AND cnf.agr_centre IN (:agrs)
+                ",
+                ['agrs' => $agrs],
+                ['agrs' => ArrayParameterType::STRING]
+            );
+        }
+
+        $this->connection->executeStatement(
+            "
+                INSERT IGNORE INTO tmp_purge_centres_factures (idfacture)
+                SELECT DISTINCT cf.idfacture
+                FROM controles_factures cf
+                WHERE cf.idfacture IS NOT NULL
+                  AND cf.agr_centre IN (:agrs)
+            ",
+            ['agrs' => $agrs],
+            ['agrs' => ArrayParameterType::STRING]
+        );
+
+        $this->connection->executeStatement(
+            "
+                INSERT IGNORE INTO tmp_purge_centres_factures (idfacture)
+                SELECT DISTINCT fr.idfacture
+                FROM factures_reglements fr
+                WHERE fr.idfacture IS NOT NULL
+                  AND fr.agr_centre IN (:agrs)
+            ",
+            ['agrs' => $agrs],
+            ['agrs' => ArrayParameterType::STRING]
+        );
+
+        $this->connection->executeStatement(
+            "
+                INSERT IGNORE INTO tmp_purge_centres_reglements (idreglement)
+                SELECT DISTINCT fr.idreglement
+                FROM factures_reglements fr
+                WHERE fr.idreglement IS NOT NULL
+                  AND fr.agr_centre IN (:agrs)
             ",
             ['agrs' => $agrs],
             ['agrs' => ArrayParameterType::STRING]
@@ -224,7 +408,7 @@ final class PurgeCentresDataCommand extends Command
      *
      * @param array<int, string> $agrs Normalized target approvals.
      *
-     * @return array{target_controls:int,target_clients_controles:int,target_synthese_controles:int,target_synthese_pros:int}
+     * @return array<string, int>
      *
      * @throws Exception
      */
@@ -236,14 +420,58 @@ final class PurgeCentresDataCommand extends Command
             'target_controls' => (int)$this->connection->fetchOne(
                 'SELECT COUNT(*) FROM tmp_purge_centres_controls'
             ),
+            'target_clients' => (int)$this->connection->fetchOne(
+                'SELECT COUNT(*) FROM tmp_purge_centres_clients'
+            ),
+            'target_factures' => (int)$this->connection->fetchOne(
+                'SELECT COUNT(*) FROM tmp_purge_centres_factures'
+            ),
+            'target_reglements' => (int)$this->connection->fetchOne(
+                'SELECT COUNT(*) FROM tmp_purge_centres_reglements'
+            ),
+            'target_centres_clients' => (int)$this->connection->fetchOne(
+                "
+                    SELECT COUNT(*)
+                    FROM centres_clients cc
+                    WHERE cc.agr_centre IN (:agrs)
+                ",
+                ['agrs' => $agrs],
+                ['agrs' => ArrayParameterType::STRING]
+            ),
             'target_clients_controles' => (int)$this->connection->fetchOne(
                 "
                     SELECT COUNT(*)
                     FROM clients_controles cc
-                    WHERE UPPER(TRIM(cc.agr_centre)) IN (:agrs)
+                    WHERE cc.agr_centre IN (:agrs)
                 ",
                 ['agrs' => $agrs],
                 ['agrs' => ArrayParameterType::STRING]
+            ),
+            'target_controles_factures' => (int)$this->connection->fetchOne(
+                "
+                    SELECT COUNT(*)
+                    FROM controles_factures cf
+                    WHERE cf.agr_centre IN (:agrs)
+                ",
+                ['agrs' => $agrs],
+                ['agrs' => ArrayParameterType::STRING]
+            ),
+            'target_controles_non_factures' => $this->countTargetControlesNonFactures($agrs),
+            'target_factures_reglements' => (int)$this->connection->fetchOne(
+                "
+                    SELECT COUNT(*)
+                    FROM factures_reglements fr
+                    WHERE fr.agr_centre IN (:agrs)
+                ",
+                ['agrs' => $agrs],
+                ['agrs' => ArrayParameterType::STRING]
+            ),
+            'target_prestas_non_facturees' => (int)$this->connection->fetchOne(
+                "
+                    SELECT COUNT(*)
+                    FROM prestas_non_facturees pnf
+                    INNER JOIN tmp_purge_centres_controls t ON t.idcontrole = pnf.idcontrole
+                "
             ),
             'target_synthese_controles' => (int)$this->connection->fetchOne(
                 "
@@ -281,6 +509,142 @@ final class PurgeCentresDataCommand extends Command
     }
 
     /**
+     * Counts controles_non_factures rows matching target approvals when table exists.
+     *
+     * @param array<int, string> $agrs Normalized target approvals.
+     *
+     * @return int Number of matching rows.
+     *
+     * @throws Exception
+     */
+    private function countTargetControlesNonFactures(array $agrs): int
+    {
+        if (!$this->tableExists('controles_non_factures')) {
+            return 0;
+        }
+
+        return (int)$this->connection->fetchOne(
+            "
+                SELECT COUNT(*)
+                FROM controles_non_factures cnf
+                WHERE cnf.agr_centre IN (:agrs)
+            ",
+            ['agrs' => $agrs],
+            ['agrs' => ArrayParameterType::STRING]
+        );
+    }
+
+    /**
+     * Deletes centres_clients rows matching target approvals.
+     *
+     * @param array<int, string> $agrs Normalized target approvals.
+     *
+     * @return int Number of deleted rows.
+     *
+     * @throws Exception
+     */
+    private function deleteTargetCentresClients(array $agrs): int
+    {
+        return $this->connection->executeStatement(
+            "
+                DELETE cc
+                FROM centres_clients cc
+                WHERE cc.agr_centre IN (:agrs)
+            ",
+            ['agrs' => $agrs],
+            ['agrs' => ArrayParameterType::STRING]
+        );
+    }
+
+    /**
+     * Deletes controles_factures rows matching target approvals.
+     *
+     * @param array<int, string> $agrs Normalized target approvals.
+     *
+     * @return int Number of deleted rows.
+     *
+     * @throws Exception
+     */
+    private function deleteTargetControlesFactures(array $agrs): int
+    {
+        return $this->connection->executeStatement(
+            "
+                DELETE cf
+                FROM controles_factures cf
+                WHERE cf.agr_centre IN (:agrs)
+            ",
+            ['agrs' => $agrs],
+            ['agrs' => ArrayParameterType::STRING]
+        );
+    }
+
+    /**
+     * Deletes controles_non_factures rows matching target approvals when table exists.
+     *
+     * @param array<int, string> $agrs Normalized target approvals.
+     *
+     * @return int Number of deleted rows.
+     *
+     * @throws Exception
+     */
+    private function deleteTargetControlesNonFacturesIfExists(array $agrs): int
+    {
+        if (!$this->tableExists('controles_non_factures')) {
+            return 0;
+        }
+
+        return $this->connection->executeStatement(
+            "
+                DELETE cnf
+                FROM controles_non_factures cnf
+                WHERE cnf.agr_centre IN (:agrs)
+            ",
+            ['agrs' => $agrs],
+            ['agrs' => ArrayParameterType::STRING]
+        );
+    }
+
+    /**
+     * Deletes factures_reglements rows matching target approvals.
+     *
+     * @param array<int, string> $agrs Normalized target approvals.
+     *
+     * @return int Number of deleted rows.
+     *
+     * @throws Exception
+     */
+    private function deleteTargetFacturesReglements(array $agrs): int
+    {
+        return $this->connection->executeStatement(
+            "
+                DELETE fr
+                FROM factures_reglements fr
+                WHERE fr.agr_centre IN (:agrs)
+            ",
+            ['agrs' => $agrs],
+            ['agrs' => ArrayParameterType::STRING]
+        );
+    }
+
+    /**
+     * Deletes prestas_non_facturees rows attached to target controls.
+     *
+     * @return int Number of deleted rows.
+     *
+     * @throws Exception
+     */
+    private function deleteTargetPrestasNonFacturees(): int
+    {
+        return $this->connection->executeStatement(
+            "
+                DELETE pnf
+                FROM prestas_non_facturees pnf
+                INNER JOIN tmp_purge_centres_controls t ON t.idcontrole = pnf.idcontrole
+            "
+        );
+    }
+
+    /**
      * Deletes clients_controles rows matching target approvals.
      *
      * @param array<int, string> $agrs Normalized target approvals.
@@ -295,7 +659,7 @@ final class PurgeCentresDataCommand extends Command
             "
                 DELETE cc
                 FROM clients_controles cc
-                WHERE UPPER(TRIM(cc.agr_centre)) IN (:agrs)
+                WHERE cc.agr_centre IN (:agrs)
             ",
             ['agrs' => $agrs],
             ['agrs' => ArrayParameterType::STRING]
@@ -334,16 +698,7 @@ final class PurgeCentresDataCommand extends Command
      */
     private function deleteOrphanControlesNonFacturesIfExists(): int
     {
-        $exists = (int)$this->connection->fetchOne(
-            "
-                SELECT COUNT(*)
-                FROM information_schema.tables
-                WHERE table_schema = DATABASE()
-                  AND table_name = 'controles_non_factures'
-            "
-        ) > 0;
-
-        if (!$exists) {
+        if (!$this->tableExists('controles_non_factures')) {
             return 0;
         }
 
@@ -362,6 +717,106 @@ final class PurgeCentresDataCommand extends Command
     }
 
     /**
+     * Deletes factures candidates no longer linked to controls or payments.
+     *
+     * @return int Number of deleted rows.
+     *
+     * @throws Exception
+     */
+    private function deleteOrphanFactures(): int
+    {
+        return $this->connection->executeStatement(
+            "
+                DELETE f
+                FROM factures f
+                INNER JOIN tmp_purge_centres_factures t ON t.idfacture = f.idfacture
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM controles_factures cf
+                    WHERE cf.idfacture = f.idfacture
+                )
+                  AND NOT EXISTS (
+                    SELECT 1
+                    FROM factures_reglements fr
+                    WHERE fr.idfacture = f.idfacture
+                )
+            "
+        );
+    }
+
+    /**
+     * Deletes reglements candidates no longer linked to invoices.
+     *
+     * @return int Number of deleted rows.
+     *
+     * @throws Exception
+     */
+    private function deleteOrphanReglements(): int
+    {
+        return $this->connection->executeStatement(
+            "
+                DELETE r
+                FROM reglements r
+                INNER JOIN tmp_purge_centres_reglements t ON t.idreglement = r.idreglement
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM factures_reglements fr
+                    WHERE fr.idreglement = r.idreglement
+                )
+            "
+        );
+    }
+
+    /**
+     * Deletes clients candidates no longer linked to any imported centre/control/invoice data.
+     *
+     * @return int Number of deleted rows.
+     *
+     * @throws Exception
+     */
+    private function deleteOrphanClients(): int
+    {
+        $controlesNonFacturesCondition = $this->tableExists('controles_non_factures')
+            ? "
+                  AND NOT EXISTS (
+                      SELECT 1
+                      FROM controles_non_factures cnf
+                      WHERE cnf.idclient = c.idclient
+                  )
+              "
+            : '';
+
+        return $this->connection->executeStatement(
+            "
+                DELETE c
+                FROM clients c
+                INNER JOIN tmp_purge_centres_clients t ON t.idclient = c.idclient
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM centres_clients cc
+                    WHERE cc.idclient = c.idclient
+                )
+                  AND NOT EXISTS (
+                    SELECT 1
+                    FROM clients_controles cc
+                    WHERE cc.idclient = c.idclient
+                )
+                  AND NOT EXISTS (
+                    SELECT 1
+                    FROM controles_factures cf
+                    WHERE cf.idclient = c.idclient
+                )
+                  AND NOT EXISTS (
+                    SELECT 1
+                    FROM factures_reglements fr
+                    WHERE fr.idclient = c.idclient
+                )
+                {$controlesNonFacturesCondition}
+            "
+        );
+    }
+
+    /**
      * Deletes controls orphaned from clients_controles.
      *
      * @return int Number of deleted rows.
@@ -370,6 +825,16 @@ final class PurgeCentresDataCommand extends Command
      */
     private function deleteOrphanControles(): int
     {
+        $controlesNonFacturesCondition = $this->tableExists('controles_non_factures')
+            ? "
+                  AND NOT EXISTS (
+                      SELECT 1
+                      FROM controles_non_factures cnf
+                      WHERE cnf.idcontrole = c.idcontrole
+                  )
+              "
+            : '';
+
         return $this->connection->executeStatement(
             "
                 DELETE c
@@ -380,6 +845,12 @@ final class PurgeCentresDataCommand extends Command
                     FROM clients_controles cc
                     WHERE cc.idcontrole = c.idcontrole
                 )
+                  AND NOT EXISTS (
+                    SELECT 1
+                    FROM controles_factures cf
+                    WHERE cf.idcontrole = c.idcontrole
+                )
+                {$controlesNonFacturesCondition}
             "
         );
     }

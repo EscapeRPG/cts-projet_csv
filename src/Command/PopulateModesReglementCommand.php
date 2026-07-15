@@ -704,7 +704,7 @@ class PopulateModesReglementCommand extends Command
                 WHEN {$normalizedModeSql} IN ('CB','CX') THEN 'Carte'
                 WHEN {$normalizedModeSql} IN ('E','ES') THEN 'Espèces'
                 WHEN {$normalizedModeSql} IN ('C','CH') THEN 'Chèque'
-                WHEN {$normalizedModeSql} IN ('6','PE','PI') THEN 'Internet'
+                WHEN {$normalizedModeSql} IN ('PE','PI', 'IN') THEN 'Internet'
                 ELSE 'Autre'
             END
         ";

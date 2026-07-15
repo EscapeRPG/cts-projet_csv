@@ -140,6 +140,10 @@ header {
             white-space: nowrap;
             padding: 15px 0;
 
+            * {
+                font-size: 12px;
+            }
+
             &.open {
                 transform: translateX(0);
             }
