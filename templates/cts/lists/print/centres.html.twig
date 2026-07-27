@@ -14,6 +14,9 @@
                 <th>Ville</th>
                 <th>Téléphone</th>
                 <th>Email</th>
+                <th>Mdp email</th>
+                <th>Email Orange</th>
+                <th>Mdp email Orange</th>
                 <th>SIRET</th>
             </tr>
             </thead>
@@ -29,6 +32,9 @@
                     <td>{{ centre.ville }}</td>
                     <td>{{ centre.telephone }}</td>
                     <td>{{ centre.email }}</td>
+                    <td>{{ centre.mailPassword }}</td>
+                    <td>{{ centre.emailOrange }}</td>
+                    <td>{{ centre.mailOrangePassword }}</td>
                     <td>{{ centre.numSiret }}</td>
                 </tr>
             {% endfor %}
