@@ -72,6 +72,12 @@ class Centre
     #[ORM\Column(length: 10, nullable: true)]
     private ?string $dateReprise = null;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $emailOrange = null;
+
+    #[ORM\Column(length: 250, nullable: true)]
+    private ?string $mailOrangePassword = null;
+
     public function __construct()
     {
         $this->voitures = new ArrayCollection();
@@ -303,6 +309,30 @@ class Centre
     public function setDateReprise(?string $dateReprise): static
     {
         $this->dateReprise = $dateReprise;
+
+        return $this;
+    }
+
+    public function getEmailOrange(): ?string
+    {
+        return $this->emailOrange;
+    }
+
+    public function setEmailOrange(?string $emailOrange): static
+    {
+        $this->emailOrange = $emailOrange;
+
+        return $this;
+    }
+
+    public function getMailOrangePassword(): ?string
+    {
+        return $this->mailOrangePassword;
+    }
+
+    public function setMailOrangePassword(?string $mailOrangePassword): static
+    {
+        $this->mailOrangePassword = $mailOrangePassword;
 
         return $this;
     }

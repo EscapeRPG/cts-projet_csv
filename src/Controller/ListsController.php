@@ -1408,6 +1408,15 @@ final class ListsController extends AbstractController
         }
 
         $centre->setMailPassword($trimOrNull($fields['mailPassword'] ?? null));
+
+        $emailOrange = $trimOrNull($fields['emailOrange'] ?? null);
+        if ($emailOrange !== null && filter_var($emailOrange, FILTER_VALIDATE_EMAIL) === false) {
+            $errors[] = 'Email Orange invalide.';
+        } else {
+            $centre->setEmailOrange($emailOrange);
+        }
+
+        $centre->setMailOrangePassword($trimOrNull($fields['mailOrangePassword'] ?? null));
         $centre->setSiteWeb($trimOrNull($fields['siteWeb'] ?? null));
         $centre->setNumSiret($trimOrNull($fields['numSiret'] ?? null) ?? '');
         $centre->setDateReprise($trimOrNull($fields['dateReprise'] ?? null));
