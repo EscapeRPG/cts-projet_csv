@@ -104,6 +104,73 @@ class SftpClient
         return rename($src, $dest);
     }
 
+    /** Moves an incoming file to its immutable, content-addressed processed path. */
+    public function archiveProcessedVersion(string $reseau, string $filename, string $hash): ?string
+    {
+        if (preg_match('/^[a-f0-9]{64}$/i', $hash) !== 1) {
+            throw new \InvalidArgumentException('Hash SHA-256 invalide.');
+        }
+
+        $src = "{$this->basePath}/{$reseau}/incoming/{$filename}";
+        if (!is_file($src)) {
+            return null;
+        }
+
+        $normalizedName = str_replace(['\\', '/'], '__', $filename);
+        $logicalDirectory = pathinfo($normalizedName, PATHINFO_FILENAME);
+        $basename = basename(str_replace('\\', '/', $filename));
+        $relativePath = "{$reseau}/processed/{$logicalDirectory}/" . strtolower($hash) . "/{$basename}";
+        $dest = "{$this->basePath}/{$relativePath}";
+        $this->ensureParentDirectoryExists($dest);
+
+        if (is_file($dest)) {
+            if (!hash_equals(strtolower($hash), strtolower((string)hash_file('sha256', $dest)))) {
+                throw new \RuntimeException('Une archive existe déjà à ce chemin avec un contenu différent.');
+            }
+
+            return unlink($src) ? $relativePath : null;
+        }
+
+        return rename($src, $dest) ? $relativePath : null;
+    }
+
+    public function resolveArchivedPath(string $relativePath): ?string
+    {
+        $candidate = $this->basePath . '/' . ltrim(str_replace('\\', '/', $relativePath), '/');
+        $resolvedBase = realpath($this->basePath);
+        $resolvedFile = realpath($candidate);
+        if ($resolvedBase === false || $resolvedFile === false || !is_file($resolvedFile)) {
+            return null;
+        }
+
+        $basePrefix = rtrim(str_replace('\\', '/', $resolvedBase), '/') . '/';
+        $filePath = str_replace('\\', '/', $resolvedFile);
+        return str_starts_with($filePath, $basePrefix) ? $resolvedFile : null;
+    }
+
+    public function resolveLegacyProcessedPath(string $reseau, string $filename): ?string
+    {
+        return $this->resolveArchivedPath("{$reseau}/processed/{$filename}");
+    }
+
+    /** Finds a pre-versioning processed file even when its folder uses a legacy network alias. */
+    public function findLegacyProcessedPath(string $filename, string $expectedHash): ?string
+    {
+        foreach ($this->listReseaux() as $reseauFolder) {
+            $path = $this->resolveLegacyProcessedPath($reseauFolder, $filename);
+            if ($path === null) {
+                continue;
+            }
+
+            $actualHash = hash_file('sha256', $path, false);
+            if (is_string($actualHash) && hash_equals(strtolower($expectedHash), strtolower($actualHash))) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Moves a failed file to the `error` folder from incoming or processed folders.
      *

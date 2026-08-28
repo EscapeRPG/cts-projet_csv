@@ -277,3 +277,7 @@ tbody tr:not(.recap):hover td {
     max-width: 200px !important;
     text-overflow: unset !important;
 }
+
+.users-list td {
+    vertical-align: middle;
+}

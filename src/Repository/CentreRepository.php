@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Centre;
+use App\Enum\TypeCentre;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\QueryBuilder;
@@ -24,13 +25,15 @@ class CentreRepository extends ServiceEntityRepository
     /**
      * @return array<int, Centre>
      */
-    public function findOrderedBySocieteVilleAgrSearch(?string $q, ?array $centreIds = null): array
+    public function findCtsOrderedBySocieteVilleAgrSearch(?string $q, ?array $centreIds = null): array
     {
         if ($centreIds !== null && $centreIds === []) {
             return [];
         }
 
         $qb = $this->createQueryBuilder('c')
+            ->andWhere('c.type = :centreType')
+            ->setParameter('centreType', TypeCentre::CONTROLE_TECHNIQUE)
             ->leftJoin('c.societe', 'so')
             ->addSelect('so')
             ->leftJoin('c.reseau', 'r')
@@ -114,6 +117,7 @@ class CentreRepository extends ServiceEntityRepository
         LEFT JOIN ranked r
           ON r.agr_centre = c.agr_centre
          AND r.rn = 1
+        WHERE c.type = :centre_type
         ORDER BY
           (r.annee IS NULL) ASC,
           r.annee ASC,
@@ -121,7 +125,9 @@ class CentreRepository extends ServiceEntityRepository
           c.reseau_nom ASC,
           c.ville ASC;";
 
-        $stmt = $conn->executeQuery($sql);
+        $stmt = $conn->executeQuery($sql, [
+            'centre_type' => TypeCentre::CONTROLE_TECHNIQUE->value,
+        ]);
 
         return $stmt->fetchAllAssociative();
     }

@@ -215,7 +215,10 @@ class CreateUserType extends AbstractType
             foreach ($societeRepo->findBy(['id' => $societeIds]) as $societe) {
                 $user->addSociete($societe);
             }
-            foreach ($centreRepo->findBy(['id' => $centreIds]) as $centre) {
+            foreach ($centreRepo->findBy([
+                'id' => $centreIds,
+                'type' => \App\Enum\TypeCentre::CONTROLE_TECHNIQUE,
+            ]) as $centre) {
                 $user->addCentre($centre);
             }
         });

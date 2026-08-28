@@ -3,6 +3,7 @@
 namespace App\Service\Suivi;
 
 use App\Entity\User;
+use App\Enum\TypeCentre;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -80,9 +81,13 @@ final readonly class SuiviCentresScope
                 FROM centre c
                 INNER JOIN user_centre uc ON uc.centre_id = c.id
                 WHERE uc.user_id = :user_id
+                  AND c.type = :centre_type
                 ORDER BY c.agr_centre
             ",
-            ['user_id' => $user->getId()]
+            [
+                'user_id' => $user->getId(),
+                'centre_type' => TypeCentre::CONTROLE_TECHNIQUE->value,
+            ]
         );
 
         $allowed = array_values(array_filter(array_map(

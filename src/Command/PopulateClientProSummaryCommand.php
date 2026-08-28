@@ -343,6 +343,7 @@ class PopulateClientProSummaryCommand extends Command
                     AND c.date_ctrl < :date_to
                     AND c.res_ctrl IN ('A','AP')
                     AND cli_ref.has_pro = 1
+                    AND (ce.id IS NULL OR ce.type = 'controle_technique')
                 GROUP BY
                     cli_ref.nom_code_client,
                     YEAR(c.date_ctrl),

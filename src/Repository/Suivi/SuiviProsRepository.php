@@ -267,6 +267,7 @@ final readonly class SuiviProsRepository extends AbstractSuiviQueryRepository
                 ) cf2
                 GROUP BY idfacture
             ) t ON t.idfacture = fa.idfacture
+            WHERE ce.id IS NULL OR ce.type = 'controle_technique'
         ";
     }
 }

@@ -25,6 +25,8 @@ final readonly class ImportHealthCheckService
      */
     public function run(?\DateTimeImmutable $referenceDate = null, bool $notify = true): array
     {
+        $this->ensureHealthCheckTableExists();
+
         $referenceDate ??= new \DateTimeImmutable();
         $historyStart = $referenceDate->modify('-' . (self::HISTORY_DAYS - 1) . ' days');
         $baselineStart = $referenceDate->modify('-' . self::BASELINE_DAYS . ' days');
@@ -115,6 +117,30 @@ final readonly class ImportHealthCheckService
             'errors' => $errors,
             'warnings' => $warnings,
         ];
+    }
+
+    private function ensureHealthCheckTableExists(): void
+    {
+        $this->connection->executeStatement(<<<'SQL'
+            CREATE TABLE IF NOT EXISTS import_health_check (
+                id INT AUTO_INCREMENT NOT NULL,
+                reseau_id INT DEFAULT NULL,
+                check_date DATE NOT NULL,
+                reseau_name VARCHAR(255) NOT NULL,
+                files_imported INT NOT NULL,
+                expected_files INT NOT NULL,
+                controles_files INT NOT NULL,
+                latest_imported_at DATETIME DEFAULT NULL,
+                status VARCHAR(20) NOT NULL,
+                issues JSON NOT NULL,
+                created_at DATETIME NOT NULL,
+                updated_at DATETIME NOT NULL,
+                INDEX IDX_D1E22214445D170C (reseau_id),
+                UNIQUE INDEX uniq_import_health_reseau_date (reseau_id, check_date),
+                PRIMARY KEY (id)
+            ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_general_ci` ENGINE = InnoDB
+            SQL
+        );
     }
 
     /**
@@ -401,7 +427,7 @@ final readonly class ImportHealthCheckService
     private function publishExistingNotificationToAdmins(int $notificationId): void
     {
         $admins = $this->connection->fetchAllAssociative(
-            "SELECT id FROM `user` WHERE is_active = 1 AND roles LIKE '%ROLE_ADMIN%'"
+            "SELECT id FROM `user` WHERE is_active = 1 AND roles LIKE '%ROLE_DEV%'"
         );
         $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
 

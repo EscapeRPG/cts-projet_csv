@@ -18,10 +18,10 @@ class Societe
     #[ORM\Column(length: 100, unique: true)]
     private ?string $nom = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $siegeSocial = null;
 
-    #[ORM\Column(length: 20)]
+    #[ORM\Column(length: 20, nullable: true)]
     private ?string $siren = null;
 
     /**

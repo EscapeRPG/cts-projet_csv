@@ -5,6 +5,7 @@ namespace App\Command;
 use App\Import\ImportRouter;
 use App\Repository\ReseauRepository;
 use App\Service\Import\SftpClient;
+use Doctrine\DBAL\Connection;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -45,7 +46,8 @@ class ImportSftpCommand extends Command
     public function __construct(
         private readonly SftpClient   $sftpClient,
         private readonly ImportRouter $importRouter,
-        private readonly ReseauRepository $reseauRepository
+        private readonly ReseauRepository $reseauRepository,
+        private readonly Connection $connection,
     )
     {
         parent::__construct();
@@ -92,6 +94,7 @@ class ImportSftpCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+        $failedFiles = 0;
 
         $maxIgnoredRateOption = $input->getOption('max-ignored-rate');
         $maxIgnoredRate = is_numeric($maxIgnoredRateOption) ? (float)$maxIgnoredRateOption : 1.0;
@@ -186,6 +189,9 @@ class ImportSftpCommand extends Command
                     }
 
                     $readCount = $importer->importFromFile($uploadedFile, $reseau);
+                    $fileHash = method_exists($importer, 'getLastFileHash')
+                        ? $importer->getLastFileHash()
+                        : hash_file('sha256', $path, false);
 
                     if (method_exists($importer, 'getLastImportStats')) {
                         $stats = $importer->getLastImportStats();
@@ -224,17 +230,49 @@ class ImportSftpCommand extends Command
                         $io->writeln(sprintf("    <info>Lignes lues:</info> %d", $readCount));
                     }
 
-                    // Si moveToProcessed échoue, lève une exception
-                    if (!$this->sftpClient->moveToProcessed($reseauCode, $file)) {
-                        throw new RuntimeException("Impossible de déplacer vers processed");
+                    if (!is_string($fileHash) || $fileHash === '') {
+                        throw new RuntimeException('Impossible de calculer le hash du fichier.');
+                    }
+
+                    $archivePath = $this->sftpClient->archiveProcessedVersion($reseauCode, $file, $fileHash);
+                    if ($archivePath === null) {
+                        throw new RuntimeException('Impossible d’archiver la version dans processed.');
+                    }
+
+                    $importedFileId = method_exists($importer, 'getLastImportedFileId')
+                        ? $importer->getLastImportedFileId()
+                        : null;
+                    if (is_int($importedFileId) && $importedFileId > 0) {
+                        $this->connection->update('imported_files', ['archive_path' => $archivePath], ['id' => $importedFileId]);
+                    } elseif (method_exists($importer, 'wasLastFileSkipped') && $importer->wasLastFileSkipped()) {
+                        $existingId = $this->connection->fetchOne(
+                            'SELECT id FROM imported_files WHERE filename = :filename AND file_hash = :hash AND reseau_id = :reseau ORDER BY id DESC LIMIT 1',
+                            ['filename' => $file, 'hash' => $fileHash, 'reseau' => $reseau->getId()]
+                        );
+                        if ($existingId !== false) {
+                            $this->connection->update('imported_files', ['archive_path' => $archivePath], ['id' => (int)$existingId]);
+                        }
+                    }
+
+                    if (method_exists($importer, 'wasLastFileSkipped') && $importer->wasLastFileSkipped()) {
+                        $io->writeln('    <comment>Doublon exact déjà archivé, import ignoré.</comment>');
+                    }
+                    if (method_exists($importer, 'wasLastFileCorrection') && $importer->wasLastFileCorrection()) {
+                        $io->warning('Version corrective détectée (même nom, hash différent). Une reconstruction par app:imports:replay est nécessaire pour appliquer d’éventuelles suppressions de lignes.');
                     }
                 } catch (Throwable $e) {
+                    $failedFiles++;
                     $io->error("<error>Erreur : {$e->getMessage()}</error>");
 
                     // Déplace vers error
                     $this->sftpClient->moveToErrorSafe($reseauCode, $file);
                 }
             }
+        }
+
+        if ($failedFiles > 0) {
+            $io->error(sprintf('%d fichier(s) en erreur. Le pipeline est interrompu.', $failedFiles));
+            return Command::FAILURE;
         }
 
         $io->success('Import des fichiers terminé.');

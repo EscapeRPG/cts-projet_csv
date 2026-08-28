@@ -1,6 +1,12 @@
 doctrine:
     dbal:
         url: '%env(resolve:DATABASE_URL)%'
+
+        default_table_options:
+            charset: utf8mb4
+            collate: utf8mb4_0900_ai_ci
+            engine: InnoDB
+
         # `synthese_*` tables are managed outside of Doctrine ORM and must never be dropped by schema tooling.
         schema_filter: '~^(?!synthese_).*$~'
 

@@ -120,6 +120,7 @@ final class SyncSalarieCentresFromSyntheseCommand extends Command
                     SELECT DISTINCT sc.salarie_id, c.id AS centre_id
                     FROM synthese_controles sc
                     INNER JOIN centre c ON c.agr_centre = sc.agr_centre
+                        AND c.type = 'controle_technique'
                     INNER JOIN salarie s ON s.id = sc.salarie_id
                     WHERE {$whereSql}
                 ) t
@@ -134,6 +135,7 @@ final class SyncSalarieCentresFromSyntheseCommand extends Command
                     SELECT DISTINCT sc.salarie_id, sc.agr_centre
                     FROM synthese_controles sc
                     LEFT JOIN centre c ON c.agr_centre = sc.agr_centre
+                        AND c.type = 'controle_technique'
                     WHERE {$whereSql} AND c.id IS NULL
                 ) t
             ",
@@ -181,6 +183,7 @@ final class SyncSalarieCentresFromSyntheseCommand extends Command
                 SELECT DISTINCT sc.salarie_id, c.id AS centre_id
                 FROM synthese_controles sc
                 INNER JOIN centre c ON c.agr_centre = sc.agr_centre
+                    AND c.type = 'controle_technique'
                 INNER JOIN salarie s ON s.id = sc.salarie_id
                 WHERE {$whereSql}
             ";

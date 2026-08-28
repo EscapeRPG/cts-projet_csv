@@ -88,7 +88,7 @@
                         <td>{{ userList.username }}</td>
                         <td>{{ userList.email }}</td>
                         <td>
-                            {% if isAdmin %}
+                            {% if isAdmin or 'ROLE_DEV' in roles %}
                                 Administrateur
                             {% else %}
                                 {% set labels = [] %}

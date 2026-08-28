@@ -23,6 +23,11 @@ abstract class AbstractCsvImportService implements CsvImportInterface
         'rows_ignored' => 0,
         'batches' => 0,
     ];
+    protected ?string $lastFileHash = null;
+    protected ?int $lastImportedFileId = null;
+    protected bool $lastFileSkipped = false;
+    protected bool $lastFileWasCorrection = false;
+    protected bool $replayMode = false;
 
     /**
      * @param EntityManagerInterface $em Entity manager used for low-level insert operations.
@@ -83,6 +88,35 @@ abstract class AbstractCsvImportService implements CsvImportInterface
     abstract protected static function getDecimalColumns(): array;
 
     /**
+     * Returns the character encoding used by the source CSV.
+     */
+    protected function getSourceEncoding(): string
+    {
+        return 'UTF-8';
+    }
+
+    /**
+     * Returns the number of lines preceding the actual CSV header.
+     */
+    protected function getHeaderLinesToSkip(): int
+    {
+        return 0;
+    }
+
+    /**
+     * Adds values supplied by the import context rather than by the CSV itself.
+     *
+     * @param array<string, mixed> $row Raw CSV row.
+     * @param UploadedFile $file Current source file.
+     *
+     * @return array<string, mixed>
+     */
+    protected function prepareRow(array $row, UploadedFile $file): array
+    {
+        return $row;
+    }
+
+    /**
      * Imports a CSV file into the target table.
      *
      * @param UploadedFile $file Uploaded CSV file.
@@ -94,6 +128,7 @@ abstract class AbstractCsvImportService implements CsvImportInterface
      */
     public function importFromFile(UploadedFile $file, Reseau $reseau): int
     {
+        $this->reseau = $reseau;
         $this->em->getConnection()->getConfiguration()->setMiddlewares([]);
         $this->lastImportStats = [
             'rows_read' => 0,
@@ -101,12 +136,23 @@ abstract class AbstractCsvImportService implements CsvImportInterface
             'rows_ignored' => 0,
             'batches' => 0,
         ];
+        $this->lastFileHash = $this->getFileHash($file);
+        $this->lastImportedFileId = null;
+        $this->lastFileSkipped = false;
+        $this->lastFileWasCorrection = false;
 
-        if ($this->shouldSkipFile($file, $reseau)) {
+        if (!$this->replayMode && $this->shouldSkipFile($file, $reseau)) {
+            $this->lastFileSkipped = true;
             return 0;
         }
 
-        $generator = $this->csvReader->read($file, ';', $reseau->getNom());
+        $generator = $this->csvReader->read(
+            $file,
+            ';',
+            $reseau->getNom(),
+            $this->getSourceEncoding(),
+            $this->getHeaderLinesToSkip(),
+        );
 
         $count = 0;
         $batch = [];
@@ -115,6 +161,7 @@ abstract class AbstractCsvImportService implements CsvImportInterface
         $batchCount = 0;
 
         foreach ($generator as $row) {
+            $row = $this->prepareRow($row, $file);
             $row = $this->mapRow($row);
 
             $batch[] = $row;
@@ -136,13 +183,16 @@ abstract class AbstractCsvImportService implements CsvImportInterface
             $batchCount++;
         }
 
-        $this->markFileAsImported($file, $reseau);
         $this->lastImportStats = [
             'rows_read' => $count,
             'rows_inserted' => $insertedTotal,
             'rows_ignored' => $ignoredTotal,
             'batches' => $batchCount,
         ];
+
+        if (!$this->replayMode) {
+            $this->markFileAsImported($file, $reseau);
+        }
 
         return $count;
     }
@@ -188,10 +238,12 @@ abstract class AbstractCsvImportService implements CsvImportInterface
 
             // conversion date
             if ($value !== null && in_array($column, $dateColumns, true)) {
-                if ($column === 'deb_ctrl' || $column === 'fin_ctrl') {
+                if ($column === 'deb_ctrl' || $column === 'fin_ctrl' || $column === 'heure') {
                     $value = DateParser::parseDate($value)?->format('H:i:s');
                 } elseif ($column === 'annee_circulation') {
                     $value = (int) DateParser::parseDate($value)?->format('Y');
+                } elseif ($column === 'date') {
+                    $value = DateParser::parseDate($value)?->format('Y-m-d');
                 } else {
                     $value = DateParser::parseDate($value)?->format('Y-m-d H:i:s');
                 }
@@ -200,7 +252,9 @@ abstract class AbstractCsvImportService implements CsvImportInterface
             // conversion décimales
             if ($value !== null && in_array($column, $decimalColumns, true)) {
                 $value = trim((string) $value);
-                $value = $value === '' ? null : str_replace(',', '.', $value);
+                $value = str_replace(["\u{00A0}", "\u{202F}", ' ', '€'], '', $value);
+                $value = str_replace(',', '.', $value);
+                $value = $value === '' ? null : $value;
             }
 
             $row[] = $value;
@@ -221,15 +275,25 @@ abstract class AbstractCsvImportService implements CsvImportInterface
      */
     protected function shouldSkipFile(UploadedFile $file, Reseau $reseau): bool
     {
-        return (bool)$this->em->getConnection()->fetchOne(
-            'SELECT 1 FROM imported_files WHERE filename = :name AND reseau_id = :reseau',
+        $connection = $this->em->getConnection();
+        $isExactDuplicate = (bool)$connection->fetchOne(
+            'SELECT 1 FROM imported_files WHERE filename = :name AND file_hash = :hash AND reseau_id = :reseau',
             [
                 'name' => $file->getClientOriginalName(),
+                'hash' => $this->lastFileHash ?? $this->getFileHash($file),
                 'reseau' => $reseau->getId(),
             ]
         );
-    }
 
+        if (!$isExactDuplicate) {
+            $this->lastFileWasCorrection = (bool)$connection->fetchOne(
+                'SELECT 1 FROM imported_files WHERE filename = :name AND reseau_id = :reseau',
+                ['name' => $file->getClientOriginalName(), 'reseau' => $reseau->getId()]
+            );
+        }
+
+        return $isExactDuplicate;
+    }
 
     /**
      * Inserts one batch without deduplicating business identifiers.
@@ -296,12 +360,31 @@ abstract class AbstractCsvImportService implements CsvImportInterface
      */
     protected function markFileAsImported(UploadedFile $file, Reseau $reseau): void
     {
-        $this->em->getConnection()->insert('imported_files', [
-            'filename' => $file->getClientOriginalName(),
-            'file_hash' => $this->getFileHash($file),
-            'imported_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
-            'reseau_id' => $reseau->getId(),
-        ]);
+        $connection = $this->em->getConnection();
+        $previousId = $connection->fetchOne(
+            'SELECT id FROM imported_files WHERE filename = :name AND reseau_id = :reseau AND is_active = 1 ORDER BY id DESC LIMIT 1',
+            ['name' => $file->getClientOriginalName(), 'reseau' => $reseau->getId()]
+        );
+
+        $connection->transactional(function () use ($connection, $file, $reseau, $previousId): void {
+            $connection->executeStatement(
+                "UPDATE imported_files SET is_active = 0, status = 'superseded' WHERE filename = :name AND reseau_id = :reseau AND is_active = 1",
+                ['name' => $file->getClientOriginalName(), 'reseau' => $reseau->getId()]
+            );
+            $connection->insert('imported_files', [
+                'filename' => $file->getClientOriginalName(),
+                'file_hash' => $this->lastFileHash ?? $this->getFileHash($file),
+                'imported_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
+                'reseau_id' => $reseau->getId(),
+                'status' => 'active',
+                'is_active' => 1,
+                'supersedes_id' => $previousId !== false ? (int)$previousId : null,
+                'rows_read' => $this->lastImportStats['rows_read'],
+                'rows_inserted' => $this->lastImportStats['rows_inserted'],
+                'rows_ignored' => $this->lastImportStats['rows_ignored'],
+            ]);
+            $this->lastImportedFileId = (int)$connection->lastInsertId();
+        });
     }
 
     /**
@@ -313,5 +396,11 @@ abstract class AbstractCsvImportService implements CsvImportInterface
     {
         return $this->lastImportStats;
     }
+
+    public function getLastFileHash(): ?string { return $this->lastFileHash; }
+    public function getLastImportedFileId(): ?int { return $this->lastImportedFileId; }
+    public function wasLastFileSkipped(): bool { return $this->lastFileSkipped; }
+    public function wasLastFileCorrection(): bool { return $this->lastFileWasCorrection; }
+    public function setReplayMode(bool $replayMode): void { $this->replayMode = $replayMode; }
 
 }

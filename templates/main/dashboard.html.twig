@@ -115,7 +115,11 @@
             <div class="app-container">
                 <fieldset class="app-category">
                     <legend>En cours de construction</legend>
-                    À venir...
+
+                    <a href="{{ path('astikoto_import_csv') }}" class="app">
+                        <img src="{{ asset('img/import.png') }}" alt="import de fichiers">
+                        <div class="inner-div">Import de fichiers</div>
+                    </a>
                 </fieldset>
             </div>
         </div>

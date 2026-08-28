@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Import Astikoto{% endblock %}
+
+{% block body %}
+    <div class="form-wrapper">
+        {{ form_start(form, {'attr': {'data-turbo': 'false'}}) }}
+        <h1>Import des fichiers Astikoto</h1>
+
+        {{ form_row(form.centre) }}
+
+        <div data-controller="dropzone" class="dropzone">
+            {{ form_widget(form.files, {
+                attr: {
+                    'data-dropzone-target': 'input',
+                    'hidden': true
+                }
+            }) }}
+
+            <div class="dropzone__area" data-dropzone-target="area">
+                <p>Déposez vos fichiers ici, ou cliquez pour sélectionner <span
+                        class="dropzone__hint">(.csv uniquement)</span></p>
+            </div>
+
+            <div class="dropzone__files" data-dropzone-target="files"></div>
+        </div>
+
+        {{ form_row(form.import) }}
+        {{ form_end(form) }}
+    </div>
+
+    <div class="latest-imports">
+        <h2>Derniers fichiers importés</h2>
+        {% for numPortique in [4, 5] %}
+            <div>
+                Portique {{ numPortique }} —
+                {% if latestImports[numPortique] %}
+                    "{{ latestImports[numPortique].filename }}" le {{ latestImports[numPortique].importedAt|date('d/m/Y') }}
+                {% else %}
+                    Aucun fichier importé
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if errors is not empty %}
+        <div class="import-errors">
+            <h3>Erreurs détectées</h3>
+            <ul>
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {% for message in app.flashes('error') %}
+        <div class="import-errors">
+            <p>{{ message }}</p>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('warning') %}
+        <div class="import-errors">
+            <p>{{ message }}</p>
+        </div>
+    {% endfor %}
+
+    {% set successMessages = app.flashes('success') %}
+
+    {% if successMessages is not empty %}
+        <div id="modal" class="modal-overlay" data-controller="modals" data-modals-target="overlay">
+            <div class="modal success-modal" data-modals-target="modal">
+                <h2>Succès</h2>
+
+                {% for message in successMessages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+
+                <button id="close-modal" data-action="click->modals#hide">OK</button>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

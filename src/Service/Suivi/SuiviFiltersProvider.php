@@ -2,6 +2,7 @@
 
 namespace App\Service\Suivi;
 
+use App\Enum\TypeCentre;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
@@ -40,13 +41,14 @@ readonly class SuiviFiltersProvider
         // $this->cache->delete('suivi_filters');
 
         // Garde en cache les informations nécessaires aux filtres pour éviter de relancer les requêtes SQL
-        $baseFilters = $this->cache->get('suivi_filters', function () {
+        $baseFilters = $this->cache->get('suivi_filters_v2_centre_type', function () {
             $centres = $this->connection->fetchAllAssociative("
                 SELECT c.agr_centre, c.reseau_nom, c.ville, s.nom AS societe_nom
                 FROM centre c
                 LEFT JOIN societe s ON s.id = c.societe_id
+                WHERE c.type = :centre_type
                 ORDER BY c.reseau_nom, c.ville
-            ");
+            ", ['centre_type' => TypeCentre::CONTROLE_TECHNIQUE->value]);
 
             $controleurs = $this->connection->fetchAllAssociative("
                 SELECT sa.id, sa.nom, sa.prenom, so.nom AS societe_nom
@@ -71,7 +73,10 @@ readonly class SuiviFiltersProvider
                     11 => 'Novembre',
                     12 => 'Décembre',
                 ],
-                'reseaux' => $this->connection->fetchFirstColumn('SELECT DISTINCT reseau_nom FROM centre ORDER BY reseau_nom'),
+                'reseaux' => $this->connection->fetchFirstColumn(
+                    'SELECT DISTINCT reseau_nom FROM centre WHERE type = :centre_type ORDER BY reseau_nom',
+                    ['centre_type' => TypeCentre::CONTROLE_TECHNIQUE->value]
+                ),
                 'societes' => $this->connection->fetchFirstColumn("
                         SELECT nom
                         FROM societe
@@ -229,14 +234,19 @@ readonly class SuiviFiltersProvider
                 SELECT c.agr_centre, c.reseau_nom, c.ville
                 FROM centre c
             ";
-            $centresWhere = [];
+            $centresWhere = ['c.type = :centre_type'];
+            $centresParams['centre_type'] = TypeCentre::CONTROLE_TECHNIQUE->value;
         } else {
             $centresSql = "
                 SELECT c.agr_centre, c.reseau_nom, c.ville
                 FROM centre c
                 INNER JOIN societe s ON s.id = c.societe_id
             ";
-            $centresWhere = ['s.nom IN (:societes)'];
+            $centresWhere = [
+                'c.type = :centre_type',
+                's.nom IN (:societes)',
+            ];
+            $centresParams['centre_type'] = TypeCentre::CONTROLE_TECHNIQUE->value;
             $centresParams['societes'] = $selectedSocietes;
             $centresTypes['societes'] = ArrayParameterType::STRING;
         }

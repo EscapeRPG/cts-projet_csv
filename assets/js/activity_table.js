@@ -145,7 +145,8 @@ export function applyActivityTableColumnVisibility(table, selectedTypes, selecte
         cell.hidden = !(matchesType && matchesVehicle);
     });
 
-    if (hasTypeSelection || hasVehicleSelection) {
-        recalculateActivityTotals(table);
-    }
+    // Totals may already have been narrowed by a previous selection. Recompute
+    // them even when filters are now empty so clearing filters restores totals
+    // from every visible activity column.
+    recalculateActivityTotals(table);
 }

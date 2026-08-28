@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\TypeCentre;
 use App\Repository\CentreRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -78,10 +79,27 @@ class Centre
     #[ORM\Column(length: 250, nullable: true)]
     private ?string $mailOrangePassword = null;
 
+    #[ORM\Column(length: 30, enumType: TypeCentre::class, options: ['default' => 'controle_technique'])]
+    private TypeCentre $type = TypeCentre::CONTROLE_TECHNIQUE;
+
+    /**
+     * @var Collection<int, EquipementStation>
+     */
+    #[ORM\OneToMany(targetEntity: EquipementStation::class, mappedBy: 'centre')]
+    private Collection $equipementsStation;
+
+    /**
+     * @var Collection<int, ReleveJournalier>
+     */
+    #[ORM\OneToMany(targetEntity: ReleveJournalier::class, mappedBy: 'centre')]
+    private Collection $relevesJournaliers;
+
     public function __construct()
     {
         $this->voitures = new ArrayCollection();
         $this->salaries = new ArrayCollection();
+        $this->equipementsStation = new ArrayCollection();
+        $this->relevesJournaliers = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -336,4 +354,87 @@ class Centre
 
         return $this;
     }
+
+    public function getType(): TypeCentre
+    {
+        return $this->type;
+    }
+
+    public function setType(TypeCentre $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function isControleTechnique(): bool
+    {
+        return $this->type === TypeCentre::CONTROLE_TECHNIQUE;
+    }
+
+    public function isStationLavage(): bool
+    {
+        return $this->type === TypeCentre::STATION_LAVAGE;
+    }
+
+    /**
+     * @return Collection<int, EquipementStation>
+     */
+    public function getEquipementsStation(): Collection
+    {
+        return $this->equipementsStation;
+    }
+
+    public function addEquipementStation(EquipementStation $equipementStation): static
+    {
+        if (!$this->equipementsStation->contains($equipementStation)) {
+            $this->equipementsStation->add($equipementStation);
+            $equipementStation->setCentre($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEquipementStation(EquipementStation $equipementStation): static
+    {
+        if ($this->equipementsStation->removeElement($equipementStation)) {
+            // set the owning side to null (unless already changed)
+            if ($equipementStation->getCentre() === $this) {
+                $equipementStation->setCentre(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ReleveJournalier>
+     */
+    public function getRelevesJournaliers(): Collection
+    {
+        return $this->relevesJournaliers;
+    }
+
+    public function addReleveJournalier(ReleveJournalier $releveJournalier): static
+    {
+        if (!$this->relevesJournaliers->contains($releveJournalier)) {
+            $this->relevesJournaliers->add($releveJournalier);
+            $releveJournalier->setCentre($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReleveJournalier(ReleveJournalier $releveJournalier): static
+    {
+        if ($this->relevesJournaliers->removeElement($releveJournalier)) {
+            // set the owning side to null (unless already changed)
+            if ($releveJournalier->getCentre() === $this) {
+                $releveJournalier->setCentre(null);
+            }
+        }
+
+        return $this;
+    }
+
 }

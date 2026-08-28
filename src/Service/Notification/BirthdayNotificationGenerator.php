@@ -245,7 +245,7 @@ final class BirthdayNotificationGenerator
      */
     private function computeUserCentreScopeIds(User $user): ?array
     {
-        if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+        if (in_array('ROLE_ADMIN', $user->getRoles(), true) || in_array('ROLE_DEV', $user->getRoles(), true)) {
             return null;
         }
 
@@ -261,6 +261,9 @@ final class BirthdayNotificationGenerator
                     if (!$centre instanceof \App\Entity\Centre) {
                         continue;
                     }
+                    if (!$centre->isControleTechnique()) {
+                        continue;
+                    }
                     $id = $centre->getId();
                     if ($id !== null) {
                         $ids[] = $id;
@@ -270,6 +273,9 @@ final class BirthdayNotificationGenerator
         } else {
             // Backward compat: old scope stored as explicit centres.
             foreach ($user->getCentres() as $centre) {
+                if (!$centre->isControleTechnique()) {
+                    continue;
+                }
                 $id = $centre->getId();
                 if ($id !== null) {
                     $ids[] = $id;

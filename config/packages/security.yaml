@@ -115,6 +115,8 @@ security:
             - ROLE_ENCOURS_EDIT
             - ROLE_ENCOURS_ADD
 
+        ROLE_DEV: ROLE_ADMIN
+
 when@test:
     security:
         password_hashers:

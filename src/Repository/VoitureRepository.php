@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Voiture;
+use App\Enum\TypeCentre;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -33,6 +34,9 @@ class VoitureRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('v')
             ->leftJoin('v.societe', 'so')
             ->addSelect('so')
+            ->innerJoin('v.centre', 'c_cts')
+            ->andWhere('c_cts.type = :centreType')
+            ->setParameter('centreType', TypeCentre::CONTROLE_TECHNIQUE)
             ->orderBy('so.nom', 'ASC')
             ->addOrderBy('v.immatriculation', 'ASC')
             ->setFirstResult($offset)
@@ -50,6 +54,7 @@ class VoitureRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('v')
             ->select('COUNT(v.id)');
 
+        $this->applyCtsCentreFilter($qb);
         $this->applyCentreScopeFilter($qb, $centreIds);
         $this->applySearchFilter($qb, $q);
         $this->applyActiveFilter($qb, $includeActive, $includeInactive);
@@ -76,6 +81,7 @@ class VoitureRepository extends ServiceEntityRepository
             ->setFirstResult($offset)
             ->setMaxResults($limit);
 
+        $this->applyCtsCentreFilter($qb);
         $this->applyCentreScopeFilter($qb, $centreIds);
         $this->applySearchFilter($qb, $q);
         $this->applyActiveFilter($qb, $includeActive, $includeInactive);
@@ -100,6 +106,7 @@ class VoitureRepository extends ServiceEntityRepository
             ->orderBy('so.nom', 'ASC')
             ->addOrderBy('v.immatriculation', 'ASC');
 
+        $this->applyCtsCentreFilter($qb);
         $this->applyCentreScopeFilter($qb, $centreIds);
         $this->applySearchFilter($qb, $q);
         $this->applyActiveFilter($qb, $includeActive, $includeInactive);
@@ -118,6 +125,14 @@ class VoitureRepository extends ServiceEntityRepository
             ->innerJoin('v.centre', 'c_scope')
             ->andWhere('c_scope.id IN (:centreIds)')
             ->setParameter('centreIds', $centreIds);
+    }
+
+    private function applyCtsCentreFilter(QueryBuilder $qb): void
+    {
+        $qb
+            ->innerJoin('v.centre', 'c_cts')
+            ->andWhere('c_cts.type = :centreType')
+            ->setParameter('centreType', TypeCentre::CONTROLE_TECHNIQUE);
     }
 
     private function applySearchFilter(QueryBuilder $qb, ?string $q): void

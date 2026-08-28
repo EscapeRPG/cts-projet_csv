@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Centre;
 use App\Entity\Salarie;
 use App\Entity\Societe;
+use App\Enum\TypeCentre;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -62,6 +63,8 @@ class CreateSalarieType extends AbstractType
                             $qb
                                 ->innerJoin('so.centre', 'c_scope')
                                 ->andWhere('c_scope.id IN (:centreIds)')
+                                ->andWhere('c_scope.type = :centreType')
+                                ->setParameter('centreType', TypeCentre::CONTROLE_TECHNIQUE)
                                 ->setParameter('centreIds', $centreScopeIds);
                         }
                     }
@@ -100,6 +103,8 @@ class CreateSalarieType extends AbstractType
                 ],
                 'query_builder' => static function (EntityRepository $er) use ($centreScopeIds) {
                     $qb = $er->createQueryBuilder('c')
+                        ->andWhere('c.type = :centreType')
+                        ->setParameter('centreType', TypeCentre::CONTROLE_TECHNIQUE)
                         ->orderBy('c.reseauNom', 'ASC')
                         ->addOrderBy('c.ville', 'ASC');
 

@@ -15,12 +15,20 @@ final class CsvReader
      * @param UploadedFile $file Uploaded CSV file.
      * @param string $delimiter CSV delimiter.
      * @param string|null $reseauCode Optional network code used for header remapping rules.
+     * @param string $sourceEncoding Character encoding used by the source file.
+     * @param int $linesToSkip Number of lines to ignore before reading the header.
      *
      * @return \Generator<int, array<string, mixed>> Generator yielding normalized CSV rows.
      *
      * @throws \RuntimeException When the CSV file cannot be opened.
      */
-    public function read(UploadedFile $file, string $delimiter = ';', ?string $reseauCode = null): \Generator
+    public function read(
+        UploadedFile $file,
+        string $delimiter = ';',
+        ?string $reseauCode = null,
+        string $sourceEncoding = 'UTF-8',
+        int $linesToSkip = 0,
+    ): \Generator
     {
         $handle = fopen($file->getPathname(), 'r');
 
@@ -38,7 +46,24 @@ final class CsvReader
                 rewind($handle);
             }
 
+            $lineNumber = 0;
+
             while (($row = fgetcsv($handle, 0, $delimiter, '"', '')) !== false) {
+                $lineNumber++;
+
+                if ($lineNumber <= $linesToSkip) {
+                    continue;
+                }
+
+                if (strcasecmp($sourceEncoding, 'UTF-8') !== 0) {
+                    $row = array_map(
+                        static fn(?string $value): ?string => $value === null
+                            ? null
+                            : mb_convert_encoding($value, 'UTF-8', $sourceEncoding),
+                        $row
+                    );
+                }
+
                 if ($headers === null) {
                     $headers = array_map(
                         fn($h) => $this->normalizeHeader($h),
@@ -83,6 +108,40 @@ final class CsvReader
 
         // Lowercase for stable matching.
         $header = mb_strtolower($header);
+
+        // Normalize common French characters explicitly. iconv transliteration
+        // differs between operating systems and may otherwise turn "é" into "_".
+        $header = strtr($header, [
+            'à' => 'a',
+            'á' => 'a',
+            'â' => 'a',
+            'ä' => 'a',
+            'ã' => 'a',
+            'å' => 'a',
+            'æ' => 'ae',
+            'ç' => 'c',
+            'è' => 'e',
+            'é' => 'e',
+            'ê' => 'e',
+            'ë' => 'e',
+            'ì' => 'i',
+            'í' => 'i',
+            'î' => 'i',
+            'ï' => 'i',
+            'ñ' => 'n',
+            'ò' => 'o',
+            'ó' => 'o',
+            'ô' => 'o',
+            'ö' => 'o',
+            'õ' => 'o',
+            'œ' => 'oe',
+            'ù' => 'u',
+            'ú' => 'u',
+            'û' => 'u',
+            'ü' => 'u',
+            'ý' => 'y',
+            'ÿ' => 'y',
+        ]);
 
         // Try to make headers resilient to accents/punctuation differences.
         if (function_exists('iconv')) {

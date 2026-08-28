@@ -713,6 +713,7 @@ class PopulateSyntheseCommand extends Command
                 ) ranked_pnf
                 WHERE ranked_pnf.rn = 1
             ) pnf ON pnf.idcontrole = ctrl.idcontrole
+            WHERE ce.id IS NULL OR ce.type = 'controle_technique'
             GROUP BY
                 COALESCE(sa.id, 0),
                 COALESCE(sa.agr_controleur, cc.agr_controleur, 'Agrément inconnu'),

@@ -373,6 +373,7 @@ class PopulateModesReglementCommand extends Command
             LEFT JOIN societe so
                 ON so.id = ce.societe_id
             WHERE ctrl.res_ctrl IN ('A','AP')
+              AND (ce.id IS NULL OR ce.type = 'controle_technique')
             GROUP BY
                 YEAR(lp.date_reglt),
                 MONTH(lp.date_reglt),
@@ -529,6 +530,7 @@ class PopulateModesReglementCommand extends Command
                 ON {$centreJoinCondition}
             LEFT JOIN societe so
                 ON so.id = ce.societe_id
+            WHERE ce.id IS NULL OR ce.type = 'controle_technique'
             GROUP BY
                 YEAR(up.date_reglt),
                 MONTH(up.date_reglt),
@@ -658,6 +660,7 @@ class PopulateModesReglementCommand extends Command
                 ON {$centreJoinCondition}
             LEFT JOIN societe so
                 ON so.id = ce.societe_id
+            WHERE ce.id IS NULL OR ce.type = 'controle_technique'
             GROUP BY
                 YEAR(missing.date_reglt),
                 MONTH(missing.date_reglt),

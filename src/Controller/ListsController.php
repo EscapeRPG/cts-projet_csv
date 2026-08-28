@@ -67,7 +67,7 @@ final class ListsController extends AbstractController
         // Bulk-edit: load the full result set (no pagination).
         $salaries = $salarieRepository->findOrderedBySocieteSearch($q, $centreIds, $includeActive, $includeInactive);
         $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
-        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch(null, $centreIds);
+        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch(null, $centreIds);
 
         return $this->renderSalariesList($salaries, $societes, $centres, null);
     }
@@ -91,7 +91,7 @@ final class ListsController extends AbstractController
         }
         $salaries = $salarieRepository->findOrderedBySocieteSearch($q, $centreIds, $includeActive, $includeInactive);
         $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
-        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch(null, $centreIds);
+        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch(null, $centreIds);
 
         return $this->render('cts/salaries/_list_results.html.twig', [
             'salaries' => $salaries,
@@ -245,7 +245,7 @@ final class ListsController extends AbstractController
                 $this->addFlash('error', $msg);
             }
             $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
-            $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch(null, $centreIds);
+            $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch(null, $centreIds);
             return $this->renderSalariesList($salaries, $societes, $centres, null);
         }
 
@@ -438,7 +438,7 @@ final class ListsController extends AbstractController
     {
         $q = trim((string)$request->query->get('q', ''));
         $centreIds = $this->getCurrentUserCentreScopeIds();
-        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch($q, $centreIds);
+        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $centreIds);
         $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
         $reseaux = $this->findReseauxForCentreScope($reseauRepository, $centreIds);
 
@@ -460,7 +460,7 @@ final class ListsController extends AbstractController
     {
         $q = trim((string)$request->query->get('q', ''));
         $centreIds = $this->getCurrentUserCentreScopeIds();
-        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch($q, $centreIds);
+        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $centreIds);
         $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
         $reseaux = $this->findReseauxForCentreScope($reseauRepository, $centreIds);
 
@@ -479,7 +479,7 @@ final class ListsController extends AbstractController
     public function listCentresNonEditable(Request $request, CentreRepository $centreRepository): Response
     {
         $q = trim((string)$request->query->get('q', ''));
-        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch($q, $this->getCurrentUserCentreScopeIds());
+        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $this->getCurrentUserCentreScopeIds());
 
         return $this->render('cts/centres/list_uneditable.html.twig', [
             'centres' => $centres,
@@ -491,7 +491,7 @@ final class ListsController extends AbstractController
     public function listCentresNonEditablePartial(Request $request, CentreRepository $centreRepository): Response
     {
         $q = trim((string)$request->query->get('q', ''));
-        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch($q, $this->getCurrentUserCentreScopeIds());
+        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $this->getCurrentUserCentreScopeIds());
 
         return $this->render('cts/centres/_list_results_uneditable.html.twig', [
             'centres' => $centres,
@@ -547,7 +547,7 @@ final class ListsController extends AbstractController
 
         $q = trim((string)$request->query->get('q', ''));
         $centreIds = $this->getCurrentUserCentreScopeIds();
-        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch($q, $centreIds);
+        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $centreIds);
         $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
         $reseaux = $this->findReseauxForCentreScope($reseauRepository, $centreIds);
 
@@ -684,7 +684,7 @@ final class ListsController extends AbstractController
         }
         $voitures = $voitureRepository->findOrderedBySocieteSearch($q, $centreIds, $includeActive, $includeInactive);
         $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
-        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch(null, $centreIds);
+        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch(null, $centreIds);
 
         return $this->render('cts/voitures/list.html.twig', [
             'voitures' => $voitures,
@@ -713,7 +713,7 @@ final class ListsController extends AbstractController
         }
         $voitures = $voitureRepository->findOrderedBySocieteSearch($q, $centreIds, $includeActive, $includeInactive);
         $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
-        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch(null, $centreIds);
+        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch(null, $centreIds);
 
         return $this->render('cts/voitures/_list_results.html.twig', [
             'voitures' => $voitures,
@@ -816,7 +816,7 @@ final class ListsController extends AbstractController
         $voitures = $voitureRepository->findOrderedBySocieteSearch($q, $centreIds, $includeActive, $includeInactive);
 
         $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
-        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch(null, $centreIds);
+        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch(null, $centreIds);
 
         $allowedById = [];
         foreach ($voitures as $v) {
@@ -1174,7 +1174,7 @@ final class ListsController extends AbstractController
     public function listCentresPrint(Request $request, CentreRepository $centreRepository): Response
     {
         $q = trim((string)$request->query->get('q', ''));
-        $centres = $centreRepository->findOrderedBySocieteVilleAgrSearch($q, $this->getCurrentUserCentreScopeIds());
+        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $this->getCurrentUserCentreScopeIds());
 
         return $this->render('cts/lists/print/centres.html.twig', [
             'centres' => $centres,
@@ -1472,7 +1472,7 @@ final class ListsController extends AbstractController
                 $errors[] = 'Centre hors scope.';
             } else {
                 $centre = $centreRepository->find($cid);
-                if (!$centre instanceof \App\Entity\Centre) {
+                if (!$centre instanceof \App\Entity\Centre || !$centre->isControleTechnique()) {
                     $errors[] = 'Centre introuvable.';
                 } else {
                     $voiture->setCentre($centre);
@@ -1687,7 +1687,9 @@ final class ListsController extends AbstractController
         if ($centreIds !== []) {
             $wanted = $centreRepo->createQueryBuilder('c')
                 ->andWhere('c.id IN (:ids)')
+                ->andWhere('c.type = :centreType')
                 ->setParameter('ids', $centreIds)
+                ->setParameter('centreType', \App\Enum\TypeCentre::CONTROLE_TECHNIQUE)
                 ->getQuery()
                 ->getResult();
         }
@@ -1968,6 +1970,9 @@ final class ListsController extends AbstractController
                     if (!$centre instanceof \App\Entity\Centre) {
                         continue;
                     }
+                    if (!$centre->isControleTechnique()) {
+                        continue;
+                    }
                     $id = $centre->getId();
                     if ($id !== null) {
                         $ids[] = $id;
@@ -1977,6 +1982,9 @@ final class ListsController extends AbstractController
         } else {
             // Backward compat: old scope stored as explicit centres.
             foreach ($user->getCentres() as $centre) {
+                if (!$centre->isControleTechnique()) {
+                    continue;
+                }
                 $id = $centre->getId();
                 if ($id !== null) {
                     $ids[] = $id;
@@ -2019,6 +2027,9 @@ final class ListsController extends AbstractController
         } else {
             // Backward compat: derive societes from assigned centres.
             foreach ($user->getCentres() as $centre) {
+                if (!$centre->isControleTechnique()) {
+                    continue;
+                }
                 $societe = $centre->getSociete();
                 $id = $societe?->getId();
                 if ($id !== null) {
