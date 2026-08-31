@@ -144,6 +144,10 @@ class VoitureRepository extends ServiceEntityRepository
 
         $qb
             ->andWhere('LOWER(v.immatriculation) LIKE :q')
+            ->orWhere('LOWER(so.nom) LIKE :q')
+            ->orWhere('LOWER(c.ville) LIKE :q')
+            ->orWhere('LOWER(c.reseauNom) LIKE :q')
+            ->orWhere('LOWER(v.modele) LIKE :q')
             ->setParameter('q', '%' . mb_strtolower($q) . '%');
     }
 
@@ -168,29 +172,4 @@ class VoitureRepository extends ServiceEntityRepository
                 ->setParameter('isActive', false);
         }
     }
-
-    //    /**
-    //     * @return Voiture[] Returns an array of Voiture objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('v')
-    //            ->andWhere('v.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('v.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Voiture
-    //    {
-    //        return $this->createQueryBuilder('v')
-    //            ->andWhere('v.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }
