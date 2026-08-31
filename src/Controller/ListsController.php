@@ -957,7 +957,11 @@ final class ListsController extends AbstractController
             ]);
         }
 
+        // Read all metadata before storeCertificat(): move() removes the PHP
+        // temporary file, so SplFileInfo methods such as getSize() then fail.
+        $originalName = $file->getClientOriginalName();
         $mime = (string)($file->getMimeType() ?? '');
+        $size = $file->getSize();
         $allowed = ['application/pdf', 'image/jpeg', 'image/png'];
         if (!in_array($mime, $allowed, true)) {
             $this->addFlash('error', 'Format non autorisé. Formats acceptés: PDF, JPG, PNG.');
@@ -966,7 +970,7 @@ final class ListsController extends AbstractController
                 'q' => $request->query->get('q'),
             ]);
         }
-        if ($file->getSize() !== null && $file->getSize() > 15 * 1024 * 1024) {
+        if ($size !== null && $size > 15 * 1024 * 1024) {
             $this->addFlash('error', 'Fichier trop volumineux (15 Mo max).');
             return $this->redirectToRoute('app_voitures_list', [
                 'page' => $request->query->getInt('page', 1),
@@ -979,9 +983,9 @@ final class ListsController extends AbstractController
 
         $relativePath = $storage->storeCertificat($voiture, $file);
         $voiture->setCertificatCessionPath($relativePath);
-        $voiture->setCertificatCessionOriginalName($file->getClientOriginalName());
+        $voiture->setCertificatCessionOriginalName($originalName);
         $voiture->setCertificatCessionMime($mime !== '' ? $mime : null);
-        $voiture->setCertificatCessionSize($file->getSize());
+        $voiture->setCertificatCessionSize($size);
         $voiture->setCertificatCessionUploadedAt(new \DateTimeImmutable());
 
         $em->persist($voiture);

@@ -95,26 +95,18 @@
                                target="_blank"
                                rel="noopener">Télécharger</a>
 
-                            <form method="post"
-                                  action="{{ path('app_voitures_certificat_delete', {'id': voiture.id, 'page': 1, 'q': app.request.query.get('q'), 'active': app.request.query.get('active'), 'inactive': app.request.query.get('inactive')}) }}"
-                                  data-turbo="false"
-                                  style="display:inline-block;">
-                                <input type="hidden" name="_token"
-                                       value="{{ csrf_token('voiture_certificat_delete_' ~ voiture.id) }}">
-                                <button type="submit">Supprimer</button>
-                            </form>
+                            <button type="submit"
+                                    form="voiture-certificat-delete-{{ voiture.id }}">Supprimer</button>
                             <br><br>
                             <small>Remplacer:</small>
                         {% endif %}
 
-                        <form method="post"
-                              enctype="multipart/form-data"
-                              data-turbo="false"
-                              action="{{ path('app_voitures_certificat_upload', {'id': voiture.id, 'page': 1, 'q': app.request.query.get('q'), 'active': app.request.query.get('active'), 'inactive': app.request.query.get('inactive')}) }}">
-                            <input type="hidden" name="_token" value="{{ csrf_token('voiture_certificat_upload_' ~ voiture.id) }}">
-                            <input type="file" name="certificat" data-row-change-ignore="1">
-                            <button type="submit">Uploader</button>
-                        </form>
+                        <input type="file"
+                               name="certificat"
+                               form="voiture-certificat-upload-{{ voiture.id }}"
+                               data-row-change-ignore="1">
+                        <button type="submit"
+                                form="voiture-certificat-upload-{{ voiture.id }}">Uploader</button>
                     {% else %}
                         ---
                     {% endif %}
@@ -128,3 +120,30 @@
         </tbody>
     </table>
 </form>
+
+{#
+ # These forms must remain outside voitures-bulk-form. Nested forms are invalid HTML
+ # and can make a certificate CSRF token overwrite the bulk update token.
+ #}
+{% if is_granted('ROLE_ADMIN') %}
+    {% for voiture in voitures %}
+        {% if voiture.certificatCessionPath is not empty %}
+            <form id="voiture-certificat-delete-{{ voiture.id }}"
+                  method="post"
+                  action="{{ path('app_voitures_certificat_delete', {'id': voiture.id, 'page': 1, 'q': app.request.query.get('q'), 'active': app.request.query.get('active'), 'inactive': app.request.query.get('inactive')}) }}"
+                  data-turbo="false">
+                <input type="hidden" name="_token"
+                       value="{{ csrf_token('voiture_certificat_delete_' ~ voiture.id) }}">
+            </form>
+        {% endif %}
+
+        <form id="voiture-certificat-upload-{{ voiture.id }}"
+              method="post"
+              enctype="multipart/form-data"
+              action="{{ path('app_voitures_certificat_upload', {'id': voiture.id, 'page': 1, 'q': app.request.query.get('q'), 'active': app.request.query.get('active'), 'inactive': app.request.query.get('inactive')}) }}"
+              data-turbo="false">
+            <input type="hidden" name="_token"
+                   value="{{ csrf_token('voiture_certificat_upload_' ~ voiture.id) }}">
+        </form>
+    {% endfor %}
+{% endif %}
