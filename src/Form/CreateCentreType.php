@@ -81,8 +81,8 @@ class CreateCentreType extends AbstractType
                 'required' => true,
             ])
             ->add('agrCentre', TextType::class, [
-                'label' => '*Agrément VL : ',
-                'required' => true,
+                'label' => 'Agrément VL : ',
+                'required' => false,
             ])
             ->add('agrClCentre', TextType::class, [
                 'label' => 'Agrément Cl : ',
