@@ -234,7 +234,7 @@ class Centre
         return $this->numSiret;
     }
 
-    public function setNumSiret(string $numSiret): static
+    public function setNumSiret(?string $numSiret): static
     {
         $this->numSiret = $numSiret;
 
