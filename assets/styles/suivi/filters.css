@@ -67,7 +67,7 @@
     gap: 20px;
     min-width: 150px;
     margin: 20px auto;
-    flex: 1;
+    flex: 0;
 
     .onglets {
         width: 100%;

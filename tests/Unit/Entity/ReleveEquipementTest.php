@@ -92,7 +92,7 @@ final class ReleveEquipementTest extends TestCase
     #[DataProvider('zeroValueProvider')]
     public function testDecimalZeroFormatsAreConsideredEmpty(string $zero): void
     {
-        $ligne = (new ReleveEquipement())
+        $ligne = new ReleveEquipement()
             ->setCb($zero)
             ->setEspeces($zero)
             ->setCheque($zero)

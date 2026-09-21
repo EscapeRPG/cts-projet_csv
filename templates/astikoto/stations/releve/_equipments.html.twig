@@ -1,0 +1,148 @@
+{% set equipmentFields = {
+    cb: 'CB',
+    especes: 'Esp.',
+    cheque: 'Chq',
+    jetons: 'Jetons',
+    bl: 'BL'
+} %}
+
+<div class="stats-wrapper">
+    <div class="stats-panel">
+        <h2 class="releve-title">Station</h2>
+
+        <div class="releve-table-wrapper">
+            <table class="releve-table">
+                <thead>
+                    <tr>
+                        <th>Équipement</th>
+                        {% for label in equipmentFields %}
+                            <th>{{ label }}</th>
+                        {% endfor %}
+                        <th>Total</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for group, rows in {
+                        portiques: equipements.portiques,
+                        bornes: equipements.bornes
+                    } %}
+                        {% for row in rows %}
+                            {% set rowForm = attribute(form.relevesEquipements, row.formIndex) %}
+
+                            <tr
+                                data-revenue-row
+                                data-revenue-section="equipements"
+                                data-equipment-group="{{ group }}"
+                            >
+                                <td class="releve-item">{{ row.libelle }}</td>
+
+                                {% for name in equipmentFields|keys %}
+                                    <td>
+                                        {{ form_widget(attribute(rowForm, name), {
+                                            attr: {
+                                                readonly: group == 'bornes',
+                                                'data-revenue-input': name,
+                                                'data-borne-output': group == 'bornes' ? name : false,
+                                                'aria-label': name|upper ~ ' - ' ~ row.libelle
+                                            }
+                                        }) }}
+                                    </td>
+                                {% endfor %}
+
+                                <td class="releve-item" data-row-total>
+                                    {{ attribute(releveTotals.equipmentLines, row.formIndex)|money }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+
+                        <tr class="total" data-subtotal="{{ group }}">
+                            <th class="releve-item">Sous-total {{ group }}</th>
+
+                            {% for name in equipmentFields|keys %}
+                                <th data-total-field="{{ name }}">
+                                    {% set value = attribute(attribute(releveTotals, group), name) %}
+                                    {{ name == 'jetons' ? value : value|money }}
+                                </th>
+                            {% endfor %}
+
+                            <th data-total-field="total">
+                                {{ attribute(attribute(releveTotals, group), 'total')|money }}
+                            </th>
+                        </tr>
+                    {% endfor %}
+
+                    {% for row in equipements.bornes %}
+                        {% set borneForm = attribute(form.relevesEquipements, row.formIndex) %}
+                        {% set portiqueForm = attribute(form.relevesEquipements, row.portiqueFormIndex) %}
+
+                        <tr class="total" data-borne-total-row>
+                            <th class="releve-item">Total {{ row.libelle }}</th>
+
+                            {% for name, totalName in {
+                                cb: 'totalCb',
+                                especes: 'totalEspeces',
+                                cheque: 'totalCheque',
+                                jetons: 'totalJetons',
+                                bl: 'totalBl'
+                            } %}
+                                <td>
+                                    {{ form_widget(attribute(borneForm, totalName), {
+                                        attr: {
+                                            'data-borne-total': name,
+                                            'data-portique-input': attribute(portiqueForm, name).vars.id,
+                                            'data-borne-output-input': attribute(borneForm, name).vars.id
+                                        }
+                                    }) }}
+                                </td>
+                            {% endfor %}
+
+                            <th data-row-total></th>
+                        </tr>
+                    {% endfor %}
+
+                    {% for row in equipements.autres %}
+                        {% set rowForm = attribute(form.relevesEquipements, row.formIndex) %}
+
+                        <tr
+                            data-revenue-row
+                            data-revenue-section="equipements"
+                            data-equipment-group="autres"
+                        >
+                            <td class="releve-item">{{ row.libelle }}</td>
+
+                            {% for name in equipmentFields|keys %}
+                                <td>
+                                    {{ form_widget(attribute(rowForm, name), {
+                                        attr: {'data-revenue-input': name}
+                                    }) }}
+                                </td>
+                            {% endfor %}
+
+                            <td class="releve-item" data-row-total>
+                                {{ attribute(releveTotals.equipmentLines, row.formIndex)|money }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+
+                <tfoot>
+                    <tr class="calendar-total-row" data-section-total="equipements">
+                        <th>TOTAL</th>
+
+                        {% for name in equipmentFields|keys %}
+                            <th data-total-field="{{ name }}">
+                                {% set value = attribute(releveTotals.equipements, name) %}
+                                {{ name == 'jetons' ? value : value|money }}
+                            </th>
+                        {% endfor %}
+
+                        <th data-total-field="total">
+                            {{ releveTotals.equipements.total|money }}
+                        </th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

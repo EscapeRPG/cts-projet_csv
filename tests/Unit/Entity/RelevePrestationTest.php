@@ -88,7 +88,7 @@ final class RelevePrestationTest extends TestCase
     #[DataProvider('zeroValueProvider')]
     public function testDecimalZeroFormatsAreConsideredEmpty(string $zero): void
     {
-        $ligne = (new RelevePrestation())
+        $ligne = new RelevePrestation()
             ->setNom('   ')
             ->setCb($zero)
             ->setEspeces($zero)

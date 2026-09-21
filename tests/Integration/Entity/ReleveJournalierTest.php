@@ -15,8 +15,12 @@ use App\Entity\Reseau;
 use App\Entity\Societe;
 use App\Entity\User;
 use App\Enum\CategorieEquipement;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\OptimisticLockException;
+use Random\RandomException;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class ReleveJournalierTest extends KernelTestCase
@@ -28,13 +32,20 @@ final class ReleveJournalierTest extends KernelTestCase
         return Kernel::class;
     }
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         self::bootKernel();
+        
         $this->entityManager = self::getContainer()->get(EntityManagerInterface::class);
         $this->entityManager->getConnection()->beginTransaction();
     }
 
+    /**
+     * @throws Exception
+     */
     protected function tearDown(): void
     {
         $connection = $this->entityManager->getConnection();
@@ -46,6 +57,11 @@ final class ReleveJournalierTest extends KernelTestCase
         parent::tearDown();
     }
 
+    /**
+     * @throws OptimisticLockException
+     * @throws ORMException
+     * @throws RandomException
+     */
     public function testPersistsAndReloadsCompleteReleve(): void
     {
         [$centre, $auteur] = $this->createContext();
@@ -53,15 +69,15 @@ final class ReleveJournalierTest extends KernelTestCase
         $this->entityManager->persist($equipement);
 
         $releve = $this->createReleve($centre, $auteur);
-        $ligneEquipement = (new ReleveEquipement())
+        $ligneEquipement = new ReleveEquipement()
             ->setEquipement($equipement)
             ->setCb('12.50')
             ->setJetons(3);
-        $produit = (new ReleveProduit())
+        $produit = new ReleveProduit()
             ->setDesignation('Produit lave-vitres')
             ->setEspeces('8.20')
             ->setOrdreAffichage(1);
-        $prestation = (new RelevePrestation())
+        $prestation = new RelevePrestation()
             ->setNom('Lavage complet')
             ->setContrat('25.00')
             ->setOrdreAffichage(2);
@@ -101,6 +117,11 @@ final class ReleveJournalierTest extends KernelTestCase
         self::assertSame('25.00', $releveBddPrestation->getContrat());
     }
 
+    /**
+     * @throws OptimisticLockException
+     * @throws RandomException
+     * @throws ORMException
+     */
     public function testRemovingChildrenDeletesThemFromDatabase(): void
     {
         [$centre, $auteur] = $this->createContext();
@@ -108,9 +129,9 @@ final class ReleveJournalierTest extends KernelTestCase
         $this->entityManager->persist($equipement);
 
         $releve = $this->createReleve($centre, $auteur);
-        $ligneEquipement = (new ReleveEquipement())->setEquipement($equipement);
-        $produit = (new ReleveProduit())->setDesignation('Produit lave-vitres');
-        $prestation = (new RelevePrestation())->setNom('Lavage complet');
+        $ligneEquipement = new ReleveEquipement()->setEquipement($equipement);
+        $produit = new ReleveProduit()->setDesignation('Produit lave-vitres');
+        $prestation = new RelevePrestation()->setNom('Lavage complet');
         $releve
             ->addReleveEquipement($ligneEquipement)
             ->addReleveProduit($produit)
@@ -134,6 +155,11 @@ final class ReleveJournalierTest extends KernelTestCase
         self::assertNull($this->entityManager->find(RelevePrestation::class, $prestationId));
     }
 
+    /**
+     * @throws OptimisticLockException
+     * @throws ORMException
+     * @throws RandomException
+     */
     public function testRemovingParentDeletesItsChildren(): void
     {
         [$centre, $auteur] = $this->createContext();
@@ -141,9 +167,9 @@ final class ReleveJournalierTest extends KernelTestCase
         $this->entityManager->persist($equipement);
 
         $releve = $this->createReleve($centre, $auteur);
-        $ligneEquipement = (new ReleveEquipement())->setEquipement($equipement);
-        $produit = (new ReleveProduit())->setDesignation('Produit lave-vitres');
-        $prestation = (new RelevePrestation())->setNom('Lavage complet');
+        $ligneEquipement = new ReleveEquipement()->setEquipement($equipement);
+        $produit = new ReleveProduit()->setDesignation('Produit lave-vitres');
+        $prestation = new RelevePrestation()->setNom('Lavage complet');
         $releve
             ->addReleveEquipement($ligneEquipement)
             ->addReleveProduit($produit)
@@ -166,6 +192,9 @@ final class ReleveJournalierTest extends KernelTestCase
         self::assertNull($this->entityManager->find(RelevePrestation::class, $prestationId));
     }
 
+    /**
+     * @throws RandomException
+     */
     public function testCannotPersistTwoRelevesForSameCentreAndDate(): void
     {
         [$centre, $auteur] = $this->createContext();
@@ -176,15 +205,18 @@ final class ReleveJournalierTest extends KernelTestCase
         $this->entityManager->flush();
     }
 
+    /**
+     * @throws RandomException
+     */
     public function testCannotPersistSameEquipementTwiceInOneReleve(): void
     {
         [$centre, $auteur] = $this->createContext();
         $equipement = new EquipementStation($centre, 'BORNE-01', 'Borne 1', CategorieEquipement::BORNE);
         $releve = $this->createReleve($centre, $auteur);
-        $premiereLigne = (new ReleveEquipement())
+        $premiereLigne = new ReleveEquipement()
             ->setReleveJournalier($releve)
             ->setEquipement($equipement);
-        $secondeLigne = (new ReleveEquipement())
+        $secondeLigne = new ReleveEquipement()
             ->setReleveJournalier($releve)
             ->setEquipement($equipement);
 
@@ -197,18 +229,20 @@ final class ReleveJournalierTest extends KernelTestCase
         $this->entityManager->flush();
     }
 
-    /** @return array{Centre, User} */
+    /** @return array{Centre, User}
+     * @throws RandomException
+     */
     private function createContext(): array
     {
         $suffix = bin2hex(random_bytes(6));
-        $reseau = (new Reseau())->setNom('Réseau '.$suffix);
-        $societe = (new Societe())->setNom('Société '.$suffix);
-        $centre = (new Centre())
+        $reseau = new Reseau()->setNom('Réseau '.$suffix);
+        $societe = new Societe()->setNom('Société '.$suffix);
+        $centre = new Centre()
             ->setVille('Nantes')
             ->setCp('44000')
             ->setReseau($reseau)
             ->setSociete($societe);
-        $auteur = (new User())
+        $auteur = new User()
             ->setUsername('integration-'.$suffix)
             ->setEmail('integration-'.$suffix.'@example.test')
             ->setPassword('not-a-real-password')

@@ -1,0 +1,88 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Relevés journalier{% endblock %}
+
+{% block body %}
+    <div class="suivi-container">
+        <div class="sidenav">
+            <form method="get"
+                  class="filter-form"
+                  data-station-selector
+                  data-dependent-url="{{ path('app_suivi_filters_dependent') }}"
+                  data-preserve-centre-on-clear="{{ (is_granted('ROLE_CTS') and not is_granted('ROLE_ADMIN')) ? '1' : '0' }}">
+
+                <div class="filters-container">
+                    <div class="filter-dropdown">
+                        <button type="button" class="dropdown-toggle">
+                            Stations
+                        </button>
+
+                        <div class="dropdown-menu" data-filter-list="station" data-filter-input-type="radio">
+                            {% for station in stations %}
+                                <label>
+                                    <input type="radio" name="station" value="{{ station.id }}"
+                                        {{ selectedStation is not null and station.id == selectedStation.id ? 'checked' : '' }}>
+                                    {{ station.ville }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="activite-infos">
+            <p data-releve-activity aria-live="polite"></p>
+        </div>
+
+        <div class="centres-pros-wrapper">
+            <div class="pro-stats-container" style="max-height: unset">
+                {% if selectedStation == null %}
+                    <div class="centre-detail-alert">
+                        <p>Veuillez sélectionner une station pour consulter les détails.</p>
+                    </div>
+                {% else %}
+                    <div
+                        data-station-calendar
+                        data-station-id="{{ selectedStation.id }}"
+                        data-selected-date="{{ selectedDate|date('Y-m-d') }}"
+                        data-details-url="{{ path('app_station_detail_day') }}"
+                        class="pro-stats-panel"
+                    >
+                        <div class="stats-wrapper">
+                            <div class="calendar">
+                                <div class="calendar-year-month">
+                                    <div class="year-selector">
+                                        <button id="prevYear">&lt;</button>
+                                        <span id="yearDisplay"></span>
+                                        <button id="nextYear">&gt;</button>
+                                    </div>
+
+                                    <div class="month-selector">
+                                        <button id="prevMonth">&lt;</button>
+                                        <span id="monthDisplay"></span>
+                                        <button id="nextMonth">&gt;</button>
+                                    </div>
+
+                                    <button id="backToday">← Aujourd'hui</button>
+                                </div>
+
+                                <div class="calendar-days">
+                                    <button id="prevDay" class="scroll-btn">&lt;</button>
+
+                                    <div id="daysContainer" class="days-container"></div>
+
+                                    <button id="nextDay" class="scroll-btn">&gt;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div data-day-details aria-live="polite"></div>
+                {% endif %}
+            </div>
+
+            <div class="filters-print-actions" data-releve-page-actions></div>
+        </div>
+    </div>
+{% endblock %}

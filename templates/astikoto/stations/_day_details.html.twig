@@ -1,0 +1,49 @@
+{% if releve.validated %}
+    {% set activity = 'Validé par ' ~ releve.validatedBy.userIdentifier ~ ' le ' ~ releve.validatedAt|date('d/m/Y à H:i') %}
+{% elseif releve.id is not null %}
+    {% set activity = 'Dernière modification par ' ~ releve.updatedBy.userIdentifier ~ ' le ' ~ releve.updatedAt|date('d/m/Y à H:i') %}
+{% else %}
+    {% set activity = 'Relevé en cours de création par ' ~ releve.createdBy.userIdentifier ~ ' le ' ~ releve.createdAt|date('d/m/Y à H:i') %}
+{% endif %}
+
+<div
+    data-releve-state
+    data-releve-editing="{{ editing ? '1' : '0' }}"
+    data-releve-edit-url="{{ editUrl }}"
+    data-releve-activity="{{ activity }}"
+></div>
+
+{% if editing %}
+    {% if formErrors is not empty %}
+        <div class="centre-detail-alert alert alert-danger" role="alert">
+            <p>Le relevé n’a pas pu être enregistré :</p>
+
+            <ul>
+                {% for error in formErrors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {{ form_start(form, {attr: {
+        id: 'releve-journalier-form',
+        'data-releve-form': ''
+    }}) }}
+
+    {% include 'astikoto/stations/releve/_summary.html.twig' %}
+
+    <div class="pro-stats-panel releves-panels">
+        {% include 'astikoto/stations/releve/_equipments.html.twig' %}
+        {% include 'astikoto/stations/releve/_products.html.twig' %}
+        {% include 'astikoto/stations/releve/_services.html.twig' %}
+    </div>
+
+    {% do form.relevesEquipements.setRendered %}
+    {% do form.relevesProduits.setRendered %}
+    {% do form.relevesPrestations.setRendered %}
+    {{ form_rest(form) }}
+    {{ form_end(form, {render_rest: false}) }}
+{% else %}
+    {% include 'astikoto/stations/releve/_readonly.html.twig' %}
+{% endif %}

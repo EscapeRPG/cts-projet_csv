@@ -277,6 +277,26 @@
 
                     <h3 class="toggle">
                     <span class="toggle-title">
+                        {{ include('partials/svg/stations.html.twig') }}
+                        Stations
+                    </span>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        <li>
+                            <a href="{{ path('app_stations_list_uneditable') }}">
+                                → Liste des stations
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ path('app_stations_add') }}">
+                                → Ajout  de station
+                            </a>
+                        </li>
+                    </ul>
+
+                    <h3 class="toggle">
+                    <span class="toggle-title">
                         {{ include('partials/svg/activite.html.twig') }}
                         Activité
                     </span>
@@ -284,13 +304,13 @@
                     </h3>
                     <ul class="menu">
                         <li>
-                            <a href="{{ path('astikoto_import_csv') }}">
-                                → Suivi journalier
+                            <a href="{{ path('app_station_detail') }}">
+                                → Relevés journaliers
                             </a>
                         </li>
                         <li>
                             <a href="{{ path('astikoto_import_csv') }}">
-                                → Import de fichiers
+                                → Import de fichier
                             </a>
                         </li>
                     </ul>

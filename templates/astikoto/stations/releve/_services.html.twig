@@ -1,0 +1,65 @@
+{% set fields = ['cb', 'especes', 'cheque', 'enCompte', 'contrat'] %}
+
+<div class="stats-wrapper">
+    <div class="stats-panel">
+        <h2 class="releve-title">Prestations</h2>
+
+        <div class="releve-table-wrapper">
+            <table class="releve-table">
+                <thead>
+                    <tr>
+                        <th>Nom / Facture</th>
+                        <th>CB</th>
+                        <th>Esp.</th>
+                        <th>Chq</th>
+                        <th>En cpt</th>
+                        <th>Contrat</th>
+                        <th>Total</th>
+                        <th aria-label="Actions"></th>
+                    </tr>
+                </thead>
+
+                <tbody
+                    data-releve-collection
+                    data-index="{{ form.relevesPrestations|length }}"
+                    data-prototype="{{ include(
+                        'astikoto/stations/releve/_service_row.html.twig',
+                        {row: form.relevesPrestations.vars.prototype, totalCents: 0}
+                    )|e('html_attr') }}"
+                >
+                    {% for row in form.relevesPrestations %}
+                        {% include 'astikoto/stations/releve/_service_row.html.twig' with {
+                            row: row,
+                            totalCents: attribute(releveTotals.prestationLines, loop.index0)
+                        } only %}
+                    {% endfor %}
+                </tbody>
+
+                <tfoot>
+                    <tr class="calendar-total-row" data-section-total="prestations">
+                        <th>TOTAL</th>
+
+                        {% for name in fields %}
+                            <th data-total-field="{{ name }}">
+                                {{ attribute(releveTotals.prestations, name)|money }}
+                            </th>
+                        {% endfor %}
+
+                        <th data-total-field="total">
+                            {{ releveTotals.prestations.total|money }}
+                        </th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <button
+                type="button"
+                class="btn-link releve-add-btn"
+                data-add-releve-row
+            >
+                + Ajouter
+            </button>
+        </div>
+    </div>
+</div>

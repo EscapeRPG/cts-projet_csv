@@ -124,4 +124,44 @@ class EquipementStationTest extends TestCase
 
         $borne->associerPortique($portique);
     }
+
+    public function testPortiqueCanReceiveImportNumber(): void
+    {
+        $portique = $this->createPortique();
+
+        $portique->setNumeroPortiqueImport(4);
+
+        self::assertSame(4, $portique->getNumeroPortiqueImport());
+    }
+
+    public function testNonPortiqueCannotReceiveImportNumber(): void
+    {
+        $borne = $this->createBorne();
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('Un numéro de portique importé ne peut être associé qu’à un portique.');
+
+        $borne->setNumeroPortiqueImport(4);
+    }
+
+    public function testPortiqueWithImportNumberCannotChangeCategorie(): void
+    {
+        $portique = $this->createPortique();
+        $portique->setNumeroPortiqueImport(4);
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('Un numéro de portique importé ne peut être associé qu’à un portique.');
+
+        $portique->setCategorie(CategorieEquipement::AUTRE);
+    }
+
+    public function testImportNumberMustBePositive(): void
+    {
+        $portique = $this->createPortique();
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('Le numéro de portique importé doit être strictement positif.');
+
+        $portique->setNumeroPortiqueImport(0);
+    }
 }

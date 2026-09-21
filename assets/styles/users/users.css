@@ -5,15 +5,15 @@
 .delete {
     border: 2px solid red;
     border-radius: 100%;
-    background: white;
-    color: red;
+    background: red;
+    color: white;
     font-weight: bold;
     padding: 5px 10px;
     aspect-ratio: 1 / 1;
 
     &:hover {
-        background: red !important;
-        color: white !important;
+        background: transparent !important;
+        color: red;
     }
 }
 

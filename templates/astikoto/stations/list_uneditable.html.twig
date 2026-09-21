@@ -1,0 +1,95 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Stations de lavage{% endblock %}
+
+{% block body %}
+    <div class="list-container">
+        <div id="astikoto-stations-uneditable-results" class="table-wrapper" data-list-results-container="1">
+            <table class="centres-list">
+                <thead>
+                <tr>
+                    <th>Société</th>
+                    <th>Enseigne</th>
+                    <th>Adresse</th>
+                    <th>CP</th>
+                    <th>Ville</th>
+                    <th>Téléphone</th>
+                    <th>Email</th>
+                    <th>Site web</th>
+                    <th>SIRET</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for station in stations %}
+                    <tr>
+                        <td>{{ station.societe.nom }}</td>
+                        <td>{{ station.reseauNom }}</td>
+                        <td>{{ station.coordonnees }}</td>
+                        <td>{{ station.cp }}</td>
+                        <td>{{ station.ville }}</td>
+                        <td>{{ station.telephone }}</td>
+                        <td>{{ station.email }}</td>
+                        <td>{{ station.siteWeb }}</td>
+                        <td>{{ station.numSiret }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+
+        <div class="filters-print-actions">
+            {% if is_granted('ROLE_ASTIKOTO') %}
+                <a href="{{ path('app_stations_add') }}" class="btn-link add">Ajouter</a>
+            {% endif %}
+
+            {% if is_granted('ROLE_ASTIKOTO') %}
+                <a href="{{ path('app_stations_list') }}" class="btn-link edit">Modifier</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% set errorsMessages = app.flashes('error') %}
+    {% if errorsMessages is not empty %}
+        <div id="modal" class="modal-overlay" data-controller="modals" data-modals-target="overlay">
+            <div class="modal error-modal" data-modals-target="modal">
+                <h3>Erreurs détectées</h3>
+                <ul>
+                    {% for error in errorsMessages %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+
+    {% set successMessages = app.flashes('success') %}
+    {% if successMessages is not empty %}
+        <div id="modal" class="modal-overlay" data-controller="modals" data-modals-target="overlay">
+            <div class="modal success-modal" data-modals-target="modal">
+                <h2>Succès</h2>
+
+                {% for message in successMessages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+
+                <button id="close-modal" data-action="click->modals#hide">OK</button>
+            </div>
+        </div>
+    {% endif %}
+
+    {% set warningMessages = app.flashes('warning') %}
+    {% if warningMessages is not empty %}
+        <div id="modal" class="modal-overlay" data-controller="modals" data-modals-target="overlay">
+            <div class="modal error-modal" data-modals-target="modal">
+                <h2>Attention</h2>
+
+                {% for message in warningMessages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+
+                <button id="close-modal" data-action="click->modals#hide">OK</button>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

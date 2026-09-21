@@ -1,0 +1,106 @@
+{% include 'astikoto/stations/releve/_summary_readonly.html.twig' %}
+
+<div class="pro-stats-panel releves-panels">
+    <div class="stats-wrapper">
+        <div class="stats-panel">
+            <h2 class="releve-title">Station</h2>
+            <div class="releve-table-wrapper">
+                <table class="releve-table">
+                    <thead>
+                        <tr>
+                            <th>Équipement</th>
+                            <th>CB</th>
+                            <th>Esp.</th>
+                            <th>Chq</th>
+                            <th>Jetons</th>
+                            <th>BL</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for group, rows in {portiques: equipements.portiques, bornes: equipements.bornes} %}
+                            {% for row in rows %}
+                                <tr>
+                                    <td class="releve-item">{{ row.libelle }}</td>
+                                    <td>{{ row.releve.cb|number_format(2, ',', ' ') }} €</td>
+                                    <td>{{ row.releve.especes|number_format(2, ',', ' ') }} €</td>
+                                    <td>{{ row.releve.cheque|number_format(2, ',', ' ') }} €</td>
+                                    <td>{{ row.releve.jetons }}</td>
+                                    <td>{{ row.releve.bl|number_format(2, ',', ' ') }} €</td>
+                                    <td>{{ attribute(releveTotals.equipmentLines, row.formIndex)|money }}</td>
+                                </tr>
+                            {% endfor %}
+                            <tr class="total-row recap">
+                                <th class="releve-item">Sous-total {{ group }}</th>
+                                {% set groupTotals = attribute(releveTotals, group) %}
+                                <th>{{ groupTotals.cb|money }}</th>
+                                <th>{{ groupTotals.especes|money }}</th>
+                                <th>{{ groupTotals.cheque|money }}</th>
+                                <th>{{ groupTotals.jetons }}</th>
+                                <th>{{ groupTotals.bl|money }}</th>
+                                <th>{{ groupTotals.total|money }}</th>
+                            </tr>
+                        {% endfor %}
+
+                        {% for row in equipements.bornes %}
+                            {% set totalBorne =
+                                row.totalBorne('cb')
+                                + row.totalBorne('especes')
+                                + row.totalBorne('cheque')
+                                + row.totalBorne('bl')
+                            %}
+                            <tr class="total-row recap">
+                                <th class="releve-item">Total {{ row.libelle }}</th>
+                                <td>{{ row.totalBorne('cb')|number_format(2, ',', ' ') }} €</td>
+                                <td>{{ row.totalBorne('especes')|number_format(2, ',', ' ') }} €</td>
+                                <td>{{ row.totalBorne('cheque')|number_format(2, ',', ' ') }} €</td>
+                                <td>{{ row.totalBorne('jetons') }}</td>
+                                <td>{{ row.totalBorne('bl')|number_format(2, ',', ' ') }} €</td>
+                                <th>{{ (totalBorne * 100)|round|money }}</th>
+                            </tr>
+                        {% endfor %}
+
+                        {% for row in equipements.autres %}
+                            <tr>
+                                <td class="releve-item">{{ row.libelle }}</td>
+                                <td>{{ row.releve.cb|number_format(2, ',', ' ') }} €</td>
+                                <td>{{ row.releve.especes|number_format(2, ',', ' ') }} €</td>
+                                <td>{{ row.releve.cheque|number_format(2, ',', ' ') }} €</td>
+                                <td>{{ row.releve.jetons }}</td>
+                                <td>{{ row.releve.bl|number_format(2, ',', ' ') }} €</td>
+                                <td>{{ attribute(releveTotals.equipmentLines, row.formIndex)|money }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="calendar-total-row">
+                            <th>TOTAL</th>
+                            <th>{{ releveTotals.equipements.cb|money }}</th>
+                            <th>{{ releveTotals.equipements.especes|money }}</th>
+                            <th>{{ releveTotals.equipements.cheque|money }}</th>
+                            <th>{{ releveTotals.equipements.jetons }}</th>
+                            <th>{{ releveTotals.equipements.bl|money }}</th>
+                            <th>{{ releveTotals.equipements.total|money }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% include 'astikoto/stations/releve/_readonly_lines.html.twig' with {
+        title: 'Produits',
+        lines: releve.relevesProduits,
+        nameProperty: 'designation',
+        fields: {cb: 'CB', especes: 'Esp.', cheque: 'Chq', bl: 'BL'},
+        totals: releveTotals.produits
+    } only %}
+
+    {% include 'astikoto/stations/releve/_readonly_lines.html.twig' with {
+        title: 'Prestations',
+        lines: releve.relevesPrestations,
+        nameProperty: 'nom',
+        fields: {cb: 'CB', especes: 'Esp.', cheque: 'Chq', enCompte: 'En cpt', contrat: 'Contrat'},
+        totals: releveTotals.prestations
+    } only %}
+</div>

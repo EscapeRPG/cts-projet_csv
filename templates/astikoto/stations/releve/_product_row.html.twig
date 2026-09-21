@@ -1,0 +1,26 @@
+<tr data-revenue-row data-revenue-section="produits">
+    <td>
+        {{ form_widget(row.designation) }}
+    </td>
+
+    {% for name in ['cb', 'especes', 'cheque', 'bl'] %}
+        <td>
+            {{ form_widget(attribute(row, name), {
+                attr: {'data-revenue-input': name}
+            }) }}
+        </td>
+    {% endfor %}
+
+    <td data-row-total>{{ totalCents|default(0)|money }}</td>
+
+    <td class="releve-row-action">
+        <button
+            type="button"
+            class="delete"
+            data-remove-releve-row
+            aria-label="Supprimer ce produit"
+        >
+            x
+        </button>
+    </td>
+</tr>

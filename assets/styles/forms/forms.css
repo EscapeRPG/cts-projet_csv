@@ -412,16 +412,18 @@ button {
 }
 
 /* Encours: montants list */
-[data-encours-montants] [data-montants-list] {
+[data-encours-montants] [data-montants-list],
+[data-equipements-list] {
     display: flex;
     flex-direction: column;
     gap: 10px;
     width: 100%;
 }
 
-[data-encours-montants] .encours-montant-item {
+[data-encours-montants] .encours-montant-item,
+[data-equipements-list] .equipement-row {
     padding: 5px 10px;
-    border: 1px solid var(--cts-main-light);
+    border: 1px solid var(--cts-main);
     border-radius: 10px;
 
     div {
@@ -436,12 +438,16 @@ button {
             display: flex;
             flex-direction: row;
             align-items: center;
-
-            input {
-                flex: 1;
-            }
         }
     }
+}
+
+[data-add-equipement] {
+    margin: 20px;
+}
+
+[data-encours-montants] .encours-montant-item div div input {
+        flex: 1;
 }
 
 [data-encours-montants] .encours-montant-item > button[data-remove-montant] {

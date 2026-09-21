@@ -1,0 +1,38 @@
+<div class="pro-stats-panel">
+    <div class="summary releve-summary-panel">
+        <div class="ca-summary">
+            <span class="panel-tools-title">CA du jour</span>
+            <strong>{{ releveTotals.caJourCents|money }}</strong>
+            <span class="panel-tools-title">Cumul HT</span>
+            <strong>{{ (releveTotals.caJourCents / 1.2)|money }}</strong>
+        </div>
+    </div>
+
+    <div class="summary releve-summary-panel">
+        <div class="ca-summary">
+            <span class="panel-tools-title">CA du mois</span>
+            <strong>{{ monthlyRevenueCents|money }}</strong>
+
+            <div class="previous">
+                {% for comparison in monthlyComparisons %}
+                    <div class="row">
+                        <strong>{{ comparison.year }}</strong>
+                        {{ comparison.revenueCents|money }}
+
+                        {% if comparison.evolution is null %}
+                            <div>—</div>
+                        {% else %}
+                            <div class="{{ comparison.evolution < 0 ? 'decreased' : 'increased' }}">
+                                {{ comparison.evolution|number_format(2, ',', ' ') }} %
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="releve-commentaire">
+        <p>{{ releve.commentaire ? releve.commentaire|nl2br : 'Aucun commentaire' }}</p>
+    </div>
+</div>

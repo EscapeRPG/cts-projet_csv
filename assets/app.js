@@ -8,3 +8,8 @@ import './stimulus_bootstrap.js';
 import './styles/app.css';
 import './js/filters.js';
 import './js/clients_pros.js';
+import './js/stations/station_equipements_form.js';
+import './js/stations/calendar.js';
+import './js/stations/releve_bornes.js';
+import './js/stations/releve_collections.js';
+import './js/stations/releve_submission.js';

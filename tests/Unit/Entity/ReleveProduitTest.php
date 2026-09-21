@@ -83,7 +83,7 @@ final class ReleveProduitTest extends TestCase
     #[DataProvider('zeroValueProvider')]
     public function testDecimalZeroFormatsAreConsideredEmpty(string $zero): void
     {
-        $ligne = (new ReleveProduit())
+        $ligne = new ReleveProduit()
             ->setDesignation('   ')
             ->setCb($zero)
             ->setEspeces($zero)

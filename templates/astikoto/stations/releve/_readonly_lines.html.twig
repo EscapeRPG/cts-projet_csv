@@ -1,0 +1,56 @@
+<div class="stats-wrapper">
+    <div class="stats-panel">
+        <h2 class="releve-title">{{ title }}</h2>
+
+        <div class="releve-table-wrapper">
+            <table class="releve-table">
+                <thead>
+                    <tr>
+                        <th>
+                            {{ title == 'Produits' ? 'Détail / Référence' : 'Nom / Facture' }}
+                        </th>
+
+                        {% for label in fields %}
+                            <th>{{ label }}</th>
+                        {% endfor %}
+
+                        <th>Total</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for line in lines %}
+                        {% set lineTotal = 0 %}
+
+                        <tr>
+                            <td class="releve-item">
+                                {{ attribute(line, nameProperty) }}
+                            </td>
+
+                            {% for name in fields|keys %}
+                                {% set value = attribute(line, name) %}
+                                {% set lineTotal = lineTotal + value %}
+
+                                <td>{{ value|number_format(2, ',', ' ') }} €</td>
+                            {% endfor %}
+
+                            <td>{{ (lineTotal * 100)|round|money }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+
+                <tfoot>
+                    <tr class="calendar-total-row">
+                        <th>TOTAL</th>
+
+                        {% for name in fields|keys %}
+                            <th>{{ attribute(totals, name)|money }}</th>
+                        {% endfor %}
+
+                        <th>{{ totals.total|money }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
