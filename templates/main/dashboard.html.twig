@@ -3,8 +3,6 @@
 {% block title %}Tableau de bord{% endblock %}
 
 {% block body %}
-    <h2>Bonjour {{ user.username }}, bienvenue sur votre tableau de bord.</h2>
-
     {% if is_granted('ROLE_CTS') %}
         <div class="entreprise">
             <img src="{{ asset('img/logo-cts.png') }}" alt="cts">

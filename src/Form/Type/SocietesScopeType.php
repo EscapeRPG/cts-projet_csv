@@ -4,7 +4,6 @@ namespace App\Form\Type;
 
 use App\Entity\Centre;
 use App\Entity\Societe;
-use App\Enum\TypeCentre;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -13,8 +12,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * Selectlike-compatible scope selector:
- * - each Societe is a selectable option (value = societe id)
- * - its Centres are shown as disabled options for context (value = "centre:<id>")
+ * - each Societe is represented by a selectable group (value = "societe:<id>")
+ * - all its technical-control and car-wash Centres can be selected (value = "centre:<id>")
  *
  * This keeps the exact selectlike UX (optgroup titles + toggles) that was used for centres,
  * while allowing selecting societes even when they have no centre.
@@ -41,8 +40,6 @@ final class SocietesScopeType extends AbstractType
                 $societes = $this->em->getRepository(Societe::class)
                     ->createQueryBuilder('s')
                     ->leftJoin('s.centre', 'c')
-                    ->andWhere('c.type = :centreType OR c.id IS NULL')
-                    ->setParameter('centreType', TypeCentre::CONTROLE_TECHNIQUE)
                     ->addSelect('c')
                     ->orderBy('s.nom', 'ASC')
                     ->addOrderBy('c.ville', 'ASC')
@@ -69,10 +66,6 @@ final class SocietesScopeType extends AbstractType
                         if (!$centre instanceof Centre) {
                             continue;
                         }
-                        if (!$centre->isControleTechnique()) {
-                            continue;
-                        }
-
                         $reseau = trim((string) ($centre->getReseauNom() ?? ''));
                         $ville = trim((string) ($centre->getVille() ?? ''));
                         $agr = trim((string) ($centre->getAgrCentre() ?? ''));

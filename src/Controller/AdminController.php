@@ -375,7 +375,7 @@ final class AdminController extends AbstractController
             ];
         }
 
-        if ($listPerms === []) {
+        if (in_array('ROLE_CTS', $entreprises, true) && $listPerms === []) {
             return [
                 'roles' => [],
                 'listPerms' => $listPerms,

@@ -38,6 +38,14 @@
                         </a>
                     </li>
                 </ul>
+            {% else %}
+                <ul class="profil">
+                    <li>
+                        <a href="{{ path('app_login') }}">
+                            → Se connecter
+                        </a>
+                    </li>
+                </ul>
             {% endif %}
 
             {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_ORGANIGRAM_VIEW') or is_granted('ROLE_ENCOURS_VIEW') %}
@@ -271,55 +279,47 @@
                         </a>
                     </li>
                 </ul>
+            {% endif %}
 
-                {% if is_granted('ROLE_ASTIKOTO') %}
-                    <h2>ASTIKOTO</h2>
+            {% if is_granted('ROLE_ASTIKOTO') %}
+                <h2>ASTIKOTO</h2>
 
-                    <h3 class="toggle">
+                <h3 class="toggle">
                     <span class="toggle-title">
                         {{ include('partials/svg/stations.html.twig') }}
                         Stations
                     </span>
-                        <span class="open-btn">></span>
-                    </h3>
-                    <ul class="menu">
-                        <li>
-                            <a href="{{ path('app_stations_list_uneditable') }}">
-                                → Liste des stations
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ path('app_stations_add') }}">
-                                → Ajout  de station
-                            </a>
-                        </li>
-                    </ul>
+                    <span class="open-btn">></span>
+                </h3>
+                <ul class="menu">
+                    <li>
+                        <a href="{{ path('app_stations_list_uneditable') }}">
+                            → Liste des stations
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_stations_add') }}">
+                            → Ajout de station
+                        </a>
+                    </li>
+                </ul>
 
-                    <h3 class="toggle">
+                <h3 class="toggle">
                     <span class="toggle-title">
                         {{ include('partials/svg/activite.html.twig') }}
                         Activité
                     </span>
-                        <span class="open-btn">></span>
-                    </h3>
-                    <ul class="menu">
-                        <li>
-                            <a href="{{ path('app_station_detail') }}">
-                                → Relevés journaliers
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ path('astikoto_import_csv') }}">
-                                → Import de fichier
-                            </a>
-                        </li>
-                    </ul>
-                {% endif %}
-            {% else %}
-                <ul class="profil">
+                    <span class="open-btn">></span>
+                </h3>
+                <ul class="menu">
                     <li>
-                        <a href="{{ path('app_login') }}">
-                            → Se connecter
+                        <a href="{{ path('app_station_detail') }}">
+                            → Relevés journaliers
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('astikoto_import_csv') }}">
+                            → Import de fichier
                         </a>
                     </li>
                 </ul>

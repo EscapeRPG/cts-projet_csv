@@ -67,7 +67,7 @@ final class UserController extends AbstractController
 
         if (in_array('ROLE_ADMIN', $user->getRoles(), true)|| in_array('ROLE_DEV', $user->getRoles(), true)) {
             $notification = new Notification();
-            $notification->setExpiresAt((new \DateTimeImmutable('+7 days'))->setTime(23, 59, 59));
+            $notification->setExpiresAt(new \DateTimeImmutable('+7 days')->setTime(23, 59, 59));
 
             $form = $this->createForm(CreateNotificationType::class, $notification, [
                 'attr' => ['data-turbo' => 'false'],
