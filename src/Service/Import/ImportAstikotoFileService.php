@@ -9,7 +9,7 @@ use Doctrine\DBAL\Exception;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
- * Imports internal Astikoto sales exported by portiques 4 and 5.
+ * Imports internal Astikoto sales exported by numbered portiques.
  */
 final class ImportAstikotoFileService extends AbstractCsvImportService
 {
@@ -187,9 +187,9 @@ final class ImportAstikotoFileService extends AbstractCsvImportService
 
     private function extractPortiqueNumber(string $filename): int
     {
-        if (preg_match('/\bportique\s+([45])\b/i', $filename, $matches) !== 1) {
+        if (preg_match('/\bportique[\s_-]+(\d+)\b/i', $filename, $matches) !== 1) {
             throw new \RuntimeException(sprintf(
-                'Numéro de portique 4 ou 5 introuvable dans le nom du fichier « %s ».',
+                'Numéro de portique introuvable dans le nom du fichier « %s ».',
                 $filename
             ));
         }

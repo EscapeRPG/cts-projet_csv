@@ -109,6 +109,22 @@ class CreateCentreType extends AbstractType
                     new Regex(pattern: '/^((0[1-9])|(\+33))[ .-]?((?:[ .-]?\d{2}){4}|\d{8})$/', message: "Le numéro de téléphone doit commencer par 0 ou +33."),
                 ]
             ])
+            ->add('autreTelephone', TextType::class, [
+                'label' => 'Téléphone 2 : ',
+                'required' => false,
+                'empty_data' => null,
+                'constraints' => [
+                    new Regex(pattern: '/^((0[1-9])|(\+33))[ .-]?((?:[ .-]?\d{2}){4}|\d{8})$/', message: "Le numéro de téléphone doit commencer par 0 ou +33."),
+                ]
+            ])
+            ->add('callCenter', TextType::class, [
+                'label' => 'Call center : ',
+                'required' => false,
+                'empty_data' => null,
+                'constraints' => [
+                    new Regex(pattern: '/^((0[1-9])|(\+33))[ .-]?((?:[ .-]?\d{2}){4}|\d{8})$/', message: "Le numéro de téléphone doit commencer par 0 ou +33."),
+                ]
+            ])
             ->add('email', EmailType::class, [
                 'label' => 'Email : ',
                 'required' => false,

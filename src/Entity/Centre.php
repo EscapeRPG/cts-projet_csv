@@ -85,7 +85,7 @@ class Centre
     /**
      * @var Collection<int, EquipementStation>
      */
-    #[ORM\OneToMany(targetEntity: EquipementStation::class, mappedBy: 'centre')]
+    #[ORM\OneToMany(targetEntity: EquipementStation::class, mappedBy: 'centre', cascade: ['persist'])]
     private Collection $equipementsStation;
 
     /**
@@ -93,6 +93,12 @@ class Centre
      */
     #[ORM\OneToMany(targetEntity: ReleveJournalier::class, mappedBy: 'centre')]
     private Collection $relevesJournaliers;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $autreTelephone = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $callCenter = null;
 
     public function __construct()
     {
@@ -433,6 +439,30 @@ class Centre
                 $releveJournalier->setCentre(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getAutreTelephone(): ?string
+    {
+        return $this->autreTelephone;
+    }
+
+    public function setAutreTelephone(?string $autreTelephone): static
+    {
+        $this->autreTelephone = $autreTelephone;
+
+        return $this;
+    }
+
+    public function getCallCenter(): ?string
+    {
+        return $this->callCenter;
+    }
+
+    public function setCallCenter(?string $callCenter): static
+    {
+        $this->callCenter = $callCenter;
 
         return $this;
     }

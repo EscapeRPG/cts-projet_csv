@@ -9,6 +9,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 use Twig\TwigFunction;
+use Twig\TwigFilter;
 
 /**
  * Exposes application-level Twig globals.
@@ -31,6 +32,16 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
         return [
             new TwigFunction('notification_display_message', $this->getNotificationDisplayMessage(...)),
         ];
+    }
+
+    public function getFilters(): array
+    {
+        return [new TwigFilter('money', $this->formatMoney(...))];
+    }
+
+    public function formatMoney(int $cents): string
+    {
+        return number_format($cents / 100, 2, ',', ' ').' €';
     }
 
     /**

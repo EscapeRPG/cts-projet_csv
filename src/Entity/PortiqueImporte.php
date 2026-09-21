@@ -2,11 +2,11 @@
 
 namespace App\Entity;
 
-use App\Repository\PortiqueRepository;
+use App\Repository\PortiqueImporteRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: PortiqueRepository::class)]
+#[ORM\Entity(repositoryClass: PortiqueImporteRepository::class)]
 class PortiqueImporte
 {
     #[ORM\Id]

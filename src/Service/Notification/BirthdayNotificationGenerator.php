@@ -239,7 +239,7 @@ final class BirthdayNotificationGenerator
     }
 
     /**
-     * Mirrors ListsController::getCurrentUserCentreScopeIds(), but for an arbitrary user entity.
+     * Mirrors ScopeResolver::centreIds(), but for an arbitrary user entity.
      *
      * @return list<int>|null Null means unrestricted (ROLE_ADMIN).
      */

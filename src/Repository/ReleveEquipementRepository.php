@@ -2,7 +2,9 @@
 
 namespace App\Repository;
 
+use App\Entity\Centre;
 use App\Entity\ReleveEquipement;
+use App\Utils\MoneyToCents;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +18,39 @@ class ReleveEquipementRepository extends ServiceEntityRepository
         parent::__construct($registry, ReleveEquipement::class);
     }
 
-    //    /**
-    //     * @return ReleveEquipement[] Returns an array of ReleveEquipement objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('r')
-    //            ->andWhere('r.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('r.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Retourne le chiffre d'affaires des équipements, en centimes, pour une
+     * période semi-ouverte : date >= $from et date < $until.
+     */
+    public function sumRevenueForPeriod(
+        Centre $station,
+        \DateTimeImmutable $from,
+        \DateTimeImmutable $until,
+    ): int
+    {
+        if ($until <= $from) {
+            throw new \InvalidArgumentException('La fin de période doit être postérieure au début.');
+        }
 
-    //    public function findOneBySomeField($value): ?ReleveEquipement
-    //    {
-    //        return $this->createQueryBuilder('r')
-    //            ->andWhere('r.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        /** @var array{cb: string|int, especes: string|int, cheque: string|int, bl: string|int} $totals */
+        $totals = $this->createQueryBuilder('ligne')
+            ->select('COALESCE(SUM(ligne.cb), 0) AS cb')
+            ->addSelect('COALESCE(SUM(ligne.especes), 0) AS especes')
+            ->addSelect('COALESCE(SUM(ligne.cheque), 0) AS cheque')
+            ->addSelect('COALESCE(SUM(ligne.bl), 0) AS bl')
+            ->innerJoin('ligne.releveJournalier', 'releve')
+            ->andWhere('releve.centre = :station')
+            ->andWhere('releve.dateReleve >= :from')
+            ->andWhere('releve.dateReleve < :until')
+            ->setParameter('station', $station)
+            ->setParameter('from', $from)
+            ->setParameter('until', $until)
+            ->getQuery()
+            ->getSingleResult();
+
+        return MoneyToCents::moneyToCents((string) $totals['cb'])
+            + MoneyToCents::moneyToCents((string) $totals['especes'])
+            + MoneyToCents::moneyToCents((string) $totals['cheque'])
+            + MoneyToCents::moneyToCents((string) $totals['bl']);
+    }
 }
