@@ -1,0 +1,47 @@
+<div class="centres-pros-wrapper" data-station-results>
+    <div class="pro-stats-container" style="max-height: unset">
+        {% if selectedStation == null %}
+            <div class="centre-detail-alert">
+                <p>Veuillez sélectionner une station pour consulter les détails.</p>
+            </div>
+        {% else %}
+            <div
+                data-station-calendar
+                data-station-id="{{ selectedStation.id }}"
+                data-selected-date="{{ selectedDate|date('Y-m-d') }}"
+                data-details-url="{{ path('app_station_releves_day') }}"
+                class="pro-stats-panel"
+            >
+                <div class="stats-wrapper calendar-wrapper">
+                    <div class="calendar">
+                        <div class="calendar-year-month">
+                            <div class="year-selector">
+                                <button id="prevYear">&lt;</button>
+                                <span id="yearDisplay"></span>
+                                <button id="nextYear">&gt;</button>
+                            </div>
+
+                            <div class="month-selector">
+                                <button id="prevMonth">&lt;</button>
+                                <span id="monthDisplay"></span>
+                                <button id="nextMonth">&gt;</button>
+                            </div>
+
+                            <button id="backToday">← Aujourd'hui</button>
+                        </div>
+
+                        <div class="calendar-days">
+                            <button id="prevDay" class="scroll-btn">&lt;</button>
+                            <div id="daysContainer" class="days-container"></div>
+                            <button id="nextDay" class="scroll-btn">&gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div data-day-details aria-live="polite"></div>
+        {% endif %}
+    </div>
+
+    <div class="filters-print-actions" data-releve-page-actions></div>
+</div>

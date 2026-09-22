@@ -1,0 +1,160 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier une station de lavage{% endblock %}
+
+{% block body %}
+    {% set errors = [] %}
+
+    {% for error in form.vars.errors %}
+        {% set errors = errors|merge(['[Global] ' ~ error.message]) %}
+    {% endfor %}
+
+    {% for child in form %}
+        {% for error in child.vars.errors %}
+            {% set errors = errors|merge([child.vars.label ~ error.message]) %}
+        {% endfor %}
+
+        {% if child is iterable %}
+            {% for sub in child %}
+                {% for error in sub.vars.errors %}
+                    {% set errors = errors|merge([sub.vars.label ~ error.message]) %}
+                {% endfor %}
+
+                {% if sub is iterable %}
+                    {% for field in sub %}
+                        {% for error in field.vars.errors %}
+                            {% set errors = errors|merge([field.vars.label ~ error.message]) %}
+                        {% endfor %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+
+    {% if errors|length > 0 %}
+        <div class="alert alert-danger">
+            <ul>
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="form-wrapper">
+        <small class="required-inputs">Les champs marqués d'un * sont obligatoires.</small><br><br>
+
+        {{ form_start(form, {'attr': {'data-turbo': 'false'}}) }}
+
+        <div>
+            {{ form_label(form.societe) }}
+            {{ form_widget(form.societe, {'attr': {'class': 'reseau-uppercase'}}) }}
+        </div>
+
+        <div>
+            {{ form_label(form.reseau) }}
+            {{ form_widget(form.reseau, {'attr': {'class': 'reseau-uppercase'}}) }}
+        </div>
+
+        <div>
+            {{ form_label(form.reseauNom) }}
+            {{ form_widget(form.reseauNom) }}
+        </div>
+
+        <div>
+            {{ form_label(form.coordonnees) }}
+            {{ form_widget(form.coordonnees) }}
+        </div>
+
+        <div>
+            {{ form_label(form.cp) }}
+            {{ form_widget(form.cp) }}
+        </div>
+
+        <div>
+            {{ form_label(form.ville) }}
+            {{ form_widget(form.ville) }}
+        </div>
+
+        <div>
+            {{ form_label(form.telephone) }}
+            {{ form_widget(form.telephone) }}
+        </div>
+
+        <div>
+            {{ form_label(form.email) }}
+            {{ form_widget(form.email) }}
+        </div>
+
+        <div>
+            {{ form_label(form.mailPassword) }}
+            {{ form_widget(form.mailPassword) }}
+        </div>
+
+        <div>
+            {{ form_label(form.siteWeb) }}
+            {{ form_widget(form.siteWeb) }}
+        </div>
+
+        <div>
+            {{ form_label(form.numSiret) }}
+            {{ form_widget(form.numSiret) }}
+        </div>
+
+        <div>
+            {{ form_label(form.dateReprise) }}
+            {{ form_widget(form.dateReprise) }}
+        </div>
+
+        <small class="required-inputs right italic" style="width: 100%">(Format mm-aaaa)</small>
+
+        <fieldset class="app-category"
+                  data-equipements-collection
+                  data-index="{{ form.equipements|length }}"
+                  data-prototype="{{ form_widget(form.equipements.vars.prototype)|e('html_attr') }}"
+        >
+            <legend>Équipements</legend>
+
+            {{ form_errors(form.equipements) }}
+
+            <div data-equipements-list>
+                {% for index, equipementForm in form.equipements %}
+                    <div
+                        data-equipement-row
+                        data-index="{{ index }}"
+                        class="equipement-row"
+                    >
+                        <div>
+                        {{ form_widget(equipementForm.id) }}
+                        {{ form_row(equipementForm.libelle) }}
+                        {{ form_row(equipementForm.code) }}
+                        {{ form_row(equipementForm.categorie) }}
+
+                        <div data-portique-import-field>
+                            {{ form_row(equipementForm.numeroPortiqueImport) }}
+                        </div>
+
+                        <div data-portique-field>
+                            {{ form_row(equipementForm.portiqueTemporaire) }}
+                        </div>
+
+                        {{ form_row(equipementForm.isActive) }}
+                        </div>
+
+                        {% if equipementForm.id.vars.value is empty %}
+                            <button type="button" data-remove-equipement>-</button>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button type="button" data-add-equipement>+ Ajouter un équipement</button>
+        </fieldset>
+
+        {% do form.equipements.setRendered %}
+
+        {{ form_rest(form) }}
+        <button type="submit">Enregistrer</button>
+        {{ form_end(form, { render_rest: false }) }}
+    </div>
+{% endblock %}

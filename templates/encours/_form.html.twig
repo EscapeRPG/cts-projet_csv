@@ -21,8 +21,10 @@
             <div data-montants-list>
                 {% for row in form.montants %}
                     <div data-montant-row class="encours-montant-item">
+                        <div>
                         {{ form_row(row.annee) }}
                         {{ form_row(row.montant) }}
+                        </div>
                         <button type="button" data-remove-montant aria-label="Supprimer">-</button>
                     </div>
                 {% endfor %}

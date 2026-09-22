@@ -185,11 +185,11 @@ final class AdminController extends AbstractController
      */
     #[Route('/admin/users/edit/{id}', name: 'app_users_edit', requirements: ['id' => '\d+'])]
     public function editUser(
-        Request $request,
-        User $user,
+        Request                $request,
+        User                   $user,
         EntityManagerInterface $em,
-        SocieteRepository $societeRepository,
-        CentreRepository $centreRepository
+        SocieteRepository      $societeRepository,
+        CentreRepository       $centreRepository
     ): Response
     {
         $form = $this->createForm(CreateUserType::class, $user, [
@@ -282,8 +282,8 @@ final class AdminController extends AbstractController
         $form->get('organigrammes')->setData(self::intersectRoles($currentRoles, self::ROLE_ORGANIGRAM_BASE));
         $form->get('encours')->setData(self::intersectRoles($currentRoles, self::ROLE_ENCOURS));
 
-        $hasAnyOrgScope = (bool) array_intersect($currentRoles, self::ROLE_ORGANIGRAM_SCOPES);
-        $hasOrgBase = (bool) array_intersect($currentRoles, self::ROLE_ORGANIGRAM_BASE);
+        $hasAnyOrgScope = (bool)array_intersect($currentRoles, self::ROLE_ORGANIGRAM_SCOPES);
+        $hasOrgBase = (bool)array_intersect($currentRoles, self::ROLE_ORGANIGRAM_BASE);
         if ($hasOrgBase && !$hasAnyOrgScope) {
             // Backward compatibility: old users with only ROLE_ORGANIGRAM_* base perms see all organigrams by default.
             $form->get('organigrammeStructurel')->setData(true);
@@ -302,7 +302,7 @@ final class AdminController extends AbstractController
      */
     private function computeRolesFromForm(FormInterface $form): array
     {
-        $isAdmin = (bool) $form->get('isAdmin')->getData();
+        $isAdmin = (bool)$form->get('isAdmin')->getData();
 
         /** @var array<int, string> $entreprises */
         $entreprises = $form->get('entreprises')->getData() ?? [];
@@ -319,9 +319,9 @@ final class AdminController extends AbstractController
         /** @var array<int, string> $encoursPerms */
         $encoursPerms = $form->get('encours')->getData() ?? [];
 
-        $orgStruct = (bool) $form->get('organigrammeStructurel')->getData();
-        $orgImmo = (bool) $form->get('organigrammeImmobilier')->getData();
-        $orgHier = (bool) $form->get('organigrammeHierarchique')->getData();
+        $orgStruct = (bool)$form->get('organigrammeStructurel')->getData();
+        $orgImmo = (bool)$form->get('organigrammeImmobilier')->getData();
+        $orgHier = (bool)$form->get('organigrammeHierarchique')->getData();
 
         $roles = [];
         if ($isAdmin) {
@@ -356,14 +356,14 @@ final class AdminController extends AbstractController
 
         // If add permission is granted, ensure the corresponding view permission is also present.
         foreach ($roles as $role) {
-            $addRole = (string) $role;
+            $addRole = (string)$role;
             $viewRole = self::ADD_TO_VIEW[$addRole] ?? null;
             if (is_string($viewRole)) {
                 $roles[] = $viewRole;
             }
         }
 
-        $roles = array_values(array_unique(array_filter($roles, static fn (string $r): bool => $r !== 'ROLE_USER')));
+        $roles = array_values(array_unique(array_filter($roles, static fn(string $r): bool => $r !== 'ROLE_USER')));
 
         if ($entreprises === []) {
             return [

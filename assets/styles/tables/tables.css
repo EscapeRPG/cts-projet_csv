@@ -281,3 +281,18 @@ tbody tr:not(.recap):hover td {
 .users-list td {
     vertical-align: middle;
 }
+
+a.info-link {
+    color: var(--text);
+    text-decoration: none;
+    background: none;
+    padding: 2px 5px;
+    border: 2px solid var(--text);
+    border-radius: 50%;
+    transition: all .5s;
+}
+
+a.info-link:hover {
+    color: var(--cts-main);
+    border-color: var(--cts-main);
+}

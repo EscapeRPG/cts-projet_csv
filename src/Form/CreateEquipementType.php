@@ -9,6 +9,7 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -18,6 +19,7 @@ final class CreateEquipementType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->add('id', HiddenType::class)
             ->add('libelle', TextType::class, [
                 'label' => '*Nom :',
                 'required' => true,
@@ -44,7 +46,7 @@ final class CreateEquipementType extends AbstractType
                 'label' => 'Portique associé :',
                 'required' => false,
                 'placeholder' => '- Aucun portique -',
-                'choices' => [],
+                'choices' => $options['portique_choices'],
             ])
             ->add('isActive', CheckboxType::class, [
                 'label' => 'Actif ?',
@@ -60,6 +62,9 @@ final class CreateEquipementType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => CreateEquipementDTO::class,
+            'portique_choices' => [],
         ]);
+
+        $resolver->setAllowedTypes('portique_choices', 'array');
     }
 }

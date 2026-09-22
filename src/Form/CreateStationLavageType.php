@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Centre;
+use App\Form\Model\CreateEquipementDTO;
 use App\Entity\Reseau;
 use App\Entity\Societe;
 use App\Enum\CategorieEquipement;
@@ -25,6 +26,47 @@ class CreateStationLavageType extends AbstractType
     {
         /** @var list<int>|null $centreScopeIds */
         $centreScopeIds = $options['centre_scope_ids'];
+
+        /** @var Centre|null $station */
+        $station = $builder->getData();
+        $equipementsData = [];
+        $indexesById = [];
+
+        if ($station?->getId() !== null) {
+            foreach ($station->getEquipementsStation() as $equipement) {
+                $index = count($equipementsData);
+                $dto = new CreateEquipementDTO();
+                $dto->id = $equipement->getId() !== null ? (string) $equipement->getId() : null;
+                $dto->code = $equipement->getCode();
+                $dto->libelle = $equipement->getLibelle();
+                $dto->categorie = $equipement->getCategorie();
+                $dto->isActive = $equipement->isActive();
+                $dto->numeroPortiqueImport = $equipement->getNumeroPortiqueImport();
+                $equipementsData[] = $dto;
+
+                if ($equipement->getId() !== null) {
+                    $indexesById[$equipement->getId()] = (string) $index;
+                }
+            }
+
+            foreach ($station->getEquipementsStation() as $equipement) {
+                $index = $indexesById[$equipement->getId()] ?? null;
+                if ($index === null) {
+                    continue;
+                }
+                $portiqueId = $equipement->getPortiqueAssocie()?->getId();
+                $equipementsData[$index]->portiqueTemporaire = $portiqueId !== null
+                    ? ($indexesById[$portiqueId] ?? null)
+                    : null;
+            }
+        }
+
+        $portiqueChoices = [];
+        foreach ($equipementsData as $index => $dto) {
+            if ($dto->categorie === CategorieEquipement::PORTIQUE) {
+                $portiqueChoices[sprintf('%s [%s]', $dto->libelle, $index)] = (string) $index;
+            }
+        }
 
         $builder
             ->add('societe', EntityType::class, [
@@ -134,6 +176,8 @@ class CreateStationLavageType extends AbstractType
         $equipements = $builder->create('equipements', CollectionType::class, [
             'entry_type' => CreateEquipementType::class,
             'mapped' => false,
+            'data' => $equipementsData,
+            'entry_options' => ['portique_choices' => $portiqueChoices],
             'allow_add' => true,
             'allow_delete' => true,
             'prototype' => true,

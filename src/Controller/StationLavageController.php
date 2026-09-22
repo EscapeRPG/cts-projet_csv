@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\EquipementStation;
+use App\Entity\Centre;
 use App\Enum\TypeCentre;
 use App\Form\CreateStationLavageType;
 use App\Repository\SocieteRepository;
@@ -123,7 +124,7 @@ final class StationLavageController extends AbstractController
 
             $this->addFlash('success', 'Station créée.');
 
-            return $this->redirectToRoute('app_stations_list');
+            return $this->redirectToRoute('app_stations_list_uneditable');
         }
 
         return $this->render('astikoto/stations/add.html.twig', [
@@ -167,7 +168,7 @@ final class StationLavageController extends AbstractController
             $stations,
             $payload,
             fn($station, array $fields): array => $centreRowUpdater->updateStation($station, $fields, $societeIds),
-            static fn($station): string => (string) $station->getNom(),
+            static fn($station): string => (string)$station->getNom(),
         );
 
         if ($result->errors !== []) {
@@ -192,6 +193,105 @@ final class StationLavageController extends AbstractController
 
         return $this->redirectToRoute('app_stations_list_uneditable', [
             'q' => $request->query->get('q'),
+        ]);
+    }
+
+    #[Route("/astikoto/stations/details/{id}", name: 'app_station_details', methods: ['GET'])]
+    public function detailsStation(
+        Centre $station
+    ): Response
+    {
+        return $this->render('astikoto/stations/station_details.html.twig', [
+            'station' => $station,
+        ]);
+    }
+
+    #[Route("/astikoto/stations/edit/{id}", name: 'app_station_edit', methods: ['GET', 'POST'])]
+    public function editStation(
+        Request $request,
+        StationLavageRepository $repository,
+        int $id,
+        EntityManagerInterface $em
+    ): Response
+    {
+        $centreIds = $this->scopeResolver->centreIds(TypeCentre::STATION_LAVAGE);
+        $station = $repository->findOneStationInScope($id, $centreIds);
+
+        if ($station === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $form = $this->createForm(CreateStationLavageType::class, $station, [
+            'centre_scope_ids' => $centreIds,
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $station = $form->getData();
+            $station->setType(TypeCentre::STATION_LAVAGE);
+
+            $equipementsExistants = [];
+            foreach ($station->getEquipementsStation() as $equipementExistant) {
+                if ($equipementExistant->getId() !== null) {
+                    $equipementsExistants[$equipementExistant->getId()] = $equipementExistant;
+                }
+            }
+
+            $equipements = [];
+            $donneesEquipements = [];
+
+            foreach ($form->get('equipements') as $index => $equipementForm) {
+                $data = $equipementForm->getData();
+
+                $equipement = $data->id !== null ? ($equipementsExistants[$data->id] ?? null) : null;
+                if ($data->id !== null && $equipement === null) {
+                    throw $this->createNotFoundException();
+                }
+
+                if ($equipement === null) {
+                    $equipement = new EquipementStation($station, $data->code, $data->libelle, $data->categorie);
+                    $station->addEquipementStation($equipement);
+                } else {
+                    $equipement->dissocierPortique();
+                    $equipement->setNumeroPortiqueImport(null);
+                    $equipement
+                        ->setCode($data->code)
+                        ->setLibelle($data->libelle)
+                        ->setCategorie($data->categorie);
+                }
+
+                $equipement->setIsActive($data->isActive);
+                $equipement->setNumeroPortiqueImport($data->numeroPortiqueImport);
+
+                $equipements[(string)$index] = $equipement;
+                $donneesEquipements[(string)$index] = $data;
+            }
+
+            foreach ($donneesEquipements as $index => $data) {
+                if ($data->portiqueTemporaire === null) {
+                    continue;
+                }
+
+                $portique = $equipements[$data->portiqueTemporaire] ?? null;
+
+                if ($portique === null) {
+                    throw new LogicException('Portique temporaire inexistant');
+                }
+
+                $equipements[$index]->associerPortique($portique);
+            }
+
+            $em->persist($station);
+            $em->flush();
+
+            $this->addFlash('success', 'Station mise à jour.');
+
+            return $this->redirectToRoute('app_station_details', ['id' => $station->getId()]);
+        }
+
+        return $this->render('astikoto/stations/station_edit.html.twig', [
+            'station' => $station,
+            'form' => $form->createView(),
         ]);
     }
 }

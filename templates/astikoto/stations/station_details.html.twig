@@ -4,48 +4,11 @@
 
 {% block body %}
     <div class="list-container">
-        <div id="astikoto-stations-uneditable-results" class="table-wrapper" data-list-results-container="1">
-            <table class="centres-list">
-                <thead>
-                <tr>
-                    <th>Société</th>
-                    <th>Enseigne</th>
-                    <th>Adresse</th>
-                    <th>CP</th>
-                    <th>Ville</th>
-                    <th>Téléphone</th>
-                    <th>Email</th>
-                    <th>Site web</th>
-                    <th>SIRET</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for station in stations %}
-                    <tr>
-                        <td>{{ station.societe.nom }}</td>
-                        <td>{{ station.reseauNom }}</td>
-                        <td>{{ station.coordonnees }}</td>
-                        <td>{{ station.cp }}</td>
-                        <td>{{ station.ville }}</td>
-                        <td>{{ station.telephone }}</td>
-                        <td>{{ station.email }}</td>
-                        <td>{{ station.siteWeb }}</td>
-                        <td>{{ station.numSiret }}</td>
-                        <td><a href="{{ path('app_station_details', { id: station.id }) }}" class="info-link">&#x2139;</a></td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        <p>{{ station.ville }}</p>
 
         <div class="filters-print-actions">
             {% if is_granted('ROLE_ASTIKOTO') %}
-                <a href="{{ path('app_stations_add') }}" class="btn-link add">Ajouter</a>
-            {% endif %}
-
-            {% if is_granted('ROLE_ASTIKOTO') %}
-                <a href="{{ path('app_stations_list') }}" class="btn-link edit">Modifier</a>
+                <a href="{{ path('app_station_edit', { id: station.id }) }}" class="btn-link edit">Modifier</a>
             {% endif %}
         </div>
     </div>

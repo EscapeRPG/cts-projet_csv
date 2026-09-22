@@ -262,7 +262,7 @@
         max-height: none;
     }
 
-    .stats-wrapper {
+    .stats-wrapper:not(.calendar-wrapper) {
         height: 250px;
     }
 

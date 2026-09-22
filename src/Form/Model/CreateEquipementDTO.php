@@ -8,6 +8,8 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class CreateEquipementDTO
 {
+    public ?string $id = null;
+
     #[Assert\NotBlank]
     #[Assert\Length(max: 50)]
     public ?string $code = null;

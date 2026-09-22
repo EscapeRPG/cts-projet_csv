@@ -195,4 +195,9 @@ class EquipementStation
 
         $this->portiqueAssocie = $portique;
     }
+
+    public function dissocierPortique(): void
+    {
+        $this->portiqueAssocie = null;
+    }
 }

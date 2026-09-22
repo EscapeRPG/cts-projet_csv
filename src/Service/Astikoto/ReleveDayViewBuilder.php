@@ -35,7 +35,7 @@ final readonly class ReleveDayViewBuilder
         $releve = $this->initializer->loadOrCreate($station, $date, $user);
         $dto = $this->mapper->toDTO($releve);
         $formOptions = [
-            'action' => $this->urlGenerator->generate('app_station_detail_day', [
+            'action' => $this->urlGenerator->generate('app_station_releves_day', [
                 'station' => $station->getId(),
                 'date' => $date->format('Y-m-d'),
             ]),
@@ -80,7 +80,7 @@ final readonly class ReleveDayViewBuilder
             'monthlyRevenueCents' => $current,
             'monthlyComparisons' => $comparisons,
             'editing' => !$releve->isValidated() || $request->query->getBoolean('edit'),
-            'editUrl' => $this->urlGenerator->generate('app_station_detail_day', [
+            'editUrl' => $this->urlGenerator->generate('app_station_releves_day', [
                 'station' => $station->getId(),
                 'date' => $date->format('Y-m-d'),
                 'edit' => 1,

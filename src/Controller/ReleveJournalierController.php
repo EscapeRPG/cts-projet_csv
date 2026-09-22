@@ -29,7 +29,7 @@ final class ReleveJournalierController extends AbstractController
      * @throws DateMalformedStringException
      * @throws Exception
      */
-    #[Route("/astikoto/stations/releves", name: 'app_station_detail')]
+    #[Route("/astikoto/stations/releves", name: 'app_station_releves')]
     public function detailsStations(
         Request                 $request,
         StationLavageRepository $repo,
@@ -57,18 +57,24 @@ final class ReleveJournalierController extends AbstractController
             throw $this->createNotFoundException(self::ERROR);
         }
 
-        return $this->render('astikoto/stations/details.html.twig', [
+        $viewData = [
             'stations' => $stations,
             'selectedStation' => $station,
             'selectedDate' => $selectedDate,
-        ]);
+        ];
+
+        if ($request->isXmlHttpRequest()) {
+            return $this->render('astikoto/stations/_station_results.html.twig', $viewData);
+        }
+
+        return $this->render('astikoto/stations/details.html.twig', $viewData);
     }
 
     /**
      * @throws DateMalformedStringException
      * @throws Exception
      */
-    #[Route('/astikoto/stations/releves/jour', name: 'app_station_detail_day', methods: ['GET', 'POST'])]
+    #[Route('/astikoto/stations/releves/jour', name: 'app_station_releves_day', methods: ['GET', 'POST'])]
     public function stationDayDetails(
         Request                 $request,
         StationLavageRepository $repo,

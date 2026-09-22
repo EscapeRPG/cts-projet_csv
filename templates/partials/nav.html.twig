@@ -11,10 +11,10 @@
                 <h3>{{ user.username }}</h3>
 
                 <h3>
-                    {% if 'ROLE_ADMIN' in user.roles %}
-                        Administrateur
-                    {% elseif 'ROLE_DEV' in user.roles %}
+                    {% if 'ROLE_DEV' in user.roles %}
                         Lead Developer
+                    {% elseif 'ROLE_ADMIN' in user.roles %}
+                        Administrateur
                     {% elseif ('ROLE_CTS' in user.roles) and ('ROLE_ASTIKOTO' in user.roles) %}
                         CTS + Astikoto
                     {% elseif 'ROLE_ASTIKOTO' in user.roles %}
@@ -313,7 +313,7 @@
                 </h3>
                 <ul class="menu">
                     <li>
-                        <a href="{{ path('app_station_detail') }}">
+                        <a href="{{ path('app_station_releves') }}">
                             → Relevés journaliers
                         </a>
                     </li>

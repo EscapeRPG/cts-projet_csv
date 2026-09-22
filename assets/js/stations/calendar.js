@@ -26,15 +26,64 @@ function sameDay(first, second) {
     return formatIsoDate(first) === formatIsoDate(second);
 }
 
+let stationRequestController = null;
+
+async function loadStation(radio) {
+    const currentContainer = document.querySelector('[data-station-results]');
+    const activity = document.querySelector('[data-releve-activity]');
+
+    if (!(currentContainer instanceof HTMLElement)) return;
+
+    stationRequestController?.abort();
+    const requestController = new AbortController();
+    stationRequestController = requestController;
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('station', radio.value);
+
+    currentContainer.classList.add('is-loading');
+    currentContainer.setAttribute('aria-busy', 'true');
+
+    try {
+        const response = await fetch(url, {
+            headers: {'X-Requested-With': 'XMLHttpRequest'},
+            signal: requestController.signal,
+        });
+
+        if (!response.ok) throw new Error(`Réponse HTTP ${response.status}`);
+
+        const documentHtml = new DOMParser().parseFromString(await response.text(), 'text/html');
+        const nextContainer = documentHtml.querySelector('[data-station-results]');
+        if (!(nextContainer instanceof HTMLElement)) {
+            throw new Error('Conteneur des relevés absent de la réponse');
+        }
+
+        currentContainer.replaceWith(nextContainer);
+        if (activity instanceof HTMLElement) activity.textContent = '';
+        window.history.replaceState({}, '', url);
+
+        nextContainer.querySelectorAll('[data-station-calendar]').forEach(initCalendar);
+    } catch (error) {
+        if (error.name !== 'AbortError' && activity instanceof HTMLElement) {
+            activity.textContent = 'Impossible de charger les relevés de cette station.';
+        }
+    } finally {
+        if (stationRequestController === requestController) {
+            stationRequestController = null;
+            const activeContainer = document.querySelector('[data-station-results]');
+            activeContainer?.classList.remove('is-loading');
+            activeContainer?.removeAttribute('aria-busy');
+        }
+    }
+}
+
 function initStationSelector() {
     document.querySelectorAll('[data-station-selector] input[type="radio"][name="station"]').forEach((radio) => {
         if (!(radio instanceof HTMLInputElement) || radio.dataset.stationInit === '1') return;
         radio.dataset.stationInit = '1';
-        radio.addEventListener('change', () => {
+        radio.addEventListener('change', async () => {
             if (!radio.checked) return;
-            const url = new URL(window.location.href);
-            url.searchParams.set('station', radio.value);
-            window.location.assign(url);
+            await loadStation(radio);
         });
     });
 }
