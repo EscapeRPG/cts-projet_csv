@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 final class ImportAstikotoFileService extends AbstractCsvImportService
 {
     private ?Centre $centre = null;
+    private int $dataRowNumber = 0;
 
     protected static function getTableName(): string
     {
@@ -102,8 +103,26 @@ final class ImportAstikotoFileService extends AbstractCsvImportService
         return 1;
     }
 
-    protected function prepareRow(array $row, UploadedFile $file): array
+    protected function prepareRow(array $row, UploadedFile $file): ?array
     {
+        if (array_all($row, static fn (mixed $value): bool => trim(str_replace(
+            ["\u{00A0}", "\u{202F}", "\u{FEFF}"],
+            '',
+            (string) $value,
+        )) === '')) {
+            return null;
+        }
+
+        ++$this->dataRowNumber;
+        if (!array_key_exists('date', $row)) {
+            throw new \RuntimeException('Colonne « Date » introuvable dans les en-têtes du CSV. Vérifiez la ligne de titre et le séparateur « ; ».');
+        }
+        if (trim((string) $row['date']) === '') {
+            throw new \RuntimeException(sprintf(
+                'Date absente dans la ligne de données n° %d (hors en-têtes et lignes vides). Aucune donnée de ce fichier n’a été enregistrée.',
+                $this->dataRowNumber,
+            ));
+        }
         if ($this->centre === null || $this->centre->getId() === null) {
             throw new \LogicException('Aucune station de lavage valide n’a été sélectionnée.');
         }
@@ -132,6 +151,7 @@ final class ImportAstikotoFileService extends AbstractCsvImportService
         }
 
         $this->centre = $centre;
+        $this->dataRowNumber = 0;
 
         try {
             return $this->em->getConnection()->transactional(

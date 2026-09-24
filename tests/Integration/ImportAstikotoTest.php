@@ -22,6 +22,43 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 final class ImportAstikotoTest extends TestCase
 {
+    public function testEmptyRecordsAreSkippedButMissingDatesAreRejected(): void
+    {
+        foreach ([
+            ["Export\nDate;Paye total;Mode\n06/03/2026;20;CB\n\n;;\n", null],
+            ["Export\nDate;Paye total;Mode\n06/03/2026;20;CB\n\xA0;\xA0;\xA0\n", null],
+            ["Export\nDate;Paye total;Mode\n;20;CB\n", 'Date absente'],
+            ["Export\nAutre;Paye total;Mode\n06/03/2026;20;CB\n", 'Colonne « Date » introuvable'],
+        ] as [$contents, $expectedError]) {
+            $em = $this->entityManager();
+            $service = new ImportAstikotoFileService($em, new CsvReader());
+            $reseau = (new Reseau())->setNom('astikoto');
+            (new \ReflectionProperty(Reseau::class, 'id'))->setValue($reseau, 1);
+            $path = tempnam(sys_get_temp_dir(), 'astikoto');
+            file_put_contents($path, $contents);
+            try {
+                try {
+                    $count = $service->importFromFileForCentre(
+                        new UploadedFile($path, 'St herblain Portique 1 1 du 2026-01-01 au 2026-03-06-1.csv', 'text/plain', null, true),
+                        $reseau,
+                        $this->centre(1),
+                    );
+                    self::assertNull($expectedError);
+                    self::assertSame(1, $count);
+                    self::assertEquals(1, $em->getConnection()->fetchOne('SELECT num_portique FROM portique_importe'));
+                } catch (\RuntimeException $exception) {
+                    self::assertNotNull($expectedError);
+                    self::assertStringContainsString($expectedError, $exception->getMessage());
+                    self::assertEquals(0, $em->getConnection()->fetchOne('SELECT COUNT(*) FROM portique_importe'));
+                    self::assertEquals(0, $em->getConnection()->fetchOne('SELECT COUNT(*) FROM imported_files'));
+                }
+            } finally {
+                unlink($path);
+                $em->getConnection()->close();
+            }
+        }
+    }
+
     public function testCashAggregationIncludesBillsOrCoinsWhenTheOtherAmountIsNull(): void
     {
         $em = $this->entityManager();

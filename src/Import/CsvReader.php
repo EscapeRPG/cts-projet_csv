@@ -55,6 +55,11 @@ final class CsvReader
                     continue;
                 }
 
+                // Empty CSV records are not transactions (including rows of separators).
+                if (array_all($row, static fn (?string $value): bool => trim((string) $value) === '')) {
+                    continue;
+                }
+
                 if (strcasecmp($sourceEncoding, 'UTF-8') !== 0) {
                     $row = array_map(
                         static fn(?string $value): ?string => $value === null

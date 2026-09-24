@@ -109,9 +109,9 @@ abstract class AbstractCsvImportService implements CsvImportInterface
      * @param array<string, mixed> $row Raw CSV row.
      * @param UploadedFile $file Current source file.
      *
-     * @return array<string, mixed>
+     * @return array<string, mixed>|null Null skips a non-data record.
      */
-    protected function prepareRow(array $row, UploadedFile $file): array
+    protected function prepareRow(array $row, UploadedFile $file): ?array
     {
         return $row;
     }
@@ -162,6 +162,9 @@ abstract class AbstractCsvImportService implements CsvImportInterface
 
         foreach ($generator as $row) {
             $row = $this->prepareRow($row, $file);
+            if ($row === null) {
+                continue;
+            }
             $row = $this->mapRow($row);
 
             $batch[] = $row;
