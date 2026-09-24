@@ -49,7 +49,13 @@ final class ImportAstikotoType extends AbstractType
                     new NotBlank(message: 'Veuillez sélectionner au moins un fichier.'),
                     new All([
                         new File(
-                            extensions: ['csv'],
+                            extensions: ['csv' => [
+                                'text/csv',
+                                'application/csv',
+                                'text/x-comma-separated-values',
+                                'text/x-csv',
+                                'text/plain',
+                            ]],
                             extensionsMessage: 'Seuls les fichiers CSV sont acceptés.',
                         ),
                     ]),

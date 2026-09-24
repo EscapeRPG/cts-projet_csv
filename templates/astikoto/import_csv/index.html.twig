@@ -2,14 +2,17 @@
 
 {% block title %}Import Astikoto{% endblock %}
 
+{% block content_attributes %}data-controller="astikoto-import"{% endblock %}
+
 {% block body %}
     <div class="form-wrapper">
         {{ form_start(form, {'attr': {'data-turbo': 'false'}}) }}
         <h1>Import des fichiers Astikoto</h1>
 
-        {{ form_row(form.centre) }}
+        {{ form_row(form.centre, {'attr': {'data-astikoto-import-target': 'centre', 'data-action': 'change->astikoto-import#refresh'}}) }}
 
         <div data-controller="dropzone" class="dropzone">
+            {{ form_errors(form.files) }}
             {{ form_widget(form.files, {
                 attr: {
                     'data-dropzone-target': 'input',
@@ -31,15 +34,24 @@
 
     <div class="latest-imports">
         <h2>Derniers fichiers importés</h2>
-        {% for numPortique in [4, 5] %}
-            <div>
-                Portique {{ numPortique }} —
-                {% if latestImports[numPortique] %}
-                    "{{ latestImports[numPortique].filename }}" le {{ latestImports[numPortique].importedAt|date('d/m/Y') }}
+        <div data-astikoto-import-target="content" aria-live="polite">Sélectionnez une station pour afficher ses derniers imports.</div>
+        {% for centreId, portiques in importsByCentre %}
+            <template data-astikoto-import-target="history" data-centre-id="{{ centreId }}">
+                {% for portique in portiques %}
+                    <div>
+                        {{ portique.libelle }}{% if portique.numero is not null %} (portique {{ portique.numero }}){% endif %} —
+                        {% if portique.numero is null %}
+                            Numéro de portique à configurer dans les équipements de la station
+                        {% elseif portique.import %}
+                            « {{ portique.import.filename }} » le {{ portique.import.importedAt|date('d/m/Y à H:i') }}
+                        {% else %}
+                            Aucun fichier importé
+                        {% endif %}
+                    </div>
                 {% else %}
-                    Aucun fichier importé
-                {% endif %}
-            </div>
+                    <p>Aucun portique configuré pour cette station.</p>
+                {% endfor %}
+            </template>
         {% endfor %}
     </div>
 

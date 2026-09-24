@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Enum\CategorieEquipement;
 use App\Form\ImportCsvType;
 use App\Form\ImportAstikotoType;
 use App\Import\ImportRouter;
@@ -25,7 +26,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Throwable;
 
-#[IsGranted('ROLE_IMPORT')]
 /**
  * Handles CSV upload and orchestrates business-ordered import execution.
  */
@@ -39,6 +39,7 @@ final class ImportCsvController extends AbstractController
      *
      * @return Response Rendered import page with form state and optional success message.
      */
+    #[IsGranted('ROLE_IMPORT')]
     #[Route('/cts/import', name: 'import_csv')]
     public function import(
         Request      $request,
@@ -109,12 +110,13 @@ final class ImportCsvController extends AbstractController
      *
      * @return Response Rendered Astikoto import page.
      */
+    #[IsGranted('ROLE_ASTIKOTO')]
     #[Route('/astikoto/import', name: 'astikoto_import_csv')]
     public function importAstikoto(
-        Request $request,
+        Request                   $request,
         ImportAstikotoFileService $importAstikotoFileService,
-        ImportedFilesRepository $importedFilesRepository,
-        ReseauRepository $reseauRepository,
+        ImportedFilesRepository   $importedFilesRepository,
+        ReseauRepository          $reseauRepository,
     ): Response
     {
         $form = $this->createForm(ImportAstikotoType::class);
@@ -138,7 +140,7 @@ final class ImportCsvController extends AbstractController
                     try {
                         $rowsRead = $importAstikotoFileService->importFromFileForCentre($file, $reseau, $centre);
 
-                        if ($rowsRead === 0) {
+                        if ($importAstikotoFileService->wasLastFileSkipped()) {
                             $skipped++;
                             continue;
                         }
@@ -175,19 +177,32 @@ final class ImportCsvController extends AbstractController
             }
         }
 
-        $latestImports = [
-            4 => $reseau === null
-                ? null
-                : $importedFilesRepository->findLatestForReseauAndPortique($reseau, 4, $selectedCentre),
-            5 => $reseau === null
-                ? null
-                : $importedFilesRepository->findLatestForReseauAndPortique($reseau, 5, $selectedCentre),
-        ];
+        $importsByCentre = [];
+        foreach ($form->get('centre')->createView()->vars['choices'] as $choice) {
+            $centre = $choice->data;
+            $latestImports = $reseau === null ? []
+                : $importedFilesRepository->findLatestByPortiqueForCentre($reseau, $centre);
+            $portiques = [];
+            foreach ($centre->getEquipementsStation() as $equipement) {
+                if ($equipement->getCategorie() !== CategorieEquipement::PORTIQUE) {
+                    continue;
+                }
+                $numero = $equipement->getNumeroPortiqueImport();
+                $portiques[] = [
+                    'libelle' => $equipement->getLibelle(),
+                    'numero' => $numero,
+                    'ordre' => $equipement->getOrdreAffichage(),
+                    'import' => $numero === null ? null : ($latestImports[$numero] ?? null),
+                ];
+            }
+            usort($portiques, static fn (array $a, array $b): int => [$a['ordre'], $a['numero']] <=> [$b['ordre'], $b['numero']]);
+            $importsByCentre[$centre->getId()] = $portiques;
+        }
 
         return $this->render('astikoto/import_csv/index.html.twig', [
             'form' => $form,
             'errors' => $form->getErrors(),
-            'latestImports' => $latestImports,
+            'importsByCentre' => $importsByCentre,
         ]);
     }
 }

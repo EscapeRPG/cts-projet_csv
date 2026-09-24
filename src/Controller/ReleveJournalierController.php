@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Enum\TypeCentre;
 use App\Repository\StationLavageRepository;
 use App\Service\Astikoto\ReleveDayViewBuilder;
+use App\Service\Astikoto\ReleveRevenueCalculator;
 use App\Service\Security\UserScopeResolver;
 use DateMalformedStringException;
 use Doctrine\DBAL\Exception;
@@ -30,7 +31,7 @@ final class ReleveJournalierController extends AbstractController
      * @throws Exception
      */
     #[Route("/astikoto/stations/releves", name: 'app_station_releves')]
-    public function detailsStations(
+    public function releves(
         Request                 $request,
         StationLavageRepository $repo,
     ): Response
@@ -43,7 +44,7 @@ final class ReleveJournalierController extends AbstractController
         $stationId = $request->query->getInt('station');
 
         if ($stationId <= 0) {
-            return $this->render('astikoto/stations/details.html.twig', [
+            return $this->render('astikoto/stations/releves.html.twig', [
                 'stations' => $stations,
                 'selectedStation' => null,
                 'selectedDate' => $selectedDate,
@@ -67,7 +68,7 @@ final class ReleveJournalierController extends AbstractController
             return $this->render('astikoto/stations/_station_results.html.twig', $viewData);
         }
 
-        return $this->render('astikoto/stations/details.html.twig', $viewData);
+        return $this->render('astikoto/stations/releves.html.twig', $viewData);
     }
 
     /**
@@ -75,10 +76,11 @@ final class ReleveJournalierController extends AbstractController
      * @throws Exception
      */
     #[Route('/astikoto/stations/releves/jour', name: 'app_station_releves_day', methods: ['GET', 'POST'])]
-    public function stationDayDetails(
+    public function releveJour(
         Request                 $request,
         StationLavageRepository $repo,
         ReleveDayViewBuilder    $viewBuilder,
+        ReleveRevenueCalculator $revenueCalculator,
     ): Response
     {
         $user = $this->getUser();
@@ -106,6 +108,7 @@ final class ReleveJournalierController extends AbstractController
         return $this->render('astikoto/stations/_day_details.html.twig', [
             'selectedStation' => $station,
             'selectedDate' => $selectedDate,
+            'annualRevenues' => $revenueCalculator->getAnnualRevenues($station, new \DateTimeImmutable()),
             ...$viewBuilder->build($station, $selectedDate, $user, $request),
         ]);
     }

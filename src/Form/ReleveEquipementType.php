@@ -61,13 +61,15 @@ final class ReleveEquipementType extends AbstractType
                     'required' => false,
                     'scale' => 2,
                     'input' => 'string',
-                    'empty_data' => '0',
+                    'empty_data' => '',
+                    'attr' => ['placeholder' => '0'],
                     'html5' => false,
                 ]);
             }
             $form->add('totalJetons', IntegerType::class, [
                 'required' => false,
-                'empty_data' => '0',
+                'empty_data' => '',
+                'attr' => ['placeholder' => '0'],
             ]);
         });
     }

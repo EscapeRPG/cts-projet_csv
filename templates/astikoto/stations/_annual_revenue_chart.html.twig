@@ -1,0 +1,21 @@
+{% set maxRevenue = max(annualRevenues|map(year => year.revenueCents)) %}
+<div class="summary" style="flex: 1">
+    <div class="pro-part-panel station-annual-revenue">
+        <div class="panel-tools">
+            <span class="panel-tools-title">CA annuel</span>
+        </div>
+        <div class="ca-pro-part">
+            {% for year in annualRevenues %}
+                {% set percent = maxRevenue > 0 ? max(0, year.revenueCents * 100 / maxRevenue) : 0 %}
+                <div class="col-pro-part">
+                    <div class="metric metric-top">
+                        <span class="col-part" style="height: {{ percent }}%">
+                            <span class="bar-label">{{ year.revenueCents|money }}</span>
+                        </span>
+                    </div>
+                    <span class="years">{{ year.year }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

@@ -89,23 +89,27 @@ final readonly class ReleveJournalierMapper
         $dto->cheque = $line->getCheque();
         $dto->jetons = $line->getJetons();
         $dto->bl = $line->getBl();
-        $dto->totalCb = $this->addMoney($dto->cb, $portique?->getCb() ?? '0');
-        $dto->totalEspeces = $this->addMoney($dto->especes, $portique?->getEspeces() ?? '0');
-        $dto->totalCheque = $this->addMoney($dto->cheque, $portique?->getCheque() ?? '0');
-        $dto->totalJetons = $dto->jetons + ($portique?->getJetons() ?? 0);
-        $dto->totalBl = $this->addMoney($dto->bl, $portique?->getBl() ?? '0');
+        $dto->totalCb = $line->getTotalCb();
+        $dto->totalEspeces = $line->getTotalEspeces();
+        $dto->totalCheque = $line->getTotalCheque();
+        $dto->totalJetons = $line->getTotalJetons();
+        $dto->totalBl = $line->getTotalBl();
 
         return $dto;
     }
 
     private function applyEquipmentDTO(ReleveEquipementDTO $dto, ReleveEquipement $line, ?ReleveEquipementDTO $portique): void
     {
+        if ($dto->isBorne()) {
+            $line->setTotalCb($dto->totalCb)->setTotalEspeces($dto->totalEspeces)
+                ->setTotalCheque($dto->totalCheque)->setTotalJetons($dto->totalJetons)->setTotalBl($dto->totalBl);
+        }
         $line
-            ->setCb($dto->isBorne() ? $this->subtractMoney($dto->totalCb, $portique?->cb ?? '0') : $dto->cb)
-            ->setEspeces($dto->isBorne() ? $this->subtractMoney($dto->totalEspeces, $portique?->especes ?? '0') : $dto->especes)
-            ->setCheque($dto->isBorne() ? $this->subtractMoney($dto->totalCheque, $portique?->cheque ?? '0') : $dto->cheque)
-            ->setJetons($dto->isBorne() ? $dto->totalJetons - ($portique?->jetons ?? 0) : $dto->jetons)
-            ->setBl($dto->isBorne() ? $this->subtractMoney($dto->totalBl, $portique?->bl ?? '0') : $dto->bl);
+            ->setCb($dto->isBorne() ? ($dto->totalCb === null ? '0.00' : $this->subtractMoney($dto->totalCb, $portique?->cb ?? '0')) : $dto->cb)
+            ->setEspeces($dto->isBorne() ? ($dto->totalEspeces === null ? '0.00' : $this->subtractMoney($dto->totalEspeces, $portique?->especes ?? '0')) : $dto->especes)
+            ->setCheque($dto->isBorne() ? ($dto->totalCheque === null ? '0.00' : $this->subtractMoney($dto->totalCheque, $portique?->cheque ?? '0')) : $dto->cheque)
+            ->setJetons($dto->isBorne() ? ($dto->totalJetons === null ? 0 : $dto->totalJetons - ($portique?->jetons ?? 0)) : $dto->jetons)
+            ->setBl($dto->isBorne() ? ($dto->totalBl === null ? '0.00' : $this->subtractMoney($dto->totalBl, $portique?->bl ?? '0')) : $dto->bl);
     }
 
     private function addMoney(string $left, string $right): string

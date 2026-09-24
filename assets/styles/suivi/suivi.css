@@ -275,6 +275,10 @@
     }
 }
 
+.summary .pro-part-panel.station-annual-revenue .ca-pro-part .col-pro-part {
+    grid-template-rows: minmax(0, 1fr) auto;
+}
+
 .stats-wrapper {
     width: 100%;
     border-radius: 5px;

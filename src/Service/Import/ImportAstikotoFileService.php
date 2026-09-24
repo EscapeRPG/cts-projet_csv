@@ -17,7 +17,7 @@ final class ImportAstikotoFileService extends AbstractCsvImportService
 
     protected static function getTableName(): string
     {
-        return 'portique';
+        return 'portique_importe';
     }
 
     protected static function getColumns(): array
@@ -134,7 +134,9 @@ final class ImportAstikotoFileService extends AbstractCsvImportService
         $this->centre = $centre;
 
         try {
-            return parent::importFromFile($file, $reseau);
+            return $this->em->getConnection()->transactional(
+                fn (): int => parent::importFromFile($file, $reseau),
+            );
         } finally {
             $this->centre = null;
         }

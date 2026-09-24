@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Relevés journalier{% endblock %}
+{% block title %}Détails de la station{% endblock %}
 
 {% block body %}
     <div class="suivi-container">
@@ -8,9 +8,7 @@
             <form method="get"
                   class="filter-form"
                   data-station-selector
-                  data-dependent-url="{{ path('app_suivi_filters_dependent') }}"
-                  data-preserve-centre-on-clear="{{ (is_granted('ROLE_CTS') and not is_granted('ROLE_ADMIN')) ? '1' : '0' }}">
-
+            >
                 <div class="filters-container">
                     <div class="filter-dropdown">
                         <button type="button" class="dropdown-toggle">
@@ -18,11 +16,12 @@
                         </button>
 
                         <div class="dropdown-menu" data-filter-list="station" data-filter-input-type="radio">
-                            {% for station in stations %}
+                            {% for availableStation in stations %}
                                 <label>
-                                    <input type="radio" name="station" value="{{ station.id }}"
-                                        {{ selectedStation is not null and station.id == selectedStation.id ? 'checked' : '' }}>
-                                    {{ station.ville }}
+                                    <input type="radio" name="station" value="{{ availableStation.id }}"
+                                           data-station-url="{{ path('app_station_details', { id: availableStation.id }) }}"
+                                        {{ availableStation.id == selectedStation.id ? 'checked' : '' }}>
+                                    {{ availableStation.ville }}
                                 </label>
                             {% endfor %}
                         </div>
@@ -32,9 +31,174 @@
         </div>
 
         <div class="activite-infos">
-            <p data-releve-activity aria-live="polite"></p>
+            <h2>Détails de la station de {{ selectedStation.ville }}</h2>
         </div>
 
-        {% include 'astikoto/stations/_station_results.html.twig' %}
+        <div class="centres-pros-wrapper">
+            <div class="pro-stats-container" style="max-height: unset">
+                {% if selectedStation == null %}
+                    <div class="centre-detail-alert">
+                        <p>Veuillez sélectionner une station pour consulter les détails.</p>
+                    </div>
+                {% else %}
+                    <div class="pro-stats-panel">
+                        <div class="stats-wrapper">
+                            <h2>Informations</h2>
+
+                            <table>
+                                <tr>
+                                    <td>Société</td>
+                                    <td>{{ selectedStation.societe.nom }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Réseau</td>
+                                    <td>{{ selectedStation.reseau.nom }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Enseigne</td>
+                                    <td>{{ selectedStation.reseauNom }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Adresse</td>
+                                    <td>{{ selectedStation.coordonnees ?? '—' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Code postal</td>
+                                    <td>{{ selectedStation.cp }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Ville</td>
+                                    <td>{{ selectedStation.ville }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Numéro de téléphone</td>
+                                    <td>{{ selectedStation.telephone ?? '—' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Adresse email</td>
+                                    <td>{{ selectedStation.email ?? '—' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Site web</td>
+                                    <td>{{ selectedStation.siteWeb ?? '—' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>SIRET</td>
+                                    <td>{{ selectedStation.numSiret ?? '—' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Date de reprise</td>
+                                    <td>{{ selectedStation.dateReprise ?? '—' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="summary">
+                            {% include 'astikoto/stations/_annual_revenue_summary.html.twig' with { annualRevenues: annualRevenues } only %}
+                            {% include 'astikoto/stations/_annual_revenue_chart.html.twig' with { annualRevenues: annualRevenues } only %}
+                        </div>
+
+                        <div class="stats-wrapper graphique"
+                             data-panel-focus-target="1"
+                             data-pro-charts='{{ proCharts|json_encode|e('html_attr') }}'>
+                            <div class="chart-canvas-wrap">
+                                <canvas class="pro-chart-canvas"
+                                        aria-label="Comparatif {{ referenceYear - 2 }} à {{ referenceYear }}"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pro-stats-panel">
+                        <div class="stats-wrapper">
+                            <h2>Portiques</h2>
+
+                            {% for equipement in selectedStation.equipementsStation %}
+                                <ul>
+                                    {% if equipement.categorie.value == "portique" %}
+                                        <li>{{ equipement.libelle }}</li>
+                                    {% endif %}
+                                </ul>
+                            {% endfor %}
+                        </div>
+
+                        <div class="stats-wrapper">
+                            <h2>Bornes</h2>
+
+                            {% for equipement in selectedStation.equipementsStation %}
+                                <ul>
+                                    {% if equipement.categorie.value == "borne" %}
+                                        <li>{{ equipement.libelle }}</li>
+                                    {% endif %}
+                                </ul>
+                            {% endfor %}
+                        </div>
+
+                        <div class="stats-wrapper">
+                            <h2>Autres</h2>
+
+                            {% for equipement in selectedStation.equipementsStation %}
+                                <ul>
+                                    {% if equipement.categorie.value == "autre" %}
+                                        <li>{{ equipement.libelle }}</li>
+                                    {% endif %}
+                                </ul>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="filters-print-actions">
+                {% if is_granted('ROLE_ASTIKOTO') %}
+                    <a href="{{ path('app_station_edit', { id: station.id }) }}" class="btn-link edit">Modifier</a>
+                {% endif %}
+            </div>
+        </div>
+
+
     </div>
+
+    {% set errorsMessages = app.flashes('error') %}
+    {% if errorsMessages is not empty %}
+        <div id="modal" class="modal-overlay" data-controller="modals" data-modals-target="overlay">
+            <div class="modal error-modal" data-modals-target="modal">
+                <h3>Erreurs détectées</h3>
+                <ul>
+                    {% for error in errorsMessages %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+
+    {% set successMessages = app.flashes('success') %}
+    {% if successMessages is not empty %}
+        <div id="modal" class="modal-overlay" data-controller="modals" data-modals-target="overlay">
+            <div class="modal success-modal" data-modals-target="modal">
+                <h2>Succès</h2>
+
+                {% for message in successMessages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+
+                <button id="close-modal" data-action="click->modals#hide">OK</button>
+            </div>
+        </div>
+    {% endif %}
+
+    {% set warningMessages = app.flashes('warning') %}
+    {% if warningMessages is not empty %}
+        <div id="modal" class="modal-overlay" data-controller="modals" data-modals-target="overlay">
+            <div class="modal error-modal" data-modals-target="modal">
+                <h2>Attention</h2>
+
+                {% for message in warningMessages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+
+                <button id="close-modal" data-action="click->modals#hide">OK</button>
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}

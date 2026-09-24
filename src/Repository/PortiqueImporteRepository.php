@@ -6,6 +6,7 @@ use App\Entity\Centre;
 use App\Entity\PortiqueImporte;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -34,7 +35,7 @@ class PortiqueImporteRepository extends ServiceEntityRepository
         $rows = $this->createQueryBuilder('p')
             ->select('p.numPortique AS numero')
             ->addSelect('COALESCE(SUM(p.payeCB), 0) AS cb')
-            ->addSelect('COALESCE(SUM(p.payePieces + p.payeBillets), 0) AS especes')
+            ->addSelect('COALESCE(SUM(COALESCE(p.payePieces, 0) + COALESCE(p.payeBillets, 0)), 0) AS especes')
             ->addSelect(
                 '
                 SUM(
@@ -48,7 +49,7 @@ class PortiqueImporteRepository extends ServiceEntityRepository
             ->andWhere('p.date = :date')
             ->andWhere('p.numPortique IS NOT NULL')
             ->setParameter('station', $station)
-            ->setParameter('date', $date)
+            ->setParameter('date', $date, Types::DATE_IMMUTABLE)
             ->groupBy('p.numPortique')
             ->orderBy('p.numPortique', 'ASC')
             ->getQuery()

@@ -32,11 +32,13 @@
         </div>
     </div>
 
-        {{ form_widget(form.commentaire, {
-            attr: {
-                id: 'releve-commentaire',
-                class: 'releve-commentaire-textarea',
-                placeholder: 'Commentaires...'
-            }
-        }) }}
+    {% include 'astikoto/stations/_annual_revenue_summary.html.twig' with { annualRevenues: annualRevenues } only %}
+
+    {{ form_widget(form.commentaire, {
+        attr: {
+            id: 'releve-commentaire',
+            class: 'releve-commentaire-textarea',
+            placeholder: 'Commentaires...'
+        }
+    }) }}
 </div>

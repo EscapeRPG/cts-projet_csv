@@ -21,6 +21,20 @@ class ImportedFilesRepository extends ServiceEntityRepository
         parent::__construct($registry, ImportedFiles::class);
     }
 
+    /** @return array<int, ImportedFiles> */
+    public function findLatestByPortiqueForCentre(Reseau $reseau, Centre $centre): array
+    {
+        $files = $this->findBy(['reseau' => $reseau, 'centre' => $centre], ['imported_at' => 'DESC', 'id' => 'DESC']);
+        $latest = [];
+        foreach ($files as $file) {
+            if (preg_match('/\bportique[\s_-]+(\d+)\b/i', $file->getFilename(), $matches) === 1) {
+                $latest[(int) $matches[1]] ??= $file;
+            }
+        }
+
+        return $latest;
+    }
+
     /**
      * Returns the latest file imported for an Astikoto portique.
      */

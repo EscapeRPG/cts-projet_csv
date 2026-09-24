@@ -27,7 +27,7 @@
         <p>Chargement...</p>
     </div>
 
-    <div class="loading-content" id="loadingContent">
+    <div class="loading-content" id="loadingContent" {% block content_attributes %}{% endblock %}>
         {% block body %}{% endblock %}
     </div>
 </main>

@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Relevés journalier{% endblock %}
+
+{% block body %}
+    <div class="suivi-container">
+        <div class="sidenav">
+            <form method="get"
+                  class="filter-form"
+                  data-station-selector
+                  data-dependent-url="{{ path('app_suivi_filters_dependent') }}"
+                  data-preserve-centre-on-clear="{{ (is_granted('ROLE_CTS') and not is_granted('ROLE_ADMIN')) ? '1' : '0' }}"
+            >
+                <div class="filters-container">
+                    <div class="filter-dropdown">
+                        <button type="button" class="dropdown-toggle">
+                            Stations
+                        </button>
+
+                        <div class="dropdown-menu" data-filter-list="station" data-filter-input-type="radio">
+                            {% for station in stations %}
+                                <label>
+                                    <input type="radio" name="station" value="{{ station.id }}"
+                                        {{ selectedStation is not null and station.id == selectedStation.id ? 'checked' : '' }}>
+                                    {{ station.ville }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="activite-infos">
+            <p data-releve-activity aria-live="polite"></p>
+        </div>
+
+        {% include 'astikoto/stations/_station_results.html.twig' %}
+    </div>
+{% endblock %}

@@ -9,7 +9,9 @@ use App\Form\CreateStationLavageType;
 use App\Repository\SocieteRepository;
 use App\Repository\StationLavageRepository;
 use App\Service\Centre\CentreRowUpdater;
+use App\Service\Astikoto\ReleveRevenueCalculator;
 use App\Service\List\BulkUpdateProcessor;
+use App\Service\Suivi\SuiviProAnalyticsService;
 use App\Service\Security\UserScopeResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,7 +26,10 @@ final class StationLavageController extends AbstractController
 {
     private const string CSRF_FIELD_NAME = '_token';
 
-    public function __construct(private readonly UserScopeResolver $scopeResolver)
+    public function __construct(
+        private readonly UserScopeResolver $scopeResolver,
+        private readonly SuiviProAnalyticsService $proAnalyticsService,
+    )
     {
     }
 
@@ -105,22 +110,7 @@ final class StationLavageController extends AbstractController
                 $donneesEquipements[(string)$index] = $data;
             }
 
-            foreach ($donneesEquipements as $index => $data) {
-                if ($data->portiqueTemporaire === null) {
-                    continue;
-                }
-
-                $portique = $equipements[$data->portiqueTemporaire] ?? null;
-
-                if ($portique === null) {
-                    throw new LogicException('Portique temporaire inexistant');
-                }
-
-                $equipements[$index]->associerPortique($portique);
-            }
-
-            $em->persist($station);
-            $em->flush();
+            $this->saveDatas($donneesEquipements, $equipements, $em, $station);
 
             $this->addFlash('success', 'Station créée.');
 
@@ -196,13 +186,45 @@ final class StationLavageController extends AbstractController
         ]);
     }
 
+    #[Route('/astikoto/stations/details', name: 'app_station_details_entry', methods: ['GET'])]
+    public function stationDetailsEntry(StationLavageRepository $repository): Response
+    {
+        $centreIds = $this->scopeResolver->centreIds(TypeCentre::STATION_LAVAGE);
+        $stations = $repository->findStationsLavage(null, $centreIds);
+        $station = $stations[0] ?? null;
+
+        if ($station === null) {
+            return $this->redirectToRoute('app_stations_list_uneditable');
+        }
+
+        return $this->redirectToRoute('app_station_details', ['id' => $station->getId()]);
+    }
+
     #[Route("/astikoto/stations/details/{id}", name: 'app_station_details', methods: ['GET'])]
     public function detailsStation(
-        Centre $station
+        int $id,
+        StationLavageRepository $repository,
+        ReleveRevenueCalculator $revenueCalculator,
     ): Response
     {
-        return $this->render('astikoto/stations/station_details.html.twig', [
+        $centreIds = $this->scopeResolver->centreIds(TypeCentre::STATION_LAVAGE);
+        $station = $repository->findOneStationInScope($id, $centreIds);
+
+        if ($station === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $referenceDate = new \DateTimeImmutable();
+        $referenceYear = (int) $referenceDate->format('Y');
+        $rows = $revenueCalculator->getMonthlyRevenues($station, $referenceDate);
+
+        return $this->render('astikoto/stations/details.html.twig', [
             'station' => $station,
+            'stations' => $repository->findStationsLavage(null, $centreIds),
+            'selectedStation' => $station,
+            'annualRevenues' => $revenueCalculator->buildAnnualRevenues($rows, $referenceDate),
+            'proCharts' => $this->proAnalyticsService->buildMonthlyCharts($rows, $referenceYear),
+            'referenceYear' => $referenceYear,
         ]);
     }
 
@@ -267,31 +289,43 @@ final class StationLavageController extends AbstractController
                 $donneesEquipements[(string)$index] = $data;
             }
 
-            foreach ($donneesEquipements as $index => $data) {
-                if ($data->portiqueTemporaire === null) {
-                    continue;
-                }
-
-                $portique = $equipements[$data->portiqueTemporaire] ?? null;
-
-                if ($portique === null) {
-                    throw new LogicException('Portique temporaire inexistant');
-                }
-
-                $equipements[$index]->associerPortique($portique);
-            }
-
-            $em->persist($station);
-            $em->flush();
+            $this->saveDatas($donneesEquipements, $equipements, $em, $station);
 
             $this->addFlash('success', 'Station mise à jour.');
 
             return $this->redirectToRoute('app_station_details', ['id' => $station->getId()]);
         }
 
-        return $this->render('astikoto/stations/station_edit.html.twig', [
+        return $this->render('astikoto/stations/edit.html.twig', [
             'station' => $station,
             'form' => $form->createView(),
         ]);
+    }
+
+    /**
+     * @param array $donneesEquipements
+     * @param array $equipements
+     * @param EntityManagerInterface $em
+     * @param mixed $station
+     * @return void
+     */
+    public function saveDatas(array $donneesEquipements, array $equipements, EntityManagerInterface $em, mixed $station): void
+    {
+        foreach ($donneesEquipements as $index => $data) {
+            if ($data->portiqueTemporaire === null) {
+                continue;
+            }
+
+            $portique = $equipements[$data->portiqueTemporaire] ?? null;
+
+            if ($portique === null) {
+                throw new LogicException('Portique temporaire inexistant');
+            }
+
+            $equipements[$index]->associerPortique($portique);
+        }
+
+        $em->persist($station);
+        $em->flush();
     }
 }

@@ -46,6 +46,76 @@ class ReleveEquipement
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
     private string $bl = '0.00';
 
+    #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2, nullable: true)]
+    private ?string $totalCb = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2, nullable: true)]
+    private ?string $totalEspeces = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2, nullable: true)]
+    private ?string $totalCheque = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $totalJetons = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2, nullable: true)]
+    private ?string $totalBl = null;
+
+    public function getTotalCb(): ?string
+    {
+        return $this->totalCb;
+    }
+
+    public function setTotalCb(?string $value): static
+    {
+        $this->totalCb = $value;
+        return $this;
+    }
+
+    public function getTotalEspeces(): ?string
+    {
+        return $this->totalEspeces;
+    }
+
+    public function setTotalEspeces(?string $value): static
+    {
+        $this->totalEspeces = $value;
+        return $this;
+    }
+
+    public function getTotalCheque(): ?string
+    {
+        return $this->totalCheque;
+    }
+
+    public function setTotalCheque(?string $value): static
+    {
+        $this->totalCheque = $value;
+        return $this;
+    }
+
+    public function getTotalJetons(): ?int
+    {
+        return $this->totalJetons;
+    }
+
+    public function setTotalJetons(?int $value): static
+    {
+        $this->totalJetons = $value;
+        return $this;
+    }
+
+    public function getTotalBl(): ?string
+    {
+        return $this->totalBl;
+    }
+
+    public function setTotalBl(?string $value): static
+    {
+        $this->totalBl = $value;
+        return $this;
+    }
+
     public function getId(): ?int
     {
         return $this->id;

@@ -170,7 +170,7 @@ class ImportSftpCommand extends Command
 
                 try {
                     if (!$this->sftpClient->isIncomingFileStable($reseauCode, $file)) {
-                        $io->writeln("    <warning>Fichier non stable (upload en cours ou récent), reporté au prochain passage.</warning>");
+                        $io->writeln("<warning>Fichier non stable (upload en cours ou récent), reporté au prochain passage.</warning>");
                         continue;
                     }
 

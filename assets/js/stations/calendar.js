@@ -83,6 +83,10 @@ function initStationSelector() {
         radio.dataset.stationInit = '1';
         radio.addEventListener('change', async () => {
             if (!radio.checked) return;
+            if (radio.dataset.stationUrl) {
+                window.location.assign(radio.dataset.stationUrl);
+                return;
+            }
             await loadStation(radio);
         });
     });

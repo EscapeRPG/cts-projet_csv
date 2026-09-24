@@ -28,6 +28,10 @@ function calculateBornes(form) {
         const portique = form.querySelector(`#${CSS.escape(totalInput.dataset.portiqueInput ?? '')}`);
         const output = form.querySelector(`#${CSS.escape(totalInput.dataset.borneOutputInput ?? '')}`);
         if (!name || !(portique instanceof HTMLInputElement) || !(output instanceof HTMLInputElement)) return;
+        if (totalInput.value.trim() === '') {
+            output.value = '';
+            return;
+        }
         output.value = name === 'jetons'
             ? String(Math.trunc(decimalValue(totalInput) - decimalValue(portique)))
             : formatInputMoney(centsValue(totalInput) - centsValue(portique));

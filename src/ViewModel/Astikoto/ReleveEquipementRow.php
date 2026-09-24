@@ -29,12 +29,11 @@ final readonly class ReleveEquipementRow
 
     public function getTotalBorne(string $field): float|int
     {
-        $getter = 'get'.ucfirst($field);
-        $borneValue = $this->releve->$getter();
-        $portiqueValue = $this->portique?->$getter() ?? 0;
+        $getter = 'getTotal'.ucfirst($field);
+        $value = $this->releve->$getter();
 
         return $field === 'jetons'
-            ? (int) $borneValue + (int) $portiqueValue
-            : (float) $borneValue + (float) $portiqueValue;
+            ? (int) $value
+            : (float) $value;
     }
 }

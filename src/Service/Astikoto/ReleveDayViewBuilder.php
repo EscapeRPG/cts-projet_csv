@@ -8,6 +8,7 @@ use App\Form\CreateReleveJournalierType;
 use Doctrine\DBAL\Exception;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\FormError;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -43,6 +44,20 @@ final readonly class ReleveDayViewBuilder
         ];
         $form = $this->formFactory->create(CreateReleveJournalierType::class, $dto, $formOptions);
         $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $request->request->getString('intent') === 'validate') {
+            foreach ($dto->relevesEquipements as $index => $line) {
+                if (!$line->isBorne()) {
+                    continue;
+                }
+                foreach (['totalCb', 'totalEspeces', 'totalCheque', 'totalJetons', 'totalBl'] as $field) {
+                    if ($line->$field === null) {
+                        $form->get('relevesEquipements')->get((string) $index)->get($field)
+                            ->addError(new FormError('Renseignez tous les totaux des bornes (0 si aucun encaissement) avant de valider le relevé.'));
+                    }
+                }
+            }
+        }
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->mapper->mapToEntity($dto, $releve);

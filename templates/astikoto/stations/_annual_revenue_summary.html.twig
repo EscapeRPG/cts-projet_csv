@@ -1,0 +1,19 @@
+{% set current = annualRevenues|last %}
+<div class="summary releve-summary-panel">
+    <div class="ca-summary">
+        <span class="panel-tools-title">CA de l'année</span>
+        <strong>{{ current.revenueCents|money }}</strong>
+        <div class="previous">
+            {% for comparison in annualRevenues|slice(0, 2)|reverse %}
+                <div class="row">
+                    <strong>{{ comparison.year }}</strong>
+                    {{ comparison.revenueCents|money }}
+                    <div title="Évolution de {{ current.year }} par rapport à {{ comparison.year }}"
+                         class="{{ comparison.evolution is not null ? (comparison.evolution < 0 ? 'decreased' : 'increased') : '' }}">
+                        {{ comparison.evolution is null ? '—' : comparison.evolution|number_format(2, ',', ' ') ~ ' %' }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
