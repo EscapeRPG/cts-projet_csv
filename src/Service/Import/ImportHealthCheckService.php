@@ -5,6 +5,8 @@ namespace App\Service\Import;
 use App\Entity\Notification;
 use App\Repository\ReseauRepository;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
+use Throwable;
 
 final readonly class ImportHealthCheckService
 {
@@ -22,6 +24,7 @@ final readonly class ImportHealthCheckService
 
     /**
      * @return array{rows:int, alerts:int, errors:int, warnings:int}
+     * @throws Throwable
      */
     public function run(?\DateTimeImmutable $referenceDate = null, bool $notify = true): array
     {
@@ -119,6 +122,9 @@ final readonly class ImportHealthCheckService
         ];
     }
 
+    /**
+     * @throws Exception
+     */
     private function ensureHealthCheckTableExists(): void
     {
         $this->connection->executeStatement(<<<'SQL'
@@ -145,6 +151,7 @@ final readonly class ImportHealthCheckService
 
     /**
      * @return array<int, array<string, array{files_imported:int, controles_files:int, latest_imported_at:?string}>>
+     * @throws Exception
      */
     private function buildDailyImportStats(\DateTimeImmutable $from): array
     {
@@ -213,7 +220,7 @@ final readonly class ImportHealthCheckService
     }
 
     /**
-     * @param array<string, array{files_imported:int, controles_files:int, latest_imported_at:?string}> $dailyStats
+     * @param array<string, array{files_imported:int, controles_files:int, latest_imported_at $dailyStats :?string}> $dailyStats
      */
     private function computeExpectedFiles(array $dailyStats): int
     {
@@ -236,7 +243,7 @@ final readonly class ImportHealthCheckService
     }
 
     /**
-     * @param array<string, array{files_imported:int, controles_files:int, latest_imported_at:?string}> $dailyStats
+     * @param array<string, array{files_imported:int, controles_files:int, latest_imported_at $dailyStats :?string}> $dailyStats
      */
     private function findLatestImportDate(array $dailyStats): ?string
     {
@@ -251,6 +258,7 @@ final readonly class ImportHealthCheckService
 
     /**
      * @return list<string>
+     * @throws \DateMalformedStringException
      */
     private function detectIssues(
         string $dateKey,
@@ -313,6 +321,9 @@ final readonly class ImportHealthCheckService
         return in_array((int)$checkDate->format('N'), self::NO_NOTIFICATION_WEEKDAYS, true);
     }
 
+    /**
+     * @throws \DateMalformedStringException
+     */
     private function resolveLatestExpectedFileDate(string $reseauName, \DateTimeImmutable $referenceDate): \DateTimeImmutable
     {
         return match ($this->normalizeReseauName($reseauName)) {
@@ -320,7 +331,6 @@ final readonly class ImportHealthCheckService
                 ? $referenceDate
                 : $referenceDate->modify('-1 day'),
             'autovision' => $referenceDate->modify('-1 day'),
-            'dekra', 'sgs' => $referenceDate,
             default => $referenceDate,
         };
     }
@@ -344,6 +354,8 @@ final readonly class ImportHealthCheckService
 
     /**
      * @param list<string> $issues
+     * @throws Exception
+     * @throws \JsonException
      */
     private function upsertHealthRow(
         int $reseauId,
@@ -356,7 +368,7 @@ final readonly class ImportHealthCheckService
         string $status,
         array $issues
     ): void {
-        $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $now = new \DateTimeImmutable()->format('Y-m-d H:i:s');
         $this->connection->executeStatement(
             'INSERT INTO import_health_check (reseau_id, check_date, reseau_name, files_imported, expected_files, controles_files, latest_imported_at, status, issues, created_at, updated_at)
              VALUES (:reseau_id, :check_date, :reseau_name, :files_imported, :expected_files, :controles_files, :latest_imported_at, :status, :issues, :created_at, :updated_at)
@@ -379,6 +391,8 @@ final readonly class ImportHealthCheckService
 
     /**
      * @param list<string> $alerts
+     * @throws \DateMalformedStringException
+     * @throws Exception
      */
     private function publishAlertNotification(\DateTimeImmutable $referenceDate, array $alerts): void
     {
@@ -398,7 +412,7 @@ final readonly class ImportHealthCheckService
             $message .= sprintf(' | +%d autre(s)', count($alerts) - 5);
         }
 
-        $notification = (new Notification())
+        $notification = new Notification()
             ->setType('import_health_alert')
             ->setMessage($message)
             ->setTargetDate($referenceDate)
@@ -418,18 +432,21 @@ final readonly class ImportHealthCheckService
             $notificationId = (int)$this->connection->lastInsertId();
             $this->publishExistingNotificationToAdmins($notificationId);
             $this->connection->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->connection->rollBack();
             throw $e;
         }
     }
 
+    /**
+     * @throws Exception
+     */
     private function publishExistingNotificationToAdmins(int $notificationId): void
     {
         $admins = $this->connection->fetchAllAssociative(
             "SELECT id FROM `user` WHERE is_active = 1 AND roles LIKE '%ROLE_DEV%'"
         );
-        $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $now = new \DateTimeImmutable()->format('Y-m-d H:i:s');
 
         foreach ($admins as $admin) {
             $this->connection->insert('user_notification', [
@@ -443,6 +460,7 @@ final readonly class ImportHealthCheckService
 
     /**
      * @return iterable<\DateTimeImmutable>
+     * @throws \DateMalformedStringException
      */
     private function dateRange(\DateTimeImmutable $start, \DateTimeImmutable $end): iterable
     {

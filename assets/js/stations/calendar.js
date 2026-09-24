@@ -125,11 +125,15 @@ function initCalendar(root) {
             const date = addDays(startDate, offset);
             const button = document.createElement('button');
             const dayName = new Intl.DateTimeFormat('fr-FR', {weekday: 'long'}).format(date);
+            const dayNameCapitalized = dayName.charAt(0).toUpperCase() + dayName.slice(1);
             button.type = 'button';
             button.className = 'day';
+            if (dayName === "samedi" || dayName === "dimanche") {
+                button.classList.add('weekend');
+            }
             button.dataset.date = formatIsoDate(date);
             button.setAttribute('aria-label', `Afficher le relevé du ${date.toLocaleDateString('fr-FR')}`);
-            button.innerHTML = `<span class="date">${date.getDate()}</span><span>${dayName}</span>`;
+            button.innerHTML = `<span>${dayNameCapitalized}</span><span class="date">${date.getDate()}</span><span>${MONTH_NAMES[date.getMonth()]}</span>`;
             if (sameDay(date, today)) button.classList.add('today');
             if (sameDay(date, selectedDate)) {
                 button.classList.add('selected');
