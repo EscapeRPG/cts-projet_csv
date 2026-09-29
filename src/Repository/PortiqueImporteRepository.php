@@ -32,6 +32,15 @@ class PortiqueImporteRepository extends ServiceEntityRepository
         \DateTimeImmutable $date,
     ): array
     {
+        $servicesVendus = [
+            "MINI",
+            "DEPERL",
+            "PRELAV",
+            "INTEGRAL",
+            "LUMINA",
+            "LUXURY",
+        ];
+
         $rows = $this->createQueryBuilder('p')
             ->select('p.numPortique AS numero')
             ->addSelect('COALESCE(SUM(p.payeCB), 0) AS cb')
@@ -48,8 +57,10 @@ class PortiqueImporteRepository extends ServiceEntityRepository
             ->andWhere('p.centre = :station')
             ->andWhere('p.date = :date')
             ->andWhere('p.numPortique IS NOT NULL')
+            ->andWhere('p.serviceVendu IN (:servicesVendus)')
             ->setParameter('station', $station)
             ->setParameter('date', $date, Types::DATE_IMMUTABLE)
+            ->setParameter('servicesVendus', $servicesVendus)
             ->groupBy('p.numPortique')
             ->orderBy('p.numPortique', 'ASC')
             ->getQuery()
