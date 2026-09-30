@@ -1,0 +1,145 @@
+.calendar {
+    display: flex;
+    flex-direction: row;
+    height: 120px;
+}
+
+.calendar button,
+.calendar button:hover {
+    background: unset;
+    color: unset;
+    margin: unset;
+    padding: unset;
+    border-radius: unset;
+}
+
+.calendar-year-month {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--cts-main);
+    color: var(--text);
+    padding: 0 20px;
+    width: fit-content;
+}
+
+.calendar-year-month button:hover {
+    color: var(--cts-alt);
+}
+
+.year-selector,
+.month-selector {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    min-width: 160px;
+}
+
+button.calendar-drop-btn {
+    width: 100%;
+    padding: 5px 10px;
+}
+
+button.calendar-drop-btn:hover {
+    width: 100%;
+    padding: 5px 10px;
+    border-radius: 5px;
+    background: var(--cts-alt);
+    color: var(--text);
+}
+
+.calendar-drop-menu {
+    position: fixed;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    background: var(--blocks);
+    color: var(--main-text);
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.calendar-drop-menu button {
+    padding: 20px;
+    background: none;
+}
+
+.calendar-drop-menu button.now {
+    background: var(--cts-alt);
+}
+
+.calendar-drop-menu button:hover {
+    background: var(--cts-main);
+}
+
+.drop-menu-hidden {
+    display: none;
+}
+
+.calendar-days {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    height: 100%;
+}
+
+.calendar-days .scroll-btn {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    background: var(--cts-main-light);
+    color: var(--cts-main);
+}
+
+.calendar-days .days-container {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+}
+
+.calendar-days .days-container .day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border-left: 1px solid var(--cts-main-light);
+    border-right: 1px solid var(--cts-main-light);
+    background: var(--blocks);
+    padding: 5px;
+    flex: 1;
+    font-weight: normal;
+}
+
+.calendar-days .days-container .weekend {
+    color: #9a9a9a;
+    background: #282828;
+}
+
+.calendar-days .days-container .day.today {
+    background: var(--cts-main-light);
+    color: var(--main-text);
+}
+
+.calendar-days .days-container .day.selected {
+    background: var(--cts-alt);
+    color: var(--text);
+}
+
+.calendar-days .scroll-btn:hover,
+.calendar-days .days-container .day:hover {
+    background: var(--cts-main);
+    color: var(--text);
+    padding: 5px;
+}
+
+.calendar-days .days-container .day .date {
+    font-size: 2em;
+    font-weight: bold;
+}
+
