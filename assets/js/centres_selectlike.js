@@ -226,8 +226,10 @@ function enhanceCentresSelect(select) {
     };
 
     const updateControlLabel = () => {
-        const selected = Array.from(select.selectedOptions || []);
-        if (!selected.length) {
+        const allSelected = Array.from(select.selectedOptions || []);
+        const countPrefix = select.dataset.selectlikeCountPrefix || '';
+        const selected = allSelected.filter((option) => option.value.startsWith(countPrefix));
+        if (!allSelected.length) {
             control.textContent = isReadonly ? 'Aucun' : '- CHOISIR -';
             return;
         }
@@ -235,7 +237,7 @@ function enhanceCentresSelect(select) {
             control.textContent = selected[0].textContent || '- CHOISIR -';
             return;
         }
-        const noun = selected.length > 1 ? itemLabelPlural : itemLabelSingular;
+        const noun = selected.length === 1 ? itemLabelSingular : itemLabelPlural;
         control.textContent = isReadonly
             ? `${selected.length} ${noun}`
             : `${selected.length} ${noun} sélectionnés`;

@@ -20,6 +20,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Core\Role\RoleHierarchyInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Uid\Uuid;
 
@@ -38,13 +39,6 @@ final class AdminController extends AbstractController
     private const array ROLE_ORGANIGRAM_SCOPES = ['ROLE_ORGANIGRAM_STRUCT_VIEW', 'ROLE_ORGANIGRAM_IMMO_VIEW', 'ROLE_ORGANIGRAM_HIERARCHY_VIEW'];
     private const array ROLE_ENCOURS = ['ROLE_ENCOURS_VIEW', 'ROLE_ENCOURS_EDIT', 'ROLE_ENCOURS_ADD'];
 
-    private const array ADD_TO_VIEW = [
-        'ROLE_LIST_SOCIETES_ADD' => 'ROLE_LIST_SOCIETES_VIEW',
-        'ROLE_LIST_CENTRES_ADD' => 'ROLE_LIST_CENTRES_VIEW',
-        'ROLE_LIST_VOITURES_ADD' => 'ROLE_LIST_VOITURES_VIEW',
-        'ROLE_LIST_SALARIES_ADD' => 'ROLE_LIST_SALARIES_VIEW',
-    ];
-
     /**
      * @param string $mailerFromAddress Sender email address used for administrative notifications.
      * @param string $mailerFromName Sender display name used for administrative notifications.
@@ -53,7 +47,8 @@ final class AdminController extends AbstractController
     public function __construct(
         private readonly string          $mailerFromAddress,
         private readonly string          $mailerFromName,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly RoleHierarchyInterface $roleHierarchy,
     )
     {
     }
@@ -354,14 +349,8 @@ final class AdminController extends AbstractController
             if ($orgHier) $roles[] = 'ROLE_ORGANIGRAM_HIERARCHY_VIEW';
         }
 
-        // If add permission is granted, ensure the corresponding view permission is also present.
-        foreach ($roles as $role) {
-            $addRole = (string)$role;
-            $viewRole = self::ADD_TO_VIEW[$addRole] ?? null;
-            if (is_string($viewRole)) {
-                $roles[] = $viewRole;
-            }
-        }
+        // Persist inherited permissions using the same hierarchy as authorization checks.
+        $roles = $this->roleHierarchy->getReachableRoleNames($roles);
 
         $roles = array_values(array_unique(array_filter($roles, static fn(string $r): bool => $r !== 'ROLE_USER')));
 

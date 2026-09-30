@@ -106,13 +106,17 @@
     flex-wrap: wrap;
 }
 
-.organigram-config__page-actions button {
+.organigram-config__page-actions label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
     margin: 0;
-    transform: none;
 }
 
-.organigram-config__page-actions button.active {
-    background: var(--cts-alt);
+.organigram-config__page-actions input[type="checkbox"] {
+    margin: 0;
+    width: auto;
 }
 
 .organigram-config__footer {

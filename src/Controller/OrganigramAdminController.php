@@ -85,7 +85,7 @@ final class OrganigramAdminController extends AbstractController
         return $response;
     }
 
-    #[IsGranted('ROLE_ADMIN')]
+    #[IsGranted('ROLE_ORGANIGRAM_EDIT')]
     #[Route('/organigramme/editer', name: 'app_organigram_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, OrganigramConfig $config): Response
     {

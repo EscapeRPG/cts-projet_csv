@@ -1,5 +1,10 @@
 {% extends 'base.html.twig' %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/user_form.js') }}" type="module"></script>
+{% endblock %}
+
 {% block title %}Modifier un utilisateur{% endblock %}
 
 {% block body %}

@@ -23,7 +23,7 @@ class CreateUserType extends AbstractType
     {
         $builder
             ->add('username', TextType::class, [
-                'label' => 'Nom :',
+                'label' => 'Nom Prénom :',
                 'required' => true,
             ])
             ->add('email', EmailType::class, [

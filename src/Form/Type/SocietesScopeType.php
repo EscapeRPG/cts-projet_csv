@@ -32,8 +32,9 @@ final class SocietesScopeType extends AbstractType
             'expanded' => false,
             'attr' => [
                 'data-centres-selectlike' => '1',
-                'data-selectlike-item-singular' => 'élément',
-                'data-selectlike-item-plural' => 'éléments',
+                'data-selectlike-item-singular' => 'centre',
+                'data-selectlike-item-plural' => 'centres',
+                'data-selectlike-count-prefix' => 'centre:',
                 'size' => 1,
             ],
             'choices' => function (Options $options): array {

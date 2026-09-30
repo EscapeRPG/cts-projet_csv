@@ -13,7 +13,7 @@ function ensureWorkerConfigured(workerUrl) {
 function setSelectedLabel(root, key, pageNum) {
     const el = root.querySelector(`[data-organigram-selected="${CSS.escape(key)}"]`);
     if (!(el instanceof HTMLElement)) return;
-    el.textContent = pageNum ? `page ${pageNum}` : '';
+    el.textContent = pageNum ? `page ${pageNum}` : 'Non attribué';
 }
 
 function setHidden(root, key, pageNum) {
@@ -23,18 +23,18 @@ function setHidden(root, key, pageNum) {
     setSelectedLabel(root, key, pageNum);
 }
 
-function markButtons(root) {
+function syncCheckboxes(root) {
     const selected = {
         structurel: (root.querySelector('[data-organigram-target="structurel"]')?.value ?? '').trim(),
         immobilier: (root.querySelector('[data-organigram-target="immobilier"]')?.value ?? '').trim(),
         hierarchique: (root.querySelector('[data-organigram-target="hierarchique"]')?.value ?? '').trim(),
     };
 
-    root.querySelectorAll('[data-assign-key]').forEach((btn) => {
-        if (!(btn instanceof HTMLButtonElement)) return;
-        const key = String(btn.dataset.assignKey ?? '');
-        const page = String(btn.dataset.assignPage ?? '');
-        btn.classList.toggle('active', selected[key] !== '' && selected[key] === page);
+    root.querySelectorAll('[data-assign-key]').forEach((checkbox) => {
+        if (!(checkbox instanceof HTMLInputElement)) return;
+        const key = String(checkbox.dataset.assignKey ?? '');
+        const page = String(checkbox.dataset.assignPage ?? '');
+        checkbox.checked = selected[key] !== '' && selected[key] === page;
     });
 }
 
@@ -111,25 +111,27 @@ async function initOrganigramConfigure() {
             const actions = document.createElement('div');
             actions.className = 'organigram-config__page-actions';
 
-            const mkBtn = (key, label) => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.textContent = label;
-                btn.dataset.assignKey = key;
-                btn.dataset.assignPage = String(pageNum);
-                btn.addEventListener('click', () => {
-                    setHidden(form, key, pageNum);
-                    markButtons(form);
+            const makeCheckbox = (key, text) => {
+                const label = document.createElement('label');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.dataset.assignKey = key;
+                checkbox.dataset.assignPage = String(pageNum);
+                checkbox.addEventListener('change', () => {
+                    setHidden(form, key, checkbox.checked ? pageNum : null);
+                    syncCheckboxes(form);
                 });
-                return btn;
+                label.append(checkbox, document.createTextNode(text));
+                return label;
             };
 
-            actions.appendChild(mkBtn('structurel', 'Structurel'));
-            actions.appendChild(mkBtn('immobilier', 'Immobilier'));
-            actions.appendChild(mkBtn('hierarchique', 'Hiérarchique'));
+            actions.appendChild(makeCheckbox('structurel', 'Structurel'));
+            actions.appendChild(makeCheckbox('immobilier', 'Immobilier'));
+            actions.appendChild(makeCheckbox('hierarchique', 'Hiérarchique'));
             card.appendChild(actions);
 
             pagesHost.appendChild(card);
+            syncCheckboxes(form);
 
             // Render thumbnail (sequential to keep memory stable).
             try {
@@ -141,7 +143,7 @@ async function initOrganigramConfigure() {
             }
         }
 
-        markButtons(form);
+        syncCheckboxes(form);
     } finally {
         isRunning = false;
     }
