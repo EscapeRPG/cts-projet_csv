@@ -4,10 +4,11 @@
 
 {% block body %}
     <div class="organigram-config">
+        {{ include('organigram/_messages.html.twig') }}
         <div class="organigram-config__header">
             <h1>Configurer organigrammes</h1>
             <div class="organigram-config__actions">
-                <a class="btn-link" href="{{ path('app_organigram_edit') }}">Remplacer le PDF</a>
+                <a class="btn-link" href="{{ path('app_organigram_edit') }}">Importer un PDF</a>
             </div>
         </div>
 
@@ -16,12 +17,14 @@
                 <p>Aucun PDF uploadé.</p>
             </div>
         {% else %}
+            <p>Associez les pages aux organigrammes à ajouter ou remplacer. Les types non cochés conservent leur document actuel.</p>
             <form method="post"
                   class="organigram-config__form"
                   data-organigram-config="1"
                   data-pdf-url="{{ pdfUrl }}"
                   data-pdf-worker-url="{{ asset('vendor/pdfjs-dist/build/pdf.worker.mjs.js') }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('organigram_configure') }}">
+                <input type="hidden" name="import_id" value="{{ importId }}">
                 <input type="hidden" name="structurel" value="{{ mapping.structurel ?? '' }}" data-organigram-target="structurel">
                 <input type="hidden" name="immobilier" value="{{ mapping.immobilier ?? '' }}" data-organigram-target="immobilier">
                 <input type="hidden" name="hierarchique" value="{{ mapping.hierarchique ?? '' }}" data-organigram-target="hierarchique">

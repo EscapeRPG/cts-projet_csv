@@ -6,12 +6,15 @@
 
     .sidenav {
         width: 160px;
+        margin-right: 0;
     }
 }
 
 .organigram-admin-actions {
     width: 100%;
     display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
     justify-content: flex-end;
 }
 

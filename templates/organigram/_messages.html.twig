@@ -1,0 +1,35 @@
+{% set errorsMessages = app.flashes('error') %}
+{% set successMessages = app.flashes('success') %}
+{% set warningMessages = app.flashes('warning') %}
+
+{% if errorsMessages is not empty or successMessages is not empty or warningMessages is not empty %}
+    <div class="modal-overlay" data-controller="modals" data-modals-target="overlay">
+        <div class="modal {{ errorsMessages is not empty or warningMessages is not empty ? 'error-modal' : 'success-modal' }}"
+             data-modals-target="modal" role="dialog" aria-modal="true" aria-label="Résultat de l’opération">
+            {% if errorsMessages is not empty %}
+                <h2>Erreurs détectées</h2>
+                <ul>
+                    {% for message in errorsMessages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if successMessages is not empty %}
+                <h2>Succès</h2>
+                {% for message in successMessages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+
+            {% if warningMessages is not empty %}
+                <h2>Attention</h2>
+                {% for message in warningMessages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+
+            <button type="button" data-action="click->modals#hide">OK</button>
+        </div>
+    </div>
+{% endif %}

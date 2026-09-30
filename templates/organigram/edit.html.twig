@@ -4,9 +4,11 @@
 
 {% block body %}
     <div class="form-wrapper">
+        {{ include('organigram/_messages.html.twig') }}
+        <p>Importez un PDF d’une ou plusieurs pages, puis choisissez les organigrammes à ajouter ou remplacer. Les autres documents seront conservés.</p>
         {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
             {{ form_row(form.pdf) }}
-            <button type="submit">Uploader</button>
+            <button type="submit">Importer</button>
         {{ form_end(form) }}
 
         {% if hasPdf %}
@@ -16,4 +18,3 @@
         {% endif %}
     </div>
 {% endblock %}
-

@@ -13,7 +13,7 @@ function ensureWorkerConfigured(workerUrl) {
 function setSelectedLabel(root, key, pageNum) {
     const el = root.querySelector(`[data-organigram-selected="${CSS.escape(key)}"]`);
     if (!(el instanceof HTMLElement)) return;
-    el.textContent = pageNum ? `page ${pageNum}` : 'Non attribué';
+    el.textContent = pageNum ? `page ${pageNum}` : 'Inchangé';
 }
 
 function setHidden(root, key, pageNum) {

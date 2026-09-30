@@ -98,28 +98,35 @@
                                 → Encours bancaires
                             </a>
                         </li>
+                        <li>
+                            <a href="{{ path('app_encours_bancaires_add') }}">
+                                → Ajout d'encours
+                            </a>
+                        </li>
                     </ul>
                 {% endif %}
 
-                <h3 class="toggle">
+                {% if is_granted('ROLE_ADMIN') %}
+                    <h3 class="toggle">
                     <span class="toggle-title">
                         {{ include('partials/svg/utilisateurs.html.twig') }}
                         Utilisateurs
                     </span>
-                    <span class="open-btn">></span>
-                </h3>
-                <ul class="menu">
-                    <li>
-                        <a href="{{ path('app_users_list') }}">
-                            → Liste des utilisateurs
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ path('app_users_add') }}">
-                            → Ajouter un utilisateur
-                        </a>
-                    </li>
-                </ul>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        <li>
+                            <a href="{{ path('app_users_list') }}">
+                                → Liste des utilisateurs
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ path('app_users_add') }}">
+                                → Ajouter un utilisateur
+                            </a>
+                        </li>
+                    </ul>
+                {% endif %}
             {% endif %}
 
             {% if is_granted('ROLE_CTS') %}
