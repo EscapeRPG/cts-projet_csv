@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Outils réseaux{% endblock %}
+
+{% block body %}
+    <div class="entreprise">
+        <div class="app-container">
+            <fieldset class="app-category">
+                {% for lien in outils %}
+                    <a href="{{ lien.lien }}" class="app" target="_blank">
+                        {% if lien.logo %}
+                            <img src="{{ asset('img/' ~ lien.logo) }}" alt="{{ lien.nom }}">
+                        {% endif %}
+
+                        <div class="inner-div">{{ lien.nom }}</div>
+
+                        <form action="{{ path('app_outils_edit', { id: lien.id }) }}" method="get">
+                            <button class="edit-app">
+                                &#9998;
+                            </button>
+                        </form>
+
+                        <form action="{{ path('app_outils_delete', { id: lien.id }) }}"
+                              method="post"
+                              data-controller="confirm-modal-trigger"
+                              data-confirm-modal-trigger-message-value=""
+                        >
+                            <button
+                                type="button"
+                                class="delete-app"
+                                data-action="click->confirm-modal-trigger#open"
+                            >
+                                x
+                            </button
+                                type="button">
+                        </form>
+                    </a>
+                {% endfor %}
+            </fieldset>
+        </div>
+    </div>
+
+    <div class="filters-print-actions">
+        <a href="{{ path('app_outils_add') }}" class="btn-link add">Ajouter</a>
+    </div>
+
+    <div id="confirmModal" class="modal-overlay" data-controller="confirm-modal" data-confirm-modal-target="overlay">
+        <div class="modal error-modal" data-confirm-modal-target="modal">
+            <img src="{{ asset("/img/warning.png") }}" alt="attention">
+
+            <p>Souhaitez-vous vraiment supprimer cet outil ?</p>
+            <p>Cette action est irréversible.</p>
+
+            <div class="modal-buttons">
+                <button type="button" class="abort-btn" data-action="click->confirm-modal#hide">Annuler</button>
+                <button type="button" class="confirm-btn" data-action="click->confirm-modal#confirm">Supprimer</button>
+            </div>
+        </div>
+    </div>
+{% endblock %}

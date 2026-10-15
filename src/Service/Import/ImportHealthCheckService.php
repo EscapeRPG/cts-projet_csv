@@ -10,7 +10,7 @@ use Throwable;
 
 final readonly class ImportHealthCheckService
 {
-    private const int HISTORY_DAYS = 14;
+    private const int HISTORY_DAYS = 120;
     private const int BASELINE_DAYS = 45;
     private const float WARNING_RATIO = 0.80;
     private const array NO_NOTIFICATION_WEEKDAYS = [1, 7];

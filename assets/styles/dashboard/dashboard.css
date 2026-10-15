@@ -4,16 +4,15 @@
     align-items: center;
     justify-content: space-between;
     gap: 50px;
-    width: 70%;
+    width: 80%;
     margin: 5px auto;
     padding: 10px 50px;
     background: var(--blocks);
     border-radius: 20px;
     box-shadow: var(--box-shadow);
-    flex: 1;
 
     img {
-        width: 200px;
+        width: 150px;
     }
 }
 
@@ -51,7 +50,7 @@
 
 .app {
     display: flex;
-    align-items: start;
+    align-items: center;
     justify-content: center;
     width: 120px;
     height: 120px;
@@ -65,7 +64,6 @@
     font-weight: bold;
     text-decoration: none;
     position: relative;
-    overflow: hidden;
 
     &:hover {
         transform: scale(1.1);
@@ -74,11 +72,13 @@
             max-height: 100%;
             background: linear-gradient(var(--cts-main), var(--cts-alt));
             border: none;
+            border-radius: 10px;
         }
     }
 
     img {
         width: 80%;
+        margin-top: -15px;
     }
 
     .inner-div {
@@ -86,6 +86,7 @@
         align-items: center;
         justify-content: center;
         text-align: center;
+        border-radius: 0 0 10px 10px;
         position: absolute;
         bottom: 0;
         width: 100%;
@@ -97,5 +98,45 @@
         transition: all .25s ease;
         border-top: 1px solid var(--blocks);
         font-size: .7em;
+    }
+
+    .edit-app,
+    .delete-app {
+        position: absolute;
+        right: -15px;
+        border: 2px solid;
+        border-radius: 100%;
+        font-weight: bold;
+        aspect-ratio: 1;
+        z-index: 100;
+    }
+
+    .edit-app {
+        top: 15px;
+        padding: 0 5px;
+        border-color: var(--cts-main);
+        background: white;
+        color: var(--cts-main);
+        transform: scale(-0.8, .8);
+
+        &:hover {
+            background: var(--cts-alt) !important;
+            border-color: var(--cts-alt);
+            color: white;
+        }
+    }
+
+    .delete-app {
+        top: -12px;
+        border-color: red;
+        background: red;
+        color: white;
+        padding: 2px 8px;
+        transform: scale(0.8);
+
+        &:hover {
+            background: white !important;
+            color: red;
+        }
     }
 }

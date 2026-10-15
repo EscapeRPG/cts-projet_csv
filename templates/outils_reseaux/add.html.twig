@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter un outil réseau{% endblock %}
+
+{% block body %}
+    <div class="form-wrapper">
+        <small class="required-inputs">Les champs marqués d'un * sont obligatoires.</small><br><br>
+
+        {{ form_start(form, {'attr': {'data-turbo': 'false'}}) }}
+
+        <div class="form-row">
+            {{ form_label(form.nom) }}
+            {{ form_errors(form.nom) }}
+            {{ form_widget(form.nom) }}
+        </div>
+
+        <small class="required-inputs">{{ form_help(form.nom) }}</small>
+
+        <div class="form-row">
+            {{ form_label(form.lien) }}
+            {{ form_errors(form.lien) }}
+            {{ form_widget(form.lien) }}
+        </div>
+
+        <div class="form-row">
+            {{ form_label(form.logo) }}
+            {{ form_errors(form.logo) }}
+            {{ form_widget(form.logo) }}
+        </div>
+
+        {{ form_rest(form) }}
+        <button type="submit">Enregistrer</button>
+        {{ form_end(form, { render_rest: false }) }}
+    </div>
+{% endblock %}

@@ -35,6 +35,11 @@ class CreateUserType extends AbstractType
                 'required' => false,
                 'mapped' => false,
             ])
+            ->add('toolsView', CheckboxType::class, [
+                'label' => 'Accès outils réseaux ?',
+                'required' => false,
+                'mapped' => false,
+            ])
             ->add('organigrammes', ChoiceType::class, [
                 'label' => 'Organigrammes :',
                 'required' => false,
@@ -190,10 +195,14 @@ class CreateUserType extends AbstractType
                 $s = trim((string) $v);
                 if (str_starts_with($s, 'societe:')) {
                     $id = (int) substr($s, 8);
-                    if ($id > 0) $societeIds[] = $id;
+                    if ($id > 0) {
+                        $societeIds[] = $id;
+                    }
                 } elseif (str_starts_with($s, 'centre:')) {
                     $id = (int) substr($s, 7);
-                    if ($id > 0) $centreIds[] = $id;
+                    if ($id > 0) {
+                        $centreIds[] = $id;
+                    }
                 }
             }
             $societeIds = array_values(array_unique($societeIds));

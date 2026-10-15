@@ -51,6 +51,50 @@
             {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_ORGANIGRAM_VIEW') or is_granted('ROLE_ENCOURS_VIEW') %}
                 <h2>ADMINISTRATION</h2>
 
+                {% if is_granted('ROLE_ADMIN') %}
+                    <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('partials/svg/utilisateurs.html.twig') }}
+                        Utilisateurs
+                    </span>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        <li>
+                            <a href="{{ path('app_users_list') }}">
+                                → Liste des utilisateurs
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ path('app_users_add') }}">
+                                → Ajouter un utilisateur
+                            </a>
+                        </li>
+                    </ul>
+                {% endif %}
+
+                {% if is_granted('ROLE_TOOLS_VIEW') %}
+                    <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('partials/svg/outils.html.twig') }}
+                        Outils réseaux
+                    </span>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        <li>
+                            <a href="{{ path('app_outils_list') }}">
+                                → Liste des outils
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ path('app_outils_add') }}">
+                                → Ajouter un outil
+                            </a>
+                        </li>
+                    </ul>
+                {% endif %}
+
                 {% if is_granted('ROLE_ORGANIGRAM_VIEW') %}
                     <h3 class="toggle">
                     <span class="toggle-title">
@@ -101,28 +145,6 @@
                         <li>
                             <a href="{{ path('app_encours_bancaires_add') }}">
                                 → Ajout d'encours
-                            </a>
-                        </li>
-                    </ul>
-                {% endif %}
-
-                {% if is_granted('ROLE_ADMIN') %}
-                    <h3 class="toggle">
-                    <span class="toggle-title">
-                        {{ include('partials/svg/utilisateurs.html.twig') }}
-                        Utilisateurs
-                    </span>
-                        <span class="open-btn">></span>
-                    </h3>
-                    <ul class="menu">
-                        <li>
-                            <a href="{{ path('app_users_list') }}">
-                                → Liste des utilisateurs
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ path('app_users_add') }}">
-                                → Ajouter un utilisateur
                             </a>
                         </li>
                     </ul>
@@ -408,6 +430,6 @@
     </div>
 
     <a href="{{ path('app_home') }}" class="home">
-        <img src="{{ asset('img/logo-cts.png') }}" alt="accueil" title="Retour à l'accueil">
+        <img src="{{ asset('img/apps/logo-cts.png') }}" alt="accueil" title="Retour à l'accueil">
     </a>
 </div>

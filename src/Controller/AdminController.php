@@ -269,6 +269,9 @@ final class AdminController extends AbstractController
         $currentRoles = $user->getRoles();
 
         $form->get('isAdmin')->setData(in_array('ROLE_ADMIN', $currentRoles, true));
+        if (in_array('ROLE_ADMIN', $currentRoles, true) || in_array('ROLE_TOOLS_VIEW', $currentRoles, true)) {
+            $form->get('toolsView')->setData(true);
+        }
         $form->get('entreprises')->setData(self::intersectRoles($currentRoles, self::ROLE_ENTREPRISES));
         $form->get('societe')->setData(self::intersectRoles($currentRoles, self::ROLE_SOCIETE));
         $form->get('centre')->setData(self::intersectRoles($currentRoles, self::ROLE_CENTRE));
@@ -298,6 +301,7 @@ final class AdminController extends AbstractController
     private function computeRolesFromForm(FormInterface $form): array
     {
         $isAdmin = (bool)$form->get('isAdmin')->getData();
+        $toolsView = (bool)$form->get('toolsView')->getData();
 
         /** @var array<int, string> $entreprises */
         $entreprises = $form->get('entreprises')->getData() ?? [];
@@ -330,6 +334,10 @@ final class AdminController extends AbstractController
             ];
         }
 
+        if ($toolsView) {
+            $roles[] = 'ROLE_TOOLS_VIEW';
+        }
+
         $listPerms = array_merge($societePerms, $centrePerms, $voiturePerms, $salariesPerms, $organigrammesPerms, $encoursPerms);
         $roles = array_merge($roles, $entreprises, $listPerms);
 
@@ -344,9 +352,15 @@ final class AdminController extends AbstractController
                 $orgHier = true;
             }
 
-            if ($orgStruct) $roles[] = 'ROLE_ORGANIGRAM_STRUCT_VIEW';
-            if ($orgImmo) $roles[] = 'ROLE_ORGANIGRAM_IMMO_VIEW';
-            if ($orgHier) $roles[] = 'ROLE_ORGANIGRAM_HIERARCHY_VIEW';
+            if ($orgStruct) {
+                $roles[] = 'ROLE_ORGANIGRAM_STRUCT_VIEW';
+            }
+            if ($orgImmo) {
+                $roles[] = 'ROLE_ORGANIGRAM_IMMO_VIEW';
+            }
+            if ($orgHier) {
+                $roles[] = 'ROLE_ORGANIGRAM_HIERARCHY_VIEW';
+            }
         }
 
         // Persist inherited permissions using the same hierarchy as authorization checks.
