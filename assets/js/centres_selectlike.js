@@ -48,7 +48,7 @@ function enhanceCentresSelect(select) {
             }
 
             options.forEach((option) => {
-                if (!option.selected) return;
+                if (!option.selected || option.dataset.selectlikeHidden === '1') return;
 
                 const item = document.createElement('div');
                 item.className = 'selectlike-multi__item';
@@ -227,6 +227,15 @@ function enhanceCentresSelect(select) {
 
     const updateControlLabel = () => {
         const allSelected = Array.from(select.selectedOptions || []);
+        if (select.dataset.selectlikeScopeSummary === '1') {
+            const count = (prefix) => new Set(allSelected
+                .filter((option) => option.value.startsWith(prefix))
+                .map((option) => option.value)).size;
+            const societes = count('societe:');
+            const centres = count('centre:');
+            control.textContent = `${societes} société${societes === 1 ? '' : 's'} — ${centres} centre${centres === 1 ? '' : 's'}`;
+            return;
+        }
         const countPrefix = select.dataset.selectlikeCountPrefix || '';
         const selected = allSelected.filter((option) => option.value.startsWith(countPrefix));
         if (!allSelected.length) {

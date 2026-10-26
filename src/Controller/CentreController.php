@@ -41,7 +41,7 @@ final class CentreController extends AbstractController
     {
         $q = trim((string)$request->query->get('q', ''));
         $centreIds = $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE);
-        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $centreIds);
+        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $centreIds, $request->query->getBoolean('vl', true), $request->query->getBoolean('cl', true));
         $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
         $reseaux = $this->findReseauxForCentreScope($reseauRepository, $centreIds);
 
@@ -63,7 +63,7 @@ final class CentreController extends AbstractController
     {
         $q = trim((string)$request->query->get('q', ''));
         $centreIds = $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE);
-        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $centreIds);
+        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $centreIds, $request->query->getBoolean('vl', true), $request->query->getBoolean('cl', true));
         $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
         $reseaux = $this->findReseauxForCentreScope($reseauRepository, $centreIds);
 
@@ -82,7 +82,7 @@ final class CentreController extends AbstractController
     public function listCentresNonEditable(Request $request, CentreRepository $centreRepository): Response
     {
         $q = trim((string)$request->query->get('q', ''));
-        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE));
+        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE), $request->query->getBoolean('vl', true), $request->query->getBoolean('cl', true));
 
         return $this->render('cts/centres/list_uneditable.html.twig', [
             'centres' => $centres,
@@ -94,7 +94,7 @@ final class CentreController extends AbstractController
     public function listCentresNonEditablePartial(Request $request, CentreRepository $centreRepository): Response
     {
         $q = trim((string)$request->query->get('q', ''));
-        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE));
+        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE), $request->query->getBoolean('vl', true), $request->query->getBoolean('cl', true));
 
         return $this->render('cts/centres/_list_results_uneditable.html.twig', [
             'centres' => $centres,
@@ -105,10 +105,9 @@ final class CentreController extends AbstractController
     #[Route("/cts/centres/add", name: 'app_centres_add')]
     public function addCentre(Request $request, EntityManagerInterface $em): Response
     {
-        $centreIds = $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE);
-
         $form = $this->createForm(CreateCentreType::class, null, [
-            'centre_scope_ids' => $centreIds,
+            'is_creation' => true,
+            'societe_scope_ids' => $this->scopeResolver->societeIds(TypeCentre::CONTROLE_TECHNIQUE),
         ]);
         $form->handleRequest($request);
 
@@ -148,12 +147,14 @@ final class CentreController extends AbstractController
             $this->addFlash('error', 'Jeton CSRF invalide, rechargez la page.');
             return $this->redirectToRoute('app_centres_list', [
                 'q' => $request->query->get('q'),
+                'vl' => (int) $request->query->getBoolean('vl', true),
+                'cl' => (int) $request->query->getBoolean('cl', true),
             ]);
         }
 
         $q = trim((string)$request->query->get('q', ''));
         $centreIds = $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE);
-        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $centreIds);
+        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $centreIds, $request->query->getBoolean('vl', true), $request->query->getBoolean('cl', true));
         $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
         $reseaux = $this->findReseauxForCentreScope($reseauRepository, $centreIds);
 
@@ -162,6 +163,8 @@ final class CentreController extends AbstractController
             $this->addFlash('warning', 'Aucune modification détectée.');
             return $this->redirectToRoute('app_centres_list', [
                 'q' => $request->query->get('q'),
+                'vl' => (int) $request->query->getBoolean('vl', true),
+                'cl' => (int) $request->query->getBoolean('cl', true),
             ]);
         }
 
@@ -195,6 +198,8 @@ final class CentreController extends AbstractController
             $this->addFlash('warning', 'Aucune modification appliquée.');
             return $this->redirectToRoute('app_centres_list', [
                 'q' => $request->query->get('q'),
+                'vl' => (int) $request->query->getBoolean('vl', true),
+                'cl' => (int) $request->query->getBoolean('cl', true),
             ]);
         }
 
@@ -203,6 +208,8 @@ final class CentreController extends AbstractController
 
         return $this->redirectToRoute('app_centres_list_uneditable', [
             'q' => $request->query->get('q'),
+                'vl' => (int) $request->query->getBoolean('vl', true),
+                'cl' => (int) $request->query->getBoolean('cl', true),
         ]);
     }
 
@@ -234,7 +241,7 @@ final class CentreController extends AbstractController
     public function listCentresPrint(Request $request, CentreRepository $centreRepository): Response
     {
         $q = trim((string)$request->query->get('q', ''));
-        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE));
+        $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE), $request->query->getBoolean('vl', true), $request->query->getBoolean('cl', true));
 
         return $this->render('cts/lists/print/centres.html.twig', [
             'centres' => $centres,

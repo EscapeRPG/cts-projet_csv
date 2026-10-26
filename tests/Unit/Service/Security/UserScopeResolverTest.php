@@ -54,6 +54,25 @@ final class UserScopeResolverTest extends TestCase
         self::assertSame([4], $resolver->societeIds());
     }
 
+    public function testCompanyWithoutCentresRemainsAvailableForCreation(): void
+    {
+        $resolver = $this->resolver((new User())->addSociete($this->societe(19)));
+
+        self::assertSame([], $resolver->centreIds(TypeCentre::STATION_LAVAGE));
+        self::assertSame([19], $resolver->societeIds(TypeCentre::STATION_LAVAGE));
+        self::assertSame([19], $resolver->societeIds(TypeCentre::CONTROLE_TECHNIQUE));
+    }
+
+    public function testCreationCompanyScopeUsesTheRequestedCentreType(): void
+    {
+        $ct = $this->centre(1, TypeCentre::CONTROLE_TECHNIQUE)->setSociete($this->societe(2));
+        $station = $this->centre(3, TypeCentre::STATION_LAVAGE)->setSociete($this->societe(4));
+        $resolver = $this->resolver((new User())->addCentre($ct)->addCentre($station));
+
+        self::assertSame([2], $resolver->societeIds());
+        self::assertSame([4], $resolver->societeIds(TypeCentre::STATION_LAVAGE));
+        self::assertSame([], $this->resolver(new User())->societeIds(TypeCentre::STATION_LAVAGE));
+    }
     private function resolver(?User $user, bool $isAdmin = false): UserScopeResolver
     {
         $security = $this->createMock(Security::class);

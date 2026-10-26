@@ -136,33 +136,48 @@
                             {% if isAdmin %}
                                 Toutes
                             {% else %}
-                                {# Build an optgroup-friendly structure: company -> list of centres. #}
                                 {% set centresBySociete = {} %}
                                 {% set societeNames = [] %}
+                                {% set selectedSocietes = {} %}
+                                {% set scopedCentres = userList.centres|merge([]) %}
+                                {% set seenCentreIds = [] %}
 
-                                {% for centre in userList.centres %}
-                                    {% set societeName = centre.societe ? centre.societe.nom : '(Sans societe)' %}
-                                    {% if societeName not in societeNames %}
-                                        {% set societeNames = societeNames|merge([societeName]) %}
+                                {% for societe in userList.societes %}
+                                    {% set societeNames = societeNames|merge([societe.nom]) %}
+                                    {% set selectedSocietes = selectedSocietes|merge({ (societe.nom): societe.id }) %}
+                                    {% set centresBySociete = centresBySociete|merge({ (societe.nom): [] }) %}
+                                    {% set scopedCentres = scopedCentres|merge(societe.centre) %}
+                                {% endfor %}
+
+                                {% for centre in scopedCentres %}
+                                    {% if centre.id not in seenCentreIds %}
+                                        {% set seenCentreIds = seenCentreIds|merge([centre.id]) %}
+                                        {% set societeName = centre.societe ? centre.societe.nom : '(Sans société)' %}
+                                        {% if societeName not in societeNames %}
+                                            {% set societeNames = societeNames|merge([societeName]) %}
+                                        {% endif %}
+                                        {% set current = centresBySociete[societeName]|default([]) %}
+                                        {% set centresBySociete = centresBySociete|merge({ (societeName): current|merge([centre]) }) %}
                                     {% endif %}
-
-                                    {% set current = centresBySociete[societeName]|default([]) %}
-                                    {% set centresBySociete = centresBySociete|merge({ (societeName): current|merge([centre]) }) %}
                                 {% endfor %}
 
                                 <div class="centres-selectlike">
                                     <select multiple
                                             data-centres-selectlike="1"
                                             data-centres-selectlike-readonly="1"
-                                            aria-label="Centres rattachés">
+                                            data-selectlike-scope-summary="1"
+                                            aria-label="Sociétés et centres rattachés">
                                         {% for societeName in societeNames|sort %}
                                             <optgroup label="{{ societeName }}">
+                                                {% if selectedSocietes[societeName] is defined %}
+                                                    <option value="societe:{{ selectedSocietes[societeName] }}" data-selectlike-hidden="1" selected>{{ societeName }}</option>
+                                                {% endif %}
                                                 {% for centre in centresBySociete[societeName] %}
                                                     {% set reseau = centre.reseauNom|default('') %}
                                                     {% set ville = centre.ville|default('') %}
                                                     {% set agr = centre.agrCentre|default('') %}
                                                     {% set label = (reseau ~ ' ' ~ ville ~ (agr != '' ? ' (' ~ agr ~ ')' : ''))|trim %}
-                                                    <option value="{{ centre.id }}" selected>{{ label }}</option>
+                                                    <option value="centre:{{ centre.id }}" selected>{{ label }}</option>
                                                 {% endfor %}
                                             </optgroup>
                                         {% endfor %}

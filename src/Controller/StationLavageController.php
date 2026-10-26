@@ -77,10 +77,9 @@ final class StationLavageController extends AbstractController
     #[Route("/astikoto/stations/add", name: 'app_stations_add')]
     public function addStation(Request $request, EntityManagerInterface $em): Response
     {
-        $centreIds = $this->scopeResolver->centreIds(TypeCentre::STATION_LAVAGE);
-
         $form = $this->createForm(CreateStationLavageType::class, null, [
-            'centre_scope_ids' => $centreIds,
+            'is_creation' => true,
+            'societe_scope_ids' => $this->scopeResolver->societeIds(TypeCentre::STATION_LAVAGE),
         ]);
         $form->handleRequest($request);
 

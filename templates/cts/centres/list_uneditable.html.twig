@@ -16,6 +16,16 @@
                        data-list-search-partial-url="{{ path('app_centres_list_uneditable_partial') }}"
                        data-list-search-push-url="{{ path('app_centres_list_uneditable') }}"
                        data-list-search-results="#cts-centres-uneditable-results">
+                <label class="centre-type-filter">
+                    <input type="checkbox" name="vl" value="1" data-list-search-param="1"
+                           {% if app.request.query.getBoolean('vl', true) %}checked{% endif %}>
+                    VL
+                </label>
+                <label class="centre-type-filter">
+                    <input type="checkbox" name="cl" value="1" data-list-search-param="1"
+                           {% if app.request.query.getBoolean('cl', true) %}checked{% endif %}>
+                    CL
+                </label>
             </div>
         </div>
 
@@ -29,7 +39,7 @@
             {% endif %}
 
             {% if is_granted('ROLE_LIST_CENTRES_EDIT') %}
-                <a href="{{ path('app_centres_list') }}" class="btn-link edit">Modifier</a>
+                <a href="{{ path('app_centres_list', {q: app.request.query.get('q'), vl: app.request.query.getBoolean('vl', true) ? 1 : 0, cl: app.request.query.getBoolean('cl', true) ? 1 : 0}) }}" class="btn-link edit">Modifier</a>
             {% endif %}
 
             <a class="btn-link"

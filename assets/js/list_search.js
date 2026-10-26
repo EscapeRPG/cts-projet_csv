@@ -57,6 +57,7 @@ function initSearchInput(input) {
     const syncDirtyState = () => {
         const dirty = isDirty();
         input.disabled = dirty;
+        extraParamsEls.forEach((el) => { el.disabled = dirty; });
         if (blockedMsgEl) {
             blockedMsgEl.hidden = !dirty;
         }

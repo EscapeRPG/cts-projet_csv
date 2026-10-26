@@ -21,6 +21,8 @@ class CreateCentreType extends AbstractType
     {
         /** @var list<int>|null $centreScopeIds */
         $centreScopeIds = $options['centre_scope_ids'];
+        $isCreation = $options['is_creation'];
+        $societeScopeIds = $options['societe_scope_ids'];
 
         $builder
             ->add('societe', EntityType::class, [
@@ -29,11 +31,20 @@ class CreateCentreType extends AbstractType
                 'placeholder' => '- Choisir -',
                 'choice_label' => 'nom',
                 'required' => true,
-                'query_builder' => static function (EntityRepository $er) use ($centreScopeIds) {
+                'query_builder' => static function (EntityRepository $er) use ($centreScopeIds, $isCreation, $societeScopeIds) {
                     $qb = $er->createQueryBuilder('so')
                         ->orderBy('so.nom', 'ASC');
 
-                    if ($centreScopeIds !== null) {
+                    if ($isCreation) {
+                        if ($societeScopeIds !== null) {
+                            if ($societeScopeIds === []) {
+                                $qb->andWhere('1=0');
+                            } else {
+                                $qb->andWhere('so.id IN (:societeIds)')
+                                    ->setParameter('societeIds', $societeScopeIds);
+                            }
+                        }
+                    } elseif ($centreScopeIds !== null) {
                         $qb->distinct();
 
                         if ($centreScopeIds === []) {
@@ -55,11 +66,11 @@ class CreateCentreType extends AbstractType
                 'placeholder' => '- Choisir -',
                 'choice_label' => 'nom',
                 'required' => true,
-                'query_builder' => static function (EntityRepository $er) use ($centreScopeIds) {
+                'query_builder' => static function (EntityRepository $er) use ($centreScopeIds, $isCreation) {
                     $qb = $er->createQueryBuilder('r')
                         ->orderBy('r.nom', 'ASC');
 
-                    if ($centreScopeIds !== null) {
+                    if (!$isCreation && $centreScopeIds !== null) {
                         $qb->distinct();
 
                         if ($centreScopeIds === []) {
@@ -169,8 +180,13 @@ class CreateCentreType extends AbstractType
             'data_class' => Centre::class,
             // Null = no restriction (admin). [] = no centres assigned.
             'centre_scope_ids' => null,
+            'is_creation' => false,
+            // Null = unrestricted; [] = no authorised company.
+            'societe_scope_ids' => null,
         ]);
 
         $resolver->setAllowedTypes('centre_scope_ids', ['null', 'array']);
+        $resolver->setAllowedTypes('is_creation', 'bool');
+        $resolver->setAllowedTypes('societe_scope_ids', ['null', 'array']);
     }
 }

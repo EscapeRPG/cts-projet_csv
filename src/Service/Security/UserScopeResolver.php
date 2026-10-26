@@ -48,7 +48,7 @@ final class UserScopeResolver
     /**
      * @return list<int>|null Null means "no restriction" (admin).
      */
-    public function societeIds(): ?array
+    public function societeIds(TypeCentre $type = TypeCentre::CONTROLE_TECHNIQUE): ?array
     {
         $user = $this->security->getUser();
 
@@ -69,7 +69,7 @@ final class UserScopeResolver
             }
         } else {
             foreach ($user->getCentres() as $centre) {
-                if (!$centre->isControleTechnique()) {
+                if ($centre->getType() !== $type) {
                     continue;
                 }
 

@@ -296,3 +296,16 @@ a.info-link:hover {
     color: var(--cts-main);
     border-color: var(--cts-main);
 }
+
+.search-list .centre-type-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    width: auto;
+    margin-left: 10px;
+}
+
+.search-list .centre-type-filter input {
+    width: auto;
+    margin: 0;
+}

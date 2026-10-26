@@ -65,6 +65,14 @@ final class AdminController extends AbstractController
     {
         $users = $userRepository->findAllWithCentres();
 
+        // Keep the repository's alphabetical order within each role group.
+        usort($users, function (User $left, User $right): int {
+            $leftIsAdmin = in_array('ROLE_ADMIN', $this->roleHierarchy->getReachableRoleNames($left->getRoles()), true);
+            $rightIsAdmin = in_array('ROLE_ADMIN', $this->roleHierarchy->getReachableRoleNames($right->getRoles()), true);
+
+            return (int) $rightIsAdmin <=> (int) $leftIsAdmin;
+        });
+
         return $this->render('users/list.html.twig', [
             'users' => $users,
         ]);

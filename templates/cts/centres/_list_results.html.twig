@@ -1,7 +1,7 @@
 <form id="centres-bulk-form"
       method="post"
       data-turbo="false"
-      action="{{ path('app_centres_bulk_update', {'q': app.request.query.get('q')}) }}">
+      action="{{ path('app_centres_bulk_update', {q: app.request.query.get('q'), vl: app.request.query.getBoolean('vl', true) ? 1 : 0, cl: app.request.query.getBoolean('cl', true) ? 1 : 0}) }}">
     <input type="hidden" name="_token" value="{{ csrf_token('centres_bulk') }}">
 
     <table class="centres-list" data-bulk-edit="1">

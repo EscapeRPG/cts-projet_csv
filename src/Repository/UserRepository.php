@@ -107,6 +107,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->addSelect('so')
             ->leftJoin('u.societes', 'uso')
             ->addSelect('uso')
+            ->leftJoin('uso.centre', 'usoc')
+            ->addSelect('usoc')
             ->orderBy('u.username', 'ASC')
             ->getQuery()
             ->getResult();

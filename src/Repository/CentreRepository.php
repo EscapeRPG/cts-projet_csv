@@ -25,7 +25,7 @@ class CentreRepository extends ServiceEntityRepository
     /**
      * @return array<int, Centre>
      */
-    public function findCtsOrderedBySocieteVilleAgrSearch(?string $q, ?array $centreIds = null): array
+    public function findCtsOrderedBySocieteVilleAgrSearch(?string $q, ?array $centreIds = null, bool $vl = true, bool $cl = true): array
     {
         if ($centreIds !== null && $centreIds === []) {
             return [];
@@ -44,6 +44,14 @@ class CentreRepository extends ServiceEntityRepository
 
         $this->applyCentreScopeFilter($qb, $centreIds);
         $this->applySearchFilter($qb, $q);
+
+        if (!$vl && !$cl) {
+            return [];
+        }
+        if ($vl !== $cl) {
+            $field = $vl ? 'c.agrCentre' : 'c.agrClCentre';
+            $qb->andWhere(sprintf("TRIM(COALESCE(%s, '')) <> ''", $field));
+        }
 
         return $qb->getQuery()->getResult();
     }
@@ -69,9 +77,11 @@ class CentreRepository extends ServiceEntityRepository
         $like = '%' . mb_strtolower($q) . '%';
         $qb->andWhere(
             $qb->expr()->orX(
+                'LOWER(so.nom) LIKE :q',
                 'LOWER(c.agrCentre) LIKE :q',
                 'LOWER(c.agrClCentre) LIKE :q',
                 'LOWER(c.ville) LIKE :q',
+                'LOWER(c.cp) LIKE :q',
                 'LOWER(c.reseauNom) LIKE :q',
                 'LOWER(r.nom) LIKE :q',
             )

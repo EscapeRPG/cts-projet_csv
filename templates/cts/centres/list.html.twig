@@ -16,6 +16,16 @@
                        data-list-search-partial-url="{{ path('app_centres_list_partial') }}"
                        data-list-search-push-url="{{ path('app_centres_list') }}"
                        data-list-search-results="#cts-centres-results">
+                <label class="centre-type-filter">
+                    <input type="checkbox" name="vl" value="1" data-list-search-param="1"
+                           {% if app.request.query.getBoolean('vl', true) %}checked{% endif %}>
+                    VL
+                </label>
+                <label class="centre-type-filter">
+                    <input type="checkbox" name="cl" value="1" data-list-search-param="1"
+                           {% if app.request.query.getBoolean('cl', true) %}checked{% endif %}>
+                    CL
+                </label>
             </div>
 
             <small data-list-search-blocked-message hidden>Veuillez enregistrer vos modifications pour effectuer une
