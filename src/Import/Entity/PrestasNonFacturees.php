@@ -1,0 +1,293 @@
+<?php
+
+namespace App\Import\Entity;
+
+use App\Organisation\Entity\Reseau;
+
+use App\Import\Repository\PrestasNonFactureesRepository;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity(repositoryClass: PrestasNonFactureesRepository::class)]
+class PrestasNonFacturees
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $idcontrole = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $dateExport = null;
+
+    #[ORM\Column(length: 3, nullable: true)]
+    private ?string $devise = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2, nullable: true)]
+    private ?string $otcHt = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2, nullable: true)]
+    private ?string $montantTvaOtcHt = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2, nullable: true)]
+    private ?string $pourcentageTvaOtc = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2, nullable: true)]
+    private ?string $otcTtc = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2, nullable: true)]
+    private ?string $montantPrestaHt = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2, nullable: true)]
+    private ?string $montantPrestaTtc = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2, nullable: true)]
+    private ?string $pourcentageTvaPresta = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2, nullable: true)]
+    private ?string $MontantTvaPresta = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2, nullable: true)]
+    private ?string $montantRemise = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2, nullable: true)]
+    private ?string $pourcentageRemise = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2, nullable: true)]
+    private ?string $totalHt = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2, nullable: true)]
+    private ?string $totalTtc = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2, nullable: true)]
+    private ?string $pourcentageTva = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2, nullable: true)]
+    private ?string $montantTva = null;
+
+    #[ORM\ManyToOne]
+    private ?Reseau $reseau = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getIdcontrole(): ?string
+    {
+        return $this->idcontrole;
+    }
+
+    public function setIdcontrole(string $idcontrole): static
+    {
+        $this->idcontrole = $idcontrole;
+
+        return $this;
+    }
+
+    public function getDateExport(): ?\DateTimeImmutable
+    {
+        return $this->dateExport;
+    }
+
+    public function setDateExport(\DateTimeImmutable $dateExport): static
+    {
+        $this->dateExport = $dateExport;
+
+        return $this;
+    }
+
+    public function getDevise(): ?string
+    {
+        return $this->devise;
+    }
+
+    public function setDevise(string $devise): static
+    {
+        $this->devise = $devise;
+
+        return $this;
+    }
+
+    public function getOtcHt(): ?string
+    {
+        return $this->otcHt;
+    }
+
+    public function setOtcHt(string $otcHt): static
+    {
+        $this->otcHt = $otcHt;
+
+        return $this;
+    }
+
+    public function getMontantTvaOtcHt(): ?string
+    {
+        return $this->montantTvaOtcHt;
+    }
+
+    public function setMontantTvaOtcHt(string $montantTvaOtcHt): static
+    {
+        $this->montantTvaOtcHt = $montantTvaOtcHt;
+
+        return $this;
+    }
+
+    public function getPourcentageTvaOtc(): ?string
+    {
+        return $this->pourcentageTvaOtc;
+    }
+
+    public function setPourcentageTvaOtc(string $pourcentageTvaOtc): static
+    {
+        $this->pourcentageTvaOtc = $pourcentageTvaOtc;
+
+        return $this;
+    }
+
+    public function getOtcTtc(): ?string
+    {
+        return $this->otcTtc;
+    }
+
+    public function setOtcTtc(string $otcTtc): static
+    {
+        $this->otcTtc = $otcTtc;
+
+        return $this;
+    }
+
+    public function getMontantPrestaHt(): ?string
+    {
+        return $this->montantPrestaHt;
+    }
+
+    public function setMontantPrestaHt(string $montantPrestaHt): static
+    {
+        $this->montantPrestaHt = $montantPrestaHt;
+
+        return $this;
+    }
+
+    public function getMontantPrestaTtc(): ?string
+    {
+        return $this->montantPrestaTtc;
+    }
+
+    public function setMontantPrestaTtc(string $montantPrestaTtc): static
+    {
+        $this->montantPrestaTtc = $montantPrestaTtc;
+
+        return $this;
+    }
+
+    public function getPourcentageTvaPresta(): ?string
+    {
+        return $this->pourcentageTvaPresta;
+    }
+
+    public function setPourcentageTvaPresta(string $pourcentageTvaPresta): static
+    {
+        $this->pourcentageTvaPresta = $pourcentageTvaPresta;
+
+        return $this;
+    }
+
+    public function getMontantTvaPresta(): ?string
+    {
+        return $this->MontantTvaPresta;
+    }
+
+    public function setMontantTvaPresta(string $MontantTvaPresta): static
+    {
+        $this->MontantTvaPresta = $MontantTvaPresta;
+
+        return $this;
+    }
+
+    public function getMontantRemise(): ?string
+    {
+        return $this->montantRemise;
+    }
+
+    public function setMontantRemise(string $montantRemise): static
+    {
+        $this->montantRemise = $montantRemise;
+
+        return $this;
+    }
+
+    public function getPourcentageRemise(): ?string
+    {
+        return $this->pourcentageRemise;
+    }
+
+    public function setPourcentageRemise(string $pourcentageRemise): static
+    {
+        $this->pourcentageRemise = $pourcentageRemise;
+
+        return $this;
+    }
+
+    public function getTotalHt(): ?string
+    {
+        return $this->totalHt;
+    }
+
+    public function setTotalHt(string $totalHt): static
+    {
+        $this->totalHt = $totalHt;
+
+        return $this;
+    }
+
+    public function getTotalTtc(): ?string
+    {
+        return $this->totalTtc;
+    }
+
+    public function setTotalTtc(string $totalTtc): static
+    {
+        $this->totalTtc = $totalTtc;
+
+        return $this;
+    }
+
+    public function getPourcentageTva(): ?string
+    {
+        return $this->pourcentageTva;
+    }
+
+    public function setPourcentageTva(string $pourcentageTva): static
+    {
+        $this->pourcentageTva = $pourcentageTva;
+
+        return $this;
+    }
+
+    public function getMontantTva(): ?string
+    {
+        return $this->montantTva;
+    }
+
+    public function setMontantTva(string $montantTva): static
+    {
+        $this->montantTva = $montantTva;
+
+        return $this;
+    }
+
+    public function getReseau(): ?Reseau
+    {
+        return $this->reseau;
+    }
+
+    public function setReseau(?Reseau $reseau): static
+    {
+        $this->reseau = $reseau;
+
+        return $this;
+    }
+}

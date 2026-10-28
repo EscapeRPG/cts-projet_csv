@@ -26,27 +26,27 @@ services:
         autowire: true
         autoconfigure: true
 
-    App\Import\ImportRouter:
+    App\Import\Service\ImportRouter:
         arguments:
-            $clientsImport: '@App\Service\Import\ImportClientsService'
-            $centresClientsImport: '@App\Service\Import\ImportCentresClientsService'
-            $clientsControlesImport: '@App\Service\Import\ImportClientsControlesService'
-            $controlesImport: '@App\Service\Import\ImportControlesService'
-            $controlesFacturesImport: '@App\Service\Import\ImportControlesFacturesService'
-            $controlesNonFacturesImport: '@App\Service\Import\ImportControlesNonFacturesService'
-            $facturesImport: '@App\Service\Import\ImportFacturesService'
-            $facturesReglementsImport: '@App\Service\Import\ImportFacturesReglementsService'
-            $reglementsImport: '@App\Service\Import\ImportReglementsService'
-            $prestasNonFactureesImport: '@App\Service\Import\ImportPrestasNonFactureesService'
+            $clientsImport: '@App\Import\Service\ImportClientsService'
+            $centresClientsImport: '@App\Import\Service\ImportCentresClientsService'
+            $clientsControlesImport: '@App\Import\Service\ImportClientsControlesService'
+            $controlesImport: '@App\Import\Service\ImportControlesService'
+            $controlesFacturesImport: '@App\Import\Service\ImportControlesFacturesService'
+            $controlesNonFacturesImport: '@App\Import\Service\ImportControlesNonFacturesService'
+            $facturesImport: '@App\Import\Service\ImportFacturesService'
+            $facturesReglementsImport: '@App\Import\Service\ImportFacturesReglementsService'
+            $reglementsImport: '@App\Import\Service\ImportReglementsService'
+            $prestasNonFactureesImport: '@App\Import\Service\ImportPrestasNonFactureesService'
 
-    App\Service\Import\SftpClient:
+    App\Import\Sftp\SftpClient:
         arguments:
             $mode: '%env(string:SFTP_MODE)%'
             $basePath: '%env(string:SFTP_LOCAL_PATH)%'
 
-    App\Service\AppExtension:
+    App\Shared\Twig\AppExtension:
         tags: ['twig.extension']
 
-    App\Service\Voiture\VoitureCertificatCessionStorage:
+    App\ParcAutomobile\Service\VoitureCertificatCessionStorage:
         arguments:
             $voitureUploadRoot: '%voiture_upload_root%'

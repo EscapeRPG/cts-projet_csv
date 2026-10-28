@@ -1,0 +1,104 @@
+<?php
+
+namespace App\SuiviActivite\Service;
+
+/**
+ * Aggregates professional-client entries across company and center groups.
+ */
+class SuiviProService
+{
+    /**
+     * Builds merged professional-client rows with year-over-year percentages.
+     *
+     * @param array<string, mixed> $synthese Professional-client synthesized tree.
+     *
+     * @return array<int, array<string, mixed>> Aggregated client rows sorted by revenue.
+     */
+    public function getFocusPro(array $synthese): array
+    {
+        $clients = [];
+
+        foreach ($synthese as $societe => $centres) {
+            foreach ($centres as $centre) {
+                foreach ($centre['client_pro'] as $client_pro) {
+
+                    $id = $this->safeUpper(trim((string)$client_pro['nom']));
+
+                    if ($id === '') {
+                        continue;
+                    }
+
+                    if (!isset($clients[$id])) {
+                        // Initialisation du client
+                        $clients[$id] = [
+                            'nom' => $client_pro['nom'],
+                            'ca_client_pro' => 0,
+                            'ca_now' => 0,
+                            'ca_n1' => 0,
+                            'ca_n2' => 0,
+                            'nb_ctrl_now' => 0,
+                            'nb_ctrl_n1' => 0,
+                            'nb_ctrl_n2' => 0,
+                            'per_n1' => null,
+                            'per_n2' => null,
+                            'per_ca_n1' => null,
+                            'per_ca_n2' => null,
+                        ];
+                    }
+
+                    // Remplir les années avec la correspondance fixe
+                    $clients[$id]['ca_now'] += $client_pro['ca_now'] ?? 0;
+                    $clients[$id]['ca_n1'] += $client_pro['ca_n1'] ?? 0;
+                    $clients[$id]['ca_n2'] += $client_pro['ca_n2'] ?? 0;
+
+                    $clients[$id]['nb_ctrl_now'] += $client_pro['nb_ctrl_now'] ?? 0;
+                    $clients[$id]['nb_ctrl_n1'] += $client_pro['nb_ctrl_n1'] ?? 0;
+                    $clients[$id]['nb_ctrl_n2'] += $client_pro['nb_ctrl_n2'] ?? 0;
+
+                    $clients[$id]['ca_client_pro'] += $client_pro['ca_client_pro'] ?? 0;
+                }
+            }
+        }
+
+        // Calcul des pourcentages après aggrégation
+        foreach ($clients as &$client) {
+            $client['per_n1'] = $client['nb_ctrl_n1'] != 0
+                ? (($client['nb_ctrl_now'] - $client['nb_ctrl_n1']) / $client['nb_ctrl_n1']) * 100
+                : ($client['nb_ctrl_now'] == 0 ? 0 : 100);
+
+            $client['per_n2'] = $client['nb_ctrl_n2'] != 0
+                ? (($client['nb_ctrl_now'] - $client['nb_ctrl_n2']) / $client['nb_ctrl_n2']) * 100
+                : ($client['nb_ctrl_now'] == 0 ? 0 : 100);
+
+            $client['per_ca_n1'] = (float) $client['ca_n1'] !== 0.0
+                ? ((($client['ca_now'] - $client['ca_n1']) / $client['ca_n1']) * 100)
+                : ((float) $client['ca_now'] === 0.0 ? 0.0 : 100.0);
+
+            $client['per_ca_n2'] = (float) $client['ca_n2'] !== 0.0
+                ? ((($client['ca_now'] - $client['ca_n2']) / $client['ca_n2']) * 100)
+                : ((float) $client['ca_now'] === 0.0 ? 0.0 : 100.0);
+        }
+        unset($client);
+
+        // Trier par CA décroissant
+        usort($clients, fn($a, $b) => $b['ca_client_pro'] <=> $a['ca_client_pro']);
+
+        return $clients;
+    }
+
+    /**
+     * Uppercases text using multibyte support when available.
+     *
+     * @param string $value Input value.
+     *
+     * @return string Uppercased string.
+     */
+    private function safeUpper(string $value): string
+    {
+        if (function_exists('mb_strtoupper')) {
+            return mb_strtoupper($value);
+        }
+
+        return strtoupper($value);
+    }
+}

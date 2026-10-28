@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Import\Service;
+
+/**
+ * Imports CSV rows into the `factures_reglements` table.
+ */
+class ImportFacturesReglementsService extends \App\Import\Service\AbstractCsvImportService
+{
+    /**
+     * @return string Target table name.
+     */
+    protected static function getTableName(): string
+    {
+        return 'factures_reglements';
+    }
+
+    /**
+     * @return array<int, string> Target table columns.
+     */
+    protected static function getColumns(): array
+    {
+        return [
+            'agr_centre',
+            'idfacture',
+            'idreglement',
+            'idclient',
+            'reseau_id',
+        ];
+    }
+
+    /**
+     * @return array<string, array<int, string>> CSV-to-database mapping.
+     */
+    protected static function getColumnMapping(): array
+    {
+        return [
+            'agr_centre' => ['agr_centre'],
+            'idfacture' => ['idfacture'],
+            'idreglement' => ['idreglement'],
+            'idclient' => ['idclient'],
+        ];
+    }
+
+    /**
+     * @return array<int, string> Date/time columns.
+     */
+    protected static function getDateColumns(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<int, string> Decimal columns.
+     */
+    protected static function getDecimalColumns(): array
+    {
+        return [];
+    }
+}

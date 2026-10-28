@@ -32,12 +32,51 @@ doctrine:
             Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
         auto_mapping: true
         mappings:
-            App:
+            Encours:
                 type: attribute
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Entity'
-                prefix: 'App\Entity'
-                alias: App
+                dir: '%kernel.project_dir%/src/Encours/Entity'
+                prefix: 'App\Encours\Entity'
+            Organisation:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Organisation/Entity'
+                prefix: 'App\Organisation\Entity'
+            Utilisateur:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Utilisateur/Entity'
+                prefix: 'App\Utilisateur\Entity'
+            Personnel:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Personnel/Entity'
+                prefix: 'App\Personnel\Entity'
+            ParcAutomobile:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/ParcAutomobile/Entity'
+                prefix: 'App\ParcAutomobile\Entity'
+            Notification:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Notification/Entity'
+                prefix: 'App\Notification\Entity'
+            Import:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Import/Entity'
+                prefix: 'App\Import\Entity'
+            ReleveLavage:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/ReleveLavage/Entity'
+                prefix: 'App\ReleveLavage\Entity'
+            OutilsReseaux:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/OutilsReseaux/Entity'
+                prefix: 'App\OutilsReseaux\Entity'
         controller_resolver:
             auto_mapping: false
 

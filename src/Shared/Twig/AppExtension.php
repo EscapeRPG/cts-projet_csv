@@ -1,0 +1,93 @@
+<?php
+
+namespace App\Shared\Twig;
+
+use App\SuiviActivite\Service\SyntheseMetaProvider;
+
+use App\Notification\Entity\Notification;
+use App\Notification\Service\BirthdayNotificationGenerator;
+use App\Notification\Service\NotificationViewProvider;
+use Symfony\Bundle\SecurityBundle\Security;
+use Twig\Extension\AbstractExtension;
+use Twig\Extension\GlobalsInterface;
+use Twig\TwigFunction;
+use Twig\TwigFilter;
+
+/**
+ * Exposes application-level Twig globals.
+ */
+class AppExtension extends AbstractExtension implements GlobalsInterface
+{
+    /**
+     * @param Security $security Security helper used to resolve current user.
+     * @param SyntheseMetaProvider $syntheseMetaProvider Provider exposing synthesis metadata.
+     */
+    public function __construct(
+        private Security $security,
+        private SyntheseMetaProvider $syntheseMetaProvider,
+        private NotificationViewProvider $notificationViewProvider,
+    ) {
+    }
+
+    public function getFunctions(): array
+    {
+        return [
+            new TwigFunction('notification_display_message', $this->getNotificationDisplayMessage(...)),
+        ];
+    }
+
+    public function getFilters(): array
+    {
+        return [new TwigFilter('money', $this->formatMoney(...))];
+    }
+
+    public function formatMoney(int $cents): string
+    {
+        return number_format($cents / 100, 2, ',', ' ').' €';
+    }
+
+    /**
+     * Returns Twig global variables.
+     *
+     * @return array<string, mixed> Twig globals map.
+     */
+    public function getGlobals(): array
+    {
+        $notificationData = $this->notificationViewProvider->getNavigationData();
+
+        return [
+            'user' => $this->security->getUser(),
+            'database_last_update_at' => $this->syntheseMetaProvider->getLastDatabaseUpdateAt(),
+            'notifications' => $notificationData['notifications'],
+            'unread_notifications_count' => $notificationData['unread_count'],
+        ];
+    }
+
+    public function getNotificationDisplayMessage(Notification $notification): string
+    {
+        if (
+            $notification->getType() !== BirthdayNotificationGenerator::TYPE
+            || $notification->getSalarie() === null
+            || $notification->getTargetDate() === null
+        ) {
+            return (string) $notification->getMessage();
+        }
+
+        $today = new \DateTimeImmutable('today');
+        $targetDate = $notification->getTargetDate();
+        $daysUntil = (int) $today->diff($targetDate)->format('%r%a');
+
+        $suffix = match (true) {
+            $daysUntil < 0 => '',
+            $daysUntil === 0 => ' (aujourd\'hui)',
+            $daysUntil === 1 => ' (demain)',
+            default => sprintf(' (dans %d jours)', $daysUntil),
+        };
+
+        return sprintf(
+            '%s%s.',
+            $notification->getMessage(),
+            $suffix
+        );
+    }
+}
