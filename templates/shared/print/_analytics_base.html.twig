@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Ker-Milo - {{ printTitle|default('Impression') }}</title>
+    <link rel="icon" href="{{ asset('favicon.png') }}">
+
+    {# Only include the importmap itself; do not auto-import the main app entrypoint on print pages. #}
+    {{ importmap() }}
+
+    {# Reuse existing styles for tables/panels, then override with print rules. #}
+    {{ include('shared/stylesheets.html.twig') }}
+    <link rel="stylesheet" href="{{ asset('styles/print/print-base.css') }}">
+    {% if printOrientation is defined and printOrientation == 'landscape' %}
+        <link rel="stylesheet" href="{{ asset('styles/print/print-landscape.css') }}">
+    {% else %}
+        <link rel="stylesheet" href="{{ asset('styles/print/print-portrait.css') }}">
+    {% endif %}
+</head>
+
+<body class="print-page print-variant-{{ printVariant|default('default') }}"
+      data-auto-print="{{ autoPrint is defined and autoPrint ? '1' : '0' }}">
+<div class="print-shell">
+    {% include 'shared/print/_filters_header.html.twig' %}
+
+    <div class="print-content">
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+{# Needed for rendering the charts (canvas) before we convert them to images. #}
+{% if printVariant|default('') in ['centres-recap', 'pros-recap', 'centre-details-recap'] %}
+    <script src="{{ asset('js/clients_pros.js') }}" type="module"></script>
+{% endif %}
+<script src="{{ asset('js/print_suivi.js') }}" type="module"></script>
+</body>
+</html>

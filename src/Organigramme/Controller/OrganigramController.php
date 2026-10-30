@@ -60,7 +60,7 @@ final class OrganigramController extends AbstractController
     private function renderOrganigram(OrganigramConfig $config, string $key): Response
     {
         $path = $config->getDocumentPath($key);
-        return $this->render('organigram/organigram.html.twig', [
+        return $this->render('organigramme/organigram.html.twig', [
             'organigramKey' => $key,
             'pdfUrl' => $path !== null ? $this->generateUrl('app_organigram_pdf', ['key' => $key]) : null,
             'downloadUrl' => $path !== null ? $this->generateUrl('app_organigram_download', ['key' => $key]) : null,
@@ -119,7 +119,7 @@ final class OrganigramController extends AbstractController
             }
         }
 
-        return $this->render('organigram/edit.html.twig', [
+        return $this->render('organigramme/edit.html.twig', [
             'form' => $form->createView(),
             'hasPdf' => $this->currentImport($request, $config) !== null,
         ]);
@@ -152,7 +152,7 @@ final class OrganigramController extends AbstractController
     private function renderConfiguration(Request $request, OrganigramConfig $config, array $mapping = []): Response
     {
         $id = $this->currentImport($request, $config);
-        return $this->render('organigram/configure.html.twig', [
+        return $this->render('organigramme/configure.html.twig', [
             'pdfUrl' => $id !== null ? $this->generateUrl('app_organigram_import_pdf', ['id' => $id]) : null,
             'importId' => $id,
             'mapping' => $mapping,

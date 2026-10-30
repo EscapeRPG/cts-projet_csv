@@ -72,7 +72,7 @@ final class SalarieController extends AbstractController
         $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
         $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch(null, $centreIds);
 
-        return $this->render('cts/salaries/_list_results.html.twig', [
+        return $this->render('personnel/_list_results.html.twig', [
             'salaries' => $salaries,
             'societes' => $societes,
             'centres' => $centres,
@@ -91,7 +91,7 @@ final class SalarieController extends AbstractController
         $activeStatus = ActiveStatusFilter::fromRequest($request);
         $salaries = $salarieRepository->findOrderedByNomPrenomSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE), $activeStatus->includeActive, $activeStatus->includeInactive);
 
-        return $this->render('cts/salaries/list_uneditable.html.twig', [
+        return $this->render('personnel/list_uneditable.html.twig', [
             'salaries' => $salaries,
         ]);
     }
@@ -104,7 +104,7 @@ final class SalarieController extends AbstractController
         $activeStatus = ActiveStatusFilter::fromRequest($request);
         $salaries = $salarieRepository->findOrderedByNomPrenomSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE), $activeStatus->includeActive, $activeStatus->includeInactive);
 
-        return $this->render('cts/salaries/_list_results_uneditable.html.twig', [
+        return $this->render('personnel/_list_results_uneditable.html.twig', [
             'salaries' => $salaries,
         ]);
     }
@@ -131,7 +131,7 @@ final class SalarieController extends AbstractController
             return $this->redirectToRoute('app_salaries_list_uneditable');
         }
 
-        return $this->render('cts/salaries/add.html.twig', [
+        return $this->render('personnel/add.html.twig', [
             'form' => $form->createView(),
         ]);
     }
@@ -379,7 +379,7 @@ final class SalarieController extends AbstractController
 
     private function renderSalariesList(array $salaries, array $societes, array $centres, ?array $paginationView): Response
     {
-        return $this->render('cts/salaries/list.html.twig', [
+        return $this->render('personnel/list.html.twig', [
             'salaries' => $salaries,
             'societes' => $societes,
             'centres' => $centres,
@@ -398,7 +398,7 @@ final class SalarieController extends AbstractController
         $paginationData = $this->paginationResolver->computePagination($request, $perPage, $salarieRepository->countSearch($q, $centreIds, $activeStatus->includeActive, $activeStatus->includeInactive));
         $salaries = $salarieRepository->findPaginatedOrderedBySocieteSearch($perPage, $paginationData['offset'], $q, $centreIds, $activeStatus->includeActive, $activeStatus->includeInactive);
 
-        return $this->render('cts/lists/print/salaries.html.twig', [
+        return $this->render('personnel/print.html.twig', [
             'salaries' => $salaries,
             'pagination' => $paginationData['view'],
             'q' => $q,
@@ -418,7 +418,7 @@ final class SalarieController extends AbstractController
         $activeStatus = ActiveStatusFilter::fromRequest($request);
         $salaries = $salarieRepository->findOrderedByNomPrenomSearch($q, $centreIds, $activeStatus->includeActive, $activeStatus->includeInactive);
 
-        return $this->render('cts/lists/print/salaries.html.twig', [
+        return $this->render('personnel/print.html.twig', [
             'salaries' => $salaries,
             'pagination' => null,
             'q' => $q,

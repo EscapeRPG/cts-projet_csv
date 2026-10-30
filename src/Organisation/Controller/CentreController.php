@@ -45,7 +45,7 @@ final class CentreController extends AbstractController
         $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
         $reseaux = $this->findReseauxForCentreScope($reseauRepository, $centreIds);
 
-        return $this->render('cts/centres/list.html.twig', [
+        return $this->render('organisation/centres/list.html.twig', [
             'centres' => $centres,
             'societes' => $societes,
             'reseaux' => $reseaux,
@@ -67,7 +67,7 @@ final class CentreController extends AbstractController
         $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
         $reseaux = $this->findReseauxForCentreScope($reseauRepository, $centreIds);
 
-        return $this->render('cts/centres/_list_results.html.twig', [
+        return $this->render('organisation/centres/_list_results.html.twig', [
             'centres' => $centres,
             'societes' => $societes,
             'reseaux' => $reseaux,
@@ -84,7 +84,7 @@ final class CentreController extends AbstractController
         $q = trim((string)$request->query->get('q', ''));
         $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE), $request->query->getBoolean('vl', true), $request->query->getBoolean('cl', true));
 
-        return $this->render('cts/centres/list_uneditable.html.twig', [
+        return $this->render('organisation/centres/list_uneditable.html.twig', [
             'centres' => $centres,
         ]);
     }
@@ -96,7 +96,7 @@ final class CentreController extends AbstractController
         $q = trim((string)$request->query->get('q', ''));
         $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE), $request->query->getBoolean('vl', true), $request->query->getBoolean('cl', true));
 
-        return $this->render('cts/centres/_list_results_uneditable.html.twig', [
+        return $this->render('organisation/centres/_list_results_uneditable.html.twig', [
             'centres' => $centres,
         ]);
     }
@@ -126,7 +126,7 @@ final class CentreController extends AbstractController
             return $this->redirectToRoute('app_centres_list_uneditable');
         }
 
-        return $this->render('cts/centres/add.html.twig', [
+        return $this->render('organisation/centres/add.html.twig', [
             'form' => $form->createView(),
         ]);
     }
@@ -187,7 +187,7 @@ final class CentreController extends AbstractController
             foreach ($result->errors as $msg) {
                 $this->addFlash('error', $msg);
             }
-            return $this->render('cts/centres/list.html.twig', [
+            return $this->render('organisation/centres/list.html.twig', [
                 'centres' => $centres,
                 'societes' => $societes,
                 'reseaux' => $reseaux,
@@ -243,7 +243,7 @@ final class CentreController extends AbstractController
         $q = trim((string)$request->query->get('q', ''));
         $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE), $request->query->getBoolean('vl', true), $request->query->getBoolean('cl', true));
 
-        return $this->render('cts/lists/print/centres.html.twig', [
+        return $this->render('organisation/centres/print.html.twig', [
             'centres' => $centres,
             'q' => $q,
             'printTitle' => 'Liste des centres',

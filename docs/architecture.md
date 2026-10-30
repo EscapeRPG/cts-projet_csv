@@ -43,7 +43,21 @@ MakerBundle accepte un namespace absolu pour générer directement un contrôleu
 php bin/console make:controller '\App\Encours\Controller\ExempleController'
 ```
 
-Les templates, assets, migrations et configurations restent à la racine du projet. Les chemins de templates existants et les noms des routes sont conservés par cette réorganisation.
+Les templates, assets, migrations et configurations restent à la racine du projet. Les templates sont regroupés par module comme le code PHP ; les noms et URLs des routes restent inchangés.
+
+## Templates
+
+Chaque module utilise son dossier dans `templates/` : `accueil`, `utilisateur`, `organisation`, `personnel`, `parc_automobile`, `encours`, `organigramme`, `import`, `suivi_activite`, `releve_lavage`, `outils_reseaux` et `support`.
+
+- `organisation/centres`, `organisation/societes` et `organisation/stations` contiennent les pages de gestion correspondantes.
+- `releve_lavage` contient les pages et fragments des relevés, ainsi que leurs résumés et graphiques de recettes. Les pages de gestion des stations peuvent inclure ces fragments sans les dupliquer.
+- `utilisateur/security`, `utilisateur/reset_password` et `utilisateur/emails` regroupent la connexion, la réinitialisation et les emails liés aux comptes.
+- `import/cts`, `import/astikoto` et `import/health` distinguent les deux parcours d'import et leur suivi.
+- Les pages d'impression restent avec leur fonctionnalité. Les deux mises en page communes sont `shared/print/_list_base.html.twig` et `shared/print/_analytics_base.html.twig`.
+- `shared` contient la navigation, les styles communs et les icônes SVG. Les filtres spécifiques au suivi restent dans `suivi_activite`.
+- `base.html.twig` reste à la racine des templates.
+
+Dans les appels `render()`, les emails `htmlTemplate()` et les inclusions/héritages Twig, utiliser le chemin du module propriétaire. Un fragment ne rejoint pas automatiquement `shared` parce qu'une autre fonctionnalité le réutilise.
 
 ## Vérifications
 

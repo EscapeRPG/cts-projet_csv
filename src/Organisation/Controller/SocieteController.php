@@ -33,7 +33,7 @@ final class SocieteController extends AbstractController
         $q = trim((string)$request->query->get('q', ''));
         $societes = $societeRepository->findOrderedByNomSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE));
 
-        return $this->render('cts/societes/list.html.twig', [
+        return $this->render('organisation/societes/list.html.twig', [
             'societes' => $societes,
         ]);
     }
@@ -45,7 +45,7 @@ final class SocieteController extends AbstractController
         $q = trim((string)$request->query->get('q', ''));
         $societes = $societeRepository->findOrderedByNomSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE));
 
-        return $this->render('cts/societes/_list_results.html.twig', [
+        return $this->render('organisation/societes/_list_results.html.twig', [
             'societes' => $societes,
         ]);
     }
@@ -60,7 +60,7 @@ final class SocieteController extends AbstractController
         $q = trim((string)$request->query->get('q', ''));
         $societes = $societeRepository->findOrderedByNomSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE));
 
-        return $this->render('cts/societes/list_uneditable.html.twig', [
+        return $this->render('organisation/societes/list_uneditable.html.twig', [
             'societes' => $societes,
         ]);
     }
@@ -72,7 +72,7 @@ final class SocieteController extends AbstractController
         $q = trim((string)$request->query->get('q', ''));
         $societes = $societeRepository->findOrderedByNomSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE));
 
-        return $this->render('cts/societes/_list_results_uneditable.html.twig', [
+        return $this->render('organisation/societes/_list_results_uneditable.html.twig', [
             'societes' => $societes,
         ]);
     }
@@ -95,7 +95,7 @@ final class SocieteController extends AbstractController
             return $this->redirectToRoute('app_societes_list_uneditable');
         }
 
-        return $this->render('cts/societes/add.html.twig', [
+        return $this->render('organisation/societes/add.html.twig', [
             'form' => $form->createView(),
         ]);
     }
@@ -139,7 +139,7 @@ final class SocieteController extends AbstractController
             foreach ($result->errors as $msg) {
                 $this->addFlash('error', $msg);
             }
-            return $this->render('cts/societes/list.html.twig', [
+            return $this->render('organisation/societes/list.html.twig', [
                 'societes' => $societes,
             ]);
         }
@@ -166,7 +166,7 @@ final class SocieteController extends AbstractController
         $q = trim((string)$request->query->get('q', ''));
         $societes = $societeRepository->findOrderedByNomSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE));
 
-        return $this->render('cts/lists/print/societes.html.twig', [
+        return $this->render('organisation/societes/print.html.twig', [
             'societes' => $societes,
             'q' => $q,
             'printTitle' => 'Liste des sociétés',

@@ -49,7 +49,7 @@ final class StationLavageController extends AbstractController
         $stations = $repo->findStationsLavage($q, $centreIds);
         $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
 
-        return $this->render('astikoto/stations/list.html.twig', [
+        return $this->render('organisation/stations/list.html.twig', [
             'stations' => $stations,
             'societes' => $societes,
         ]);
@@ -69,7 +69,7 @@ final class StationLavageController extends AbstractController
 
         $stations = $repo->findStationsLavage($q, $centreIds);
 
-        return $this->render('astikoto/stations/list_uneditable.html.twig', [
+        return $this->render('organisation/stations/list_uneditable.html.twig', [
             'stations' => $stations,
         ]);
     }
@@ -116,7 +116,7 @@ final class StationLavageController extends AbstractController
             return $this->redirectToRoute('app_stations_list_uneditable');
         }
 
-        return $this->render('astikoto/stations/add.html.twig', [
+        return $this->render('organisation/stations/add.html.twig', [
             'form' => $form->createView(),
         ]);
     }
@@ -164,7 +164,7 @@ final class StationLavageController extends AbstractController
             foreach ($result->errors as $msg) {
                 $this->addFlash('error', $msg);
             }
-            return $this->render('astikoto/stations/list.html.twig', [
+            return $this->render('organisation/stations/list.html.twig', [
                 'stations' => $stations,
                 'societes' => $societes,
             ]);
@@ -217,7 +217,7 @@ final class StationLavageController extends AbstractController
         $referenceYear = (int) $referenceDate->format('Y');
         $rows = $revenueCalculator->getMonthlyRevenues($station, $referenceDate);
 
-        return $this->render('astikoto/stations/details.html.twig', [
+        return $this->render('organisation/stations/details.html.twig', [
             'station' => $station,
             'stations' => $repository->findStationsLavage(null, $centreIds),
             'selectedStation' => $station,
@@ -295,7 +295,7 @@ final class StationLavageController extends AbstractController
             return $this->redirectToRoute('app_station_details', ['id' => $station->getId()]);
         }
 
-        return $this->render('astikoto/stations/edit.html.twig', [
+        return $this->render('organisation/stations/edit.html.twig', [
             'station' => $station,
             'form' => $form->createView(),
         ]);

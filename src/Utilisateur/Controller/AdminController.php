@@ -73,7 +73,7 @@ final class AdminController extends AbstractController
             return (int) $rightIsAdmin <=> (int) $leftIsAdmin;
         });
 
-        return $this->render('users/list.html.twig', [
+        return $this->render('utilisateur/list.html.twig', [
             'users' => $users,
         ]);
     }
@@ -117,7 +117,7 @@ final class AdminController extends AbstractController
                 $target = $result['error_field'] ? $form->get($result['error_field']) : $form;
                 $target->addError($result['error']);
 
-                return $this->render('users/add.html.twig', [
+                return $this->render('utilisateur/add.html.twig', [
                     'form' => $form->createView(),
                 ]);
             }
@@ -136,7 +136,7 @@ final class AdminController extends AbstractController
                 ]);
                 $form->get('username')->addError(new FormError('Ce nom d\'utilisateur existe déjà.'));
 
-                return $this->render('users/add.html.twig', [
+                return $this->render('utilisateur/add.html.twig', [
                     'form' => $form->createView(),
                 ]);
             }
@@ -156,7 +156,7 @@ final class AdminController extends AbstractController
                 ->from(new Address($this->mailerFromAddress, $this->mailerFromName))
                 ->to($user->getEmail())
                 ->subject('Votre compte a été créé')
-                ->htmlTemplate('emails/user_created.html.twig')
+                ->htmlTemplate('utilisateur/emails/user_created.html.twig')
                 ->context([
                     'activationUrl' => $activationUrl,
                     'supportUrl' => $supportUrl,
@@ -178,7 +178,7 @@ final class AdminController extends AbstractController
             return $this->redirectToRoute('app_users_list');
         }
 
-        return $this->render('users/add.html.twig', [
+        return $this->render('utilisateur/add.html.twig', [
             'form' => $form->createView(),
         ]);
     }
@@ -210,7 +210,7 @@ final class AdminController extends AbstractController
                 $target = $result['error_field'] ? $form->get($result['error_field']) : $form;
                 $target->addError($result['error']);
 
-                return $this->render('users/edit.html.twig', [
+                return $this->render('utilisateur/edit.html.twig', [
                     'form' => $form->createView(),
                     'user' => $user,
                 ]);
@@ -229,7 +229,7 @@ final class AdminController extends AbstractController
                 ]);
                 $form->get('username')->addError(new FormError('Ce nom d\'utilisateur existe déjà.'));
 
-                return $this->render('users/edit.html.twig', [
+                return $this->render('utilisateur/edit.html.twig', [
                     'form' => $form->createView(),
                     'user' => $user,
                 ]);
@@ -239,7 +239,7 @@ final class AdminController extends AbstractController
             return $this->redirectToRoute('app_users_list');
         }
 
-        return $this->render('users/edit.html.twig', [
+        return $this->render('utilisateur/edit.html.twig', [
             'form' => $form->createView(),
             'user' => $user,
         ]);

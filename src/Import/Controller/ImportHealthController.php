@@ -26,7 +26,7 @@ final class ImportHealthController extends AbstractController
         }
         unset($row);
 
-        return $this->render('admin/import_health/index.html.twig', [
+        return $this->render('import/health/index.html.twig', [
             'rows' => $rows,
         ]);
     }

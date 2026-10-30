@@ -97,7 +97,7 @@ final class ImportCsvController extends AbstractController
             }
         }
 
-        return $this->render('cts/import_csv/index.html.twig', [
+        return $this->render('import/cts/index.html.twig', [
             'form' => $form,
             'errors' => $form->getErrors(),
         ]);
@@ -199,7 +199,7 @@ final class ImportCsvController extends AbstractController
             $importsByCentre[$centre->getId()] = $portiques;
         }
 
-        return $this->render('astikoto/import_csv/index.html.twig', [
+        return $this->render('import/astikoto/index.html.twig', [
             'form' => $form,
             'errors' => $form->getErrors(),
             'importsByCentre' => $importsByCentre,

@@ -132,7 +132,7 @@ final class SuiviActiviteController extends AbstractController
     {
         $datas = $repository->getFirstResultsPerCenter();
 
-        return $this->render('cts/suivis/first-results-per-center.html.twig', [
+        return $this->render('suivi_activite/first-results-per-center.html.twig', [
             'datas' => $datas
         ]);
     }
@@ -163,7 +163,7 @@ final class SuiviActiviteController extends AbstractController
         $synthese = $this->syntheseBuilder->buildSynthese($rows);
         $activityTotals = $this->syntheseBuilder->buildActivityTotals($synthese);
 
-        return $this->render('cts/suivis/activite.html.twig', array_merge(
+        return $this->render('suivi_activite/activite.html.twig', array_merge(
             $this->commonViewDataBuilder->build($filters),
             [
                 'synthese' => $synthese,
@@ -199,7 +199,7 @@ final class SuiviActiviteController extends AbstractController
         [$controleursStats, $moyennesGlobales] = $this->controleursService->getControleursStats($synthese);
 
         if ($request->isXmlHttpRequest()) {
-            return $this->render('cts/suivis/_controleurs_results.html.twig', array_merge(
+            return $this->render('suivi_activite/_controleurs_results.html.twig', array_merge(
                 $this->commonViewDataBuilder->build($filters),
                 [
                     'controleursStats' => $controleursStats,
@@ -208,7 +208,7 @@ final class SuiviActiviteController extends AbstractController
             ));
         }
 
-        return $this->render('cts/suivis/controleurs.html.twig', array_merge(
+        return $this->render('suivi_activite/controleurs.html.twig', array_merge(
             $this->commonViewDataBuilder->build($filters),
             [
                 'controleursStats' => $controleursStats,
@@ -235,7 +235,7 @@ final class SuiviActiviteController extends AbstractController
         $view = $this->commonViewDataBuilder->build($filters);
         $view['printFilters'] = $this->buildPrintFilters($filters, $view);
 
-        return $this->render('cts/suivis/print/controleurs.html.twig', array_merge(
+        return $this->render('suivi_activite/print/controleurs.html.twig', array_merge(
             $view,
             [
                 'controleursStats' => $controleursStats,
@@ -278,7 +278,7 @@ final class SuiviActiviteController extends AbstractController
             25
         );
 
-        return $this->render('cts/suivis/professionnels.html.twig', array_merge(
+        return $this->render('suivi_activite/professionnels.html.twig', array_merge(
             $this->commonViewDataBuilder->build($filters),
             [
                 'clients' => $paginated['items'],
@@ -310,7 +310,7 @@ final class SuiviActiviteController extends AbstractController
         $view = $this->commonViewDataBuilder->build($filters);
         $view['printFilters'] = $this->buildPrintFilters($filters, $view);
 
-        return $this->render('cts/suivis/print/professionnels_recap.html.twig', array_merge(
+        return $this->render('suivi_activite/print/professionnels_recap.html.twig', array_merge(
             $view,
             [
                 'summary' => $summary,
@@ -336,7 +336,7 @@ final class SuiviActiviteController extends AbstractController
         $view = $this->commonViewDataBuilder->build($filters);
         $view['printFilters'] = $this->buildPrintFilters($filters, $view);
 
-        return $this->render('cts/suivis/print/professionnels_table.html.twig', array_merge(
+        return $this->render('suivi_activite/print/professionnels_table.html.twig', array_merge(
             $view,
             [
                 'clients' => $allClients,
@@ -376,7 +376,7 @@ final class SuiviActiviteController extends AbstractController
         $splitSummary = $this->centresAnalyticsService->buildRevenueSplitSummary($centres);
         $proCharts = $this->proAnalyticsService->buildMonthlyCharts($rows, $referenceYear);
 
-        return $this->render('cts/suivis/centres.html.twig', array_merge(
+        return $this->render('suivi_activite/centres.html.twig', array_merge(
             $this->commonViewDataBuilder->build($filters),
             [
                 'centresList' => $centres,
@@ -408,7 +408,7 @@ final class SuiviActiviteController extends AbstractController
         $view = $this->commonViewDataBuilder->build($filters);
         $view['printFilters'] = $this->buildPrintFilters($filters, $view);
 
-        return $this->render('cts/suivis/print/centres_recap.html.twig', array_merge(
+        return $this->render('suivi_activite/print/centres_recap.html.twig', array_merge(
             $view,
             [
                 'summary' => $summary,
@@ -436,7 +436,7 @@ final class SuiviActiviteController extends AbstractController
         $view = $this->commonViewDataBuilder->build($filters);
         $view['printFilters'] = $this->buildPrintFilters($filters, $view);
 
-        return $this->render('cts/suivis/print/centres_table.html.twig', array_merge(
+        return $this->render('suivi_activite/print/centres_table.html.twig', array_merge(
             $view,
             [
                 'clients' => $centres,
@@ -506,7 +506,7 @@ final class SuiviActiviteController extends AbstractController
             $monthlySalaries = $this->centresAnalyticsService->buildMonthlySalarieBreakdown($monthlyRows);
         }
 
-        return $this->render('cts/suivis/centre_details.html.twig', array_merge(
+        return $this->render('suivi_activite/centre_details.html.twig', array_merge(
             $this->commonViewDataBuilder->build($filters),
             [
                 'centresList' => $centres,
@@ -576,7 +576,7 @@ final class SuiviActiviteController extends AbstractController
         $view = $this->commonViewDataBuilder->build($filters);
         $view['printFilters'] = $this->buildPrintFilters($filters, $view);
 
-        return $this->render('cts/suivis/print/centre_details_recap.html.twig', array_merge(
+        return $this->render('suivi_activite/print/centre_details_recap.html.twig', array_merge(
             $view,
             [
                 'summary' => $summary,
@@ -616,7 +616,7 @@ final class SuiviActiviteController extends AbstractController
 
         [$modesReglt, $tableByType] = $this->modesReglementService->buildModesReglementRows($rows, $selectedTable);
 
-        return $this->render('cts/suivis/modes_reglement.html.twig', array_merge(
+        return $this->render('suivi_activite/modes_reglement.html.twig', array_merge(
             $this->commonViewDataBuilder->build($filters),
             [
                 'modesReglt' => $modesReglt,
@@ -648,7 +648,7 @@ final class SuiviActiviteController extends AbstractController
         $view = $this->commonViewDataBuilder->build($filters);
         $view['printFilters'] = $this->buildPrintFilters($filters, $view);
 
-        return $this->render('cts/suivis/print/activite.html.twig', array_merge(
+        return $this->render('suivi_activite/print/activite.html.twig', array_merge(
             $view,
             [
                 'synthese' => $synthese,
@@ -677,7 +677,7 @@ final class SuiviActiviteController extends AbstractController
         $view = $this->commonViewDataBuilder->build($filters);
         $view['printFilters'] = $this->buildPrintFilters($filters, $view);
 
-        return $this->render('cts/suivis/print/activite_totals.html.twig', array_merge(
+        return $this->render('suivi_activite/print/activite_totals.html.twig', array_merge(
             $view,
             [
                 'synthese' => $synthese,

@@ -91,7 +91,7 @@ final class UserController extends AbstractController
             $notificationForm = $form->createView();
         }
 
-        return $this->render('users/profile.html.twig', [
+        return $this->render('utilisateur/profile.html.twig', [
             'user' => $user,
             'id' => $id,
             'password_form' => $passwordForm->createView(),

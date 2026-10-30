@@ -46,7 +46,7 @@ final class VoitureController extends AbstractController
         $activeStatus = ActiveStatusFilter::fromRequest($request);
         $voitures = $voitureRepository->findOrderedBySocieteSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE), $activeStatus->includeActive, $activeStatus->includeInactive);
 
-        return $this->render('cts/voitures/list_uneditable.html.twig', [
+        return $this->render('parc_automobile/list_uneditable.html.twig', [
             'voitures' => $voitures,
         ]);
     }
@@ -59,7 +59,7 @@ final class VoitureController extends AbstractController
         $activeStatus = ActiveStatusFilter::fromRequest($request);
         $voitures = $voitureRepository->findOrderedBySocieteSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE), $activeStatus->includeActive, $activeStatus->includeInactive);
 
-        return $this->render('cts/voitures/_list_results_uneditable.html.twig', [
+        return $this->render('parc_automobile/_list_results_uneditable.html.twig', [
             'voitures' => $voitures,
         ]);
     }
@@ -83,7 +83,7 @@ final class VoitureController extends AbstractController
         $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
         $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch(null, $centreIds);
 
-        return $this->render('cts/voitures/list.html.twig', [
+        return $this->render('parc_automobile/list.html.twig', [
             'voitures' => $voitures,
             'societes' => $societes,
             'centres' => $centres,
@@ -107,7 +107,7 @@ final class VoitureController extends AbstractController
         $societes = $societeRepository->findOrderedByNomSearch(null, $centreIds);
         $centres = $centreRepository->findCtsOrderedBySocieteVilleAgrSearch(null, $centreIds);
 
-        return $this->render('cts/voitures/_list_results.html.twig', [
+        return $this->render('parc_automobile/_list_results.html.twig', [
             'voitures' => $voitures,
             'societes' => $societes,
             'centres' => $centres,
@@ -133,7 +133,7 @@ final class VoitureController extends AbstractController
         if ($form->isSubmitted()) {
             try {
                 if (!$form->isValid()) {
-                    return $this->render('cts/voitures/add.html.twig', [
+                    return $this->render('parc_automobile/add.html.twig', [
                         'form' => $form->createView(),
                     ]);
                 }
@@ -173,7 +173,7 @@ final class VoitureController extends AbstractController
             return $this->redirectToRoute('app_voitures_list_uneditable');
         }
 
-        return $this->render('cts/voitures/add.html.twig', [
+        return $this->render('parc_automobile/add.html.twig', [
             'form' => $form->createView(),
         ]);
     }
@@ -237,7 +237,7 @@ final class VoitureController extends AbstractController
             foreach ($result->errors as $msg) {
                 $this->addFlash('error', $msg);
             }
-            return $this->render('cts/voitures/list.html.twig', [
+            return $this->render('parc_automobile/list.html.twig', [
                 'voitures' => $voitures,
                 'societes' => $societes,
                 'centres' => $centres,
@@ -487,7 +487,7 @@ final class VoitureController extends AbstractController
         $paginationData = $this->paginationResolver->computePagination($request, $perPage, $voitureRepository->countSearch($q, $centreIds, $activeStatus->includeActive, $activeStatus->includeInactive));
         $voitures = $voitureRepository->findPaginatedOrderedBySocieteSearch($perPage, $paginationData['offset'], $q, $centreIds, $activeStatus->includeActive, $activeStatus->includeInactive);
 
-        return $this->render('cts/lists/print/voitures.html.twig', [
+        return $this->render('parc_automobile/print.html.twig', [
             'voitures' => $voitures,
             'pagination' => $paginationData['view'],
             'q' => $q,
@@ -506,7 +506,7 @@ final class VoitureController extends AbstractController
         $activeStatus = ActiveStatusFilter::fromRequest($request);
         $voitures = $voitureRepository->findOrderedBySocieteSearch($q, $this->scopeResolver->centreIds(TypeCentre::CONTROLE_TECHNIQUE), $activeStatus->includeActive, $activeStatus->includeInactive);
 
-        return $this->render('cts/lists/print/voitures.html.twig', [
+        return $this->render('parc_automobile/print.html.twig', [
             'voitures' => $voitures,
             'pagination' => null,
             'q' => $q,

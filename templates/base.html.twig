@@ -10,7 +10,7 @@
         {% block importmap %}{{ importmap('app') }}{% endblock %}
     {% endblock %}
 
-    {{ include('partials/stylesheets.html.twig') }}
+    {{ include('shared/stylesheets.html.twig') }}
 
     {% block stylesheets %}
     {% endblock %}
@@ -18,7 +18,7 @@
 
 <body>
 <header>
-    {{ include('partials/nav.html.twig') }}
+    {{ include('shared/nav.html.twig') }}
 </header>
 
 <main>

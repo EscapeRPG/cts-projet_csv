@@ -44,7 +44,7 @@ final class ReleveJournalierController extends AbstractController
         $stationId = $request->query->getInt('station');
 
         if ($stationId <= 0) {
-            return $this->render('astikoto/stations/releves.html.twig', [
+            return $this->render('releve_lavage/releves.html.twig', [
                 'stations' => $stations,
                 'selectedStation' => null,
                 'selectedDate' => $selectedDate,
@@ -65,10 +65,10 @@ final class ReleveJournalierController extends AbstractController
         ];
 
         if ($request->isXmlHttpRequest()) {
-            return $this->render('astikoto/stations/_station_results.html.twig', $viewData);
+            return $this->render('releve_lavage/_station_results.html.twig', $viewData);
         }
 
-        return $this->render('astikoto/stations/releves.html.twig', $viewData);
+        return $this->render('releve_lavage/releves.html.twig', $viewData);
     }
 
     /**
@@ -105,7 +105,7 @@ final class ReleveJournalierController extends AbstractController
 
         $selectedDate = $this->resolveSelectedDate($request->query->get('date'));
 
-        return $this->render('astikoto/stations/_day_details.html.twig', [
+        return $this->render('releve_lavage/_day_details.html.twig', [
             'selectedStation' => $station,
             'selectedDate' => $selectedDate,
             'annualRevenues' => $revenueCalculator->getAnnualRevenues($station, new \DateTimeImmutable()),

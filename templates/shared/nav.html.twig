@@ -1,0 +1,435 @@
+<nav data-controller="burger">
+    <div class="burger-container" data-action="click->burger#menu" data-burger-target="container">
+        <div class="burgerBtn">
+            <span id="burger" data-burger-target="burger"></span>
+        </div>
+    </div>
+
+    <div id="responsive" data-burger-target="menu">
+        <div>
+            {% if is_granted('IS_AUTHENTICATED') %}
+                <h3>{{ user.username }}</h3>
+
+                <h3>
+                    {% if 'ROLE_DEV' in user.roles %}
+                        Lead Developer
+                    {% elseif 'ROLE_ADMIN' in user.roles %}
+                        Administrateur
+                    {% elseif ('ROLE_CTS' in user.roles) and ('ROLE_ASTIKOTO' in user.roles) %}
+                        CTS + Astikoto
+                    {% elseif 'ROLE_ASTIKOTO' in user.roles %}
+                        Gérant Astikoto
+                    {% elseif 'ROLE_CTS' in user.roles %}
+                        CTS
+                    {% else %}
+                        Utilisateur
+                    {% endif %}
+                </h3>
+
+                <ul class="profil">
+                    <li>
+                        <a href="{{ path('app_profile', { id: app.user.id }) }}">
+                            Profil
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_logout') }}">
+                            Se déconnecter
+                        </a>
+                    </li>
+                </ul>
+            {% else %}
+                <ul class="profil">
+                    <li>
+                        <a href="{{ path('app_login') }}">
+                            → Se connecter
+                        </a>
+                    </li>
+                </ul>
+            {% endif %}
+
+            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_ORGANIGRAM_VIEW') or is_granted('ROLE_ENCOURS_VIEW') %}
+                <h2>ADMINISTRATION</h2>
+
+                {% if is_granted('ROLE_ADMIN') %}
+                    <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('shared/svg/utilisateurs.html.twig') }}
+                        Utilisateurs
+                    </span>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        <li>
+                            <a href="{{ path('app_users_list') }}">
+                                → Liste des utilisateurs
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ path('app_users_add') }}">
+                                → Ajouter un utilisateur
+                            </a>
+                        </li>
+                    </ul>
+                {% endif %}
+
+                {% if is_granted('ROLE_TOOLS_VIEW') %}
+                    <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('shared/svg/outils.html.twig') }}
+                        Outils réseaux
+                    </span>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        <li>
+                            <a href="{{ path('app_outils_list') }}">
+                                → Liste des outils
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ path('app_outils_add') }}">
+                                → Ajouter un outil
+                            </a>
+                        </li>
+                    </ul>
+                {% endif %}
+
+                {% if is_granted('ROLE_ORGANIGRAM_VIEW') %}
+                    <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('shared/svg/organigramme.html.twig') }}
+                        Organigrammes
+                    </span>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        {% if is_granted('ROLE_ORGANIGRAM_STRUCT_VIEW') %}
+                            <li>
+                                <a href="{{ path('app_organigram') }}">
+                                    → Organigramme structurel
+                                </a>
+                            </li>
+                        {% endif %}
+                        {% if is_granted('ROLE_ORGANIGRAM_IMMO_VIEW') %}
+                            <li>
+                                <a href="{{ path('app_organigram_immobilier') }}">
+                                    → Organigramme immobilier
+                                </a>
+                            </li>
+                        {% endif %}
+                        {% if is_granted('ROLE_ORGANIGRAM_HIERARCHY_VIEW') %}
+                            <li>
+                                <a href="{{ path('app_organigram_hierarchique') }}">
+                                    → Organigramme hiérarchique
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                {% endif %}
+
+                {% if is_granted('ROLE_ENCOURS_VIEW') %}
+                    <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('shared/svg/encours.html.twig') }}
+                        Encours
+                    </span>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        <li>
+                            <a href="{{ path('app_encours_bancaires') }}">
+                                → Encours bancaires
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ path('app_encours_bancaires_add') }}">
+                                → Ajout d'encours
+                            </a>
+                        </li>
+                    </ul>
+                {% endif %}
+            {% endif %}
+
+            {% if is_granted('ROLE_CTS') %}
+                <h2>CTS</h2>
+
+                {% if is_granted('ROLE_LIST_SOCIETES_VIEW') or is_granted('ROLE_LIST_SOCIETES_ADD') %}
+                    <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('shared/svg/societes.html.twig') }}
+                        Sociétés
+                    </span>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        {% if is_granted('ROLE_LIST_SOCIETES_VIEW') %}
+                            <li>
+                                <a href="{{ path('app_societes_list_uneditable') }}">
+                                    → Liste des sociétés
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if is_granted('ROLE_LIST_SOCIETES_ADD') %}
+                            <li>
+                                <a href="{{ path('app_societes_add') }}">
+                                    → Ajouter une société
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                {% endif %}
+
+                {% if is_granted('ROLE_LIST_CENTRES_VIEW') or is_granted('ROLE_LIST_CENTRES_ADD') %}
+                    <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('shared/svg/centres.html.twig') }}
+                        Centres
+                    </span>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        {% if is_granted('ROLE_LIST_CENTRES_VIEW') %}
+                            <li>
+                                <a href="{{ path('app_centres_list_uneditable') }}">
+                                    → Liste des centres
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if is_granted('ROLE_LIST_CENTRES_ADD') %}
+                            <li>
+                                <a href="{{ path('app_centres_add') }}">
+                                    → Ajouter un centre
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                {% endif %}
+
+                {% if is_granted('ROLE_LIST_VOITURES_VIEW') or is_granted('ROLE_LIST_VOITURES_ADD') %}
+                    <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('shared/svg/voitures.html.twig') }}
+                        Voitures
+                    </span>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        {% if is_granted('ROLE_LIST_VOITURES_VIEW') %}
+                            <li>
+                                <a href="{{ path('app_voitures_list_uneditable') }}">
+                                    → Liste des voitures
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if is_granted('ROLE_LIST_VOITURES_ADD') %}
+                            <li>
+                                <a href="{{ path('app_voitures_add') }}">
+                                    → Ajouter une voiture
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                {% endif %}
+
+                {% if is_granted('ROLE_LIST_SALARIES_VIEW') or is_granted('ROLE_LIST_SALARIES_ADD') %}
+                    <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('shared/svg/salaries.html.twig') }}
+                        Salariés
+                    </span>
+                        <span class="open-btn">></span>
+                    </h3>
+                    <ul class="menu">
+                        {% if is_granted('ROLE_LIST_SALARIES_VIEW') %}
+                            <li>
+                                <a href="{{ path('app_salaries_list_uneditable') }}">
+                                    → Liste des salariés
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if is_granted('ROLE_LIST_SALARIES_ADD') %}
+                            <li>
+                                <a href="{{ path('app_salaries_add') }}">
+                                    → Ajouter un salarié
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                {% endif %}
+
+                <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('shared/svg/activite.html.twig') }}
+                        Activité
+                    </span>
+                    <span class="open-btn">></span>
+                </h3>
+                <ul class="menu">
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <li>
+                            <a href="{{ path('app_first_results') }}">
+                                → Dates des premières données
+                            </a>
+                        </li>
+                    {% endif %}
+                    <li>
+                        <a href="{{ path('app_suivi_activite') }}">
+                            → Synthèse
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_suivi_centres') }}">
+                            → Tous les centres
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_suivi_centre_details') }}">
+                            → Détails par centre
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_suivi_focus_pro') }}">
+                            → Professionnels
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_suivi_controleurs') }}">
+                            → Contrôleurs
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_suivi_modes_reglement') }}">
+                            → Modes de règlement
+                        </a>
+                    </li>
+                </ul>
+            {% endif %}
+
+            {% if is_granted('ROLE_ASTIKOTO') %}
+                <h2>ASTIKOTO</h2>
+
+                <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('shared/svg/stations.html.twig') }}
+                        Stations
+                    </span>
+                    <span class="open-btn">></span>
+                </h3>
+                <ul class="menu">
+                    <li>
+                        <a href="{{ path('app_stations_list_uneditable') }}">
+                            → Liste des stations
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_station_details_entry') }}">
+                            → Détails par station
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_stations_add') }}">
+                            → Ajout de station
+                        </a>
+                    </li>
+                </ul>
+
+                <h3 class="toggle">
+                    <span class="toggle-title">
+                        {{ include('shared/svg/activite.html.twig') }}
+                        Activité
+                    </span>
+                    <span class="open-btn">></span>
+                </h3>
+                <ul class="menu">
+                    <li>
+                        <a href="{{ path('app_station_releves') }}">
+                            → Relevés journaliers
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('astikoto_import_csv') }}">
+                            → Import de fichier
+                        </a>
+                    </li>
+                </ul>
+            {% endif %}
+        </div>
+
+        <div>
+            <p class="meta-info">
+                Dernière mise à jour BDD :
+                <br>
+                {% if database_last_update_at is not null %}
+                    {{ database_last_update_at|format_datetime(
+                        pattern: "d MMMM y ' - ' HH:mm",
+                        locale: 'fr'
+                    ) }}
+                {% else %}
+                    inconnue
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</nav>
+
+<div class="notif-return" data-controller="notif">
+    <div class="theme">
+        <button class="theme-btn">&#9790</button>
+    </div>
+
+    {% if is_granted('ROLE_DEV') %}
+        <div class="notifications">
+            <a href="{{ path('app_import_health') }}" class="import-health-link">
+                <img src="{{ asset('img/rapport_csv.png') }}" alt="rapport csv">
+            </a>
+        </div>
+    {% endif %}
+
+    <div class="notifications">
+        <img src="{{ asset('img/cloche.png') }}"
+             class="{{ unread_notifications_count > 0 ? 'unread-alert' : '' }}"
+             alt="notifications"
+             data-action="click->notif#notifications"
+             data-notif-target="btn">
+
+        <div class="notif-nbr {{ unread_notifications_count > 0 ? 'active' : '' }}" data-notif-target="count">
+            {% if unread_notifications_count > 0 %}
+                {{ unread_notifications_count }}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="notif-responsive" data-notif-target="panel">
+        {% if notifications is empty %}
+            <p data-notif-target="emptyState">Aucune notification.</p>
+        {% else %}
+            {% for userNotification in notifications %}
+                {% set notification = userNotification.notification %}
+                <article class="notif-item {{ userNotification.readAt is null ? 'unread' : 'read' }}"
+                         data-notif-target="item">
+                    <p>{{ notification_display_message(notification) }}</p>
+
+                    <button
+                        type="button"
+                        class="notif-dismiss"
+                        aria-label="Marquer comme lue"
+                        data-action="click->notif#markAsRead"
+                        data-url="{{ path('app_notifications_read', { id: userNotification.id }) }}"
+                        data-token="{{ csrf_token('read-notification-' ~ userNotification.id) }}"
+                    >x
+                    </button>
+                </article>
+            {% endfor %}
+            <p data-notif-target="emptyState" hidden>Aucune notification.</p>
+        {% endif %}
+    </div>
+
+    <a href="{{ path('app_home') }}" class="home">
+        <img src="{{ asset('img/apps/logo-cts.png') }}" alt="accueil" title="Retour à l'accueil">
+    </a>
+</div>
