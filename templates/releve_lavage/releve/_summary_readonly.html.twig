@@ -32,6 +32,8 @@
         </div>
     </div>
 
+    {% include 'releve_lavage/_annual_revenue_summary.html.twig' with { annualRevenues: annualRevenues } only %}
+
     <div class="releve-commentaire">
         <p>{{ releve.commentaire ? releve.commentaire|nl2br : 'Aucun commentaire' }}</p>
     </div>
