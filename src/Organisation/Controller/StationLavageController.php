@@ -222,6 +222,7 @@ final class StationLavageController extends AbstractController
             'stations' => $repository->findStationsLavage(null, $centreIds),
             'selectedStation' => $station,
             'annualRevenues' => $revenueCalculator->buildAnnualRevenues($rows, $referenceDate),
+            'annualRevenueBreakdown' => $revenueCalculator->getAnnualRevenueBreakdown($station, $referenceDate),
             'proCharts' => $this->proAnalyticsService->buildMonthlyCharts($rows, $referenceYear),
             'referenceYear' => $referenceYear,
         ]);

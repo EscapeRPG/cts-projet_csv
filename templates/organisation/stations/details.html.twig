@@ -94,7 +94,7 @@
                         </div>
 
                         <div class="summary">
-                            {% include 'releve_lavage/_annual_revenue_summary.html.twig' with { annualRevenues: annualRevenues } only %}
+                            {% include 'releve_lavage/_annual_revenue_summary.html.twig' with { annualRevenues: annualRevenues, annualRevenueBreakdown: annualRevenueBreakdown } only %}
                             {% include 'releve_lavage/_annual_revenue_chart.html.twig' with { annualRevenues: annualRevenues } only %}
                         </div>
 

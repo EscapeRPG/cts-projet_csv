@@ -275,6 +275,41 @@
     }
 }
 
+.hoverable-summary {
+    position: relative;
+
+    &.is-showing-details > .ca-summary:not(.hovered-summary) {
+        visibility: hidden;
+    }
+
+    &.is-showing-details > .hovered-summary {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .hovered-summary {
+        display: none;
+        position: absolute;
+        inset: 0;
+        padding: 0 10px 10px;
+        width: 100%;
+        overflow: auto;
+        background: var(--cts-alt);
+
+        .row {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+            gap: 20px;
+
+            span {
+                font-weight: bold;
+            }
+        }
+    }
+}
+
 .summary .pro-part-panel.station-annual-revenue .ca-pro-part .col-pro-part {
     grid-template-rows: minmax(0, 1fr) auto;
 }

@@ -11,6 +11,32 @@ use PHPUnit\Framework\TestCase;
 
 final class ReleveRevenueCalculatorTest extends TestCase
 {
+    public function testAnnualBreakdownKeepsCategoriesSeparateAndUsesCalendarYear(): void
+    {
+        $station = new Centre();
+        $repositories = [];
+        foreach ([ReleveEquipementRepository::class, ReleveProduitRepository::class, RelevePrestationRepository::class] as $index => $class) {
+            $repository = $this->createMock($class);
+            $repository->expects(self::once())->method('sumRevenueForPeriod')
+                ->willReturnCallback(function (Centre $actualStation, \DateTimeImmutable $from, \DateTimeImmutable $until) use ($station, $index): int {
+                    self::assertSame($station, $actualStation);
+                    self::assertSame('2024-01-01 00:00:00', $from->format('Y-m-d H:i:s'));
+                    self::assertSame('2025-01-01 00:00:00', $until->format('Y-m-d H:i:s'));
+                    return ($index + 1) * 1234;
+                });
+            $repositories[] = $repository;
+        }
+
+        $revenue = (new ReleveRevenueCalculator(...$repositories))->getAnnualRevenueBreakdown(
+            $station,
+            new \DateTimeImmutable('2024-02-29 15:30:00'),
+        );
+        self::assertSame(1234, $revenue->equipementsCents);
+        self::assertSame(2468, $revenue->produitsCents);
+        self::assertSame(3702, $revenue->prestationsCents);
+        self::assertSame(7404, $revenue->getTotalCents());
+    }
+
     public function testAnnualRevenuesUseFullCalendarYearsAndSumAllCategories(): void
     {
         $station = new Centre();

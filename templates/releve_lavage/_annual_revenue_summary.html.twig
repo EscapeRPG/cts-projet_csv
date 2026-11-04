@@ -1,5 +1,5 @@
 {% set current = annualRevenues|last %}
-<div class="summary releve-summary-panel">
+<div class="summary releve-summary-panel hoverable-summary">
     <div class="ca-summary">
         <span class="panel-tools-title">CA de l'année</span>
         <strong>{{ current.revenueCents|money }}</strong>
@@ -14,6 +14,25 @@
                     </div>
                 </div>
             {% endfor %}
+        </div>
+    </div>
+
+    <div class="ca-summary hovered-summary">
+        <span class="panel-tools-title">CA de l'année</span>
+
+        <div class="row">
+            <span>Station</span>
+            {{ annualRevenueBreakdown.equipementsCents|money }}
+        </div>
+
+        <div class="row">
+            <span>Produits</span>
+            {{ annualRevenueBreakdown.produitsCents|money }}
+        </div>
+
+        <div class="row">
+            <span>Prestations</span>
+            {{ annualRevenueBreakdown.prestationsCents|money }}
         </div>
     </div>
 </div>

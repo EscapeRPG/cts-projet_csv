@@ -73,7 +73,8 @@ final readonly class ReleveDayViewBuilder
             $form = $this->formFactory->create(CreateReleveJournalierType::class, $dto, $formOptions);
         }
 
-        $current = $this->revenueCalculator->getMonthlyRevenue($station, $date)->getTotalCents();
+        $monthlyRevenue = $this->revenueCalculator->getMonthlyRevenue($station, $date);
+        $current = $monthlyRevenue->getTotalCents();
         $comparisons = [];
 
         foreach ([1, 2] as $yearsAgo) {
@@ -93,6 +94,8 @@ final readonly class ReleveDayViewBuilder
             'equipements' => $this->equipementsBuilder->build($releve),
             'releveTotals' => $this->totalsCalculator->calculate($dto),
             'monthlyRevenueCents' => $current,
+            'monthlyRevenue' => $monthlyRevenue,
+            'annualRevenueBreakdown' => $this->revenueCalculator->getAnnualRevenueBreakdown($station, new \DateTimeImmutable()),
             'monthlyComparisons' => $comparisons,
             'editing' => !$releve->isValidated() || $request->query->getBoolean('edit'),
             'editUrl' => $this->urlGenerator->generate('app_station_releves_day', [

@@ -34,6 +34,18 @@ final readonly class ReleveRevenueCalculator
         );
     }
 
+    public function getAnnualRevenueBreakdown(Centre $station, \DateTimeImmutable $referenceDate): MonthlyRevenue
+    {
+        $from = $referenceDate->setDate((int) $referenceDate->format('Y'), 1, 1)->setTime(0, 0);
+        $until = $from->modify('+1 year');
+
+        return new MonthlyRevenue(
+            $this->equipementRepository->sumRevenueForPeriod($station, $from, $until),
+            $this->produitRepository->sumRevenueForPeriod($station, $from, $until),
+            $this->prestationRepository->sumRevenueForPeriod($station, $from, $until),
+        );
+    }
+
     /**
      * Totaux des années civiles N-2 à N, pour tous les relevés enregistrés.
      * @return list<array{year: int, revenueCents: int, evolution: ?float}>

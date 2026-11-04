@@ -8,7 +8,7 @@
         </div>
     </div>
 
-    <div class="summary releve-summary-panel">
+    <div class="summary releve-summary-panel hoverable-summary">
         <div class="ca-summary">
             <span class="panel-tools-title">CA du mois</span>
             <strong>{{ monthlyRevenueCents|money }}</strong>
@@ -30,9 +30,28 @@
                 {% endfor %}
             </div>
         </div>
+
+        <div class="ca-summary hovered-summary">
+            <span class="panel-tools-title">CA du mois</span>
+
+            <div class="row">
+                <span>Station</span>
+                {{ monthlyRevenue.equipementsCents|money }}
+            </div>
+
+            <div class="row">
+                <span>Produits</span>
+                {{ monthlyRevenue.produitsCents|money }}
+            </div>
+
+            <div class="row">
+                <span>Prestations</span>
+                {{ monthlyRevenue.prestationsCents|money }}
+            </div>
+        </div>
     </div>
 
-    {% include 'releve_lavage/_annual_revenue_summary.html.twig' with { annualRevenues: annualRevenues } only %}
+    {% include 'releve_lavage/_annual_revenue_summary.html.twig' with { annualRevenues: annualRevenues, annualRevenueBreakdown: annualRevenueBreakdown } only %}
 
     <div class="releve-commentaire">
         <p>{{ releve.commentaire ? releve.commentaire|nl2br : 'Aucun commentaire' }}</p>
