@@ -62,7 +62,7 @@ final class CreateEncoursBancaireType extends AbstractType
                 'empty_data' => null,
             ])
             ->add('emprunt', NumberType::class, [
-                'label' => 'Emprunt :',
+                'label' => 'Montant emprunt :',
                 'required' => false,
                 'scale' => 2,
                 'empty_data' => null,

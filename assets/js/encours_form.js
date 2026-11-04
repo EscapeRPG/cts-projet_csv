@@ -49,6 +49,16 @@ function initEncoursMontantsCollection(holder) {
         // Move all generated nodes (typically the two field containers) into the row.
         Array.from(protoWrapper.childNodes).forEach((n) => row.appendChild(n));
 
+        const previousYear = list.lastElementChild?.querySelector('input[name$="[annee]"]');
+        const yearInput = row.querySelector('input[name$="[annee]"]');
+        if (previousYear instanceof HTMLInputElement && yearInput instanceof HTMLInputElement) {
+            const value = previousYear.value.trim();
+            const year = Number(value);
+            if (value !== '' && Number.isSafeInteger(year) && year > 0 && Number.isSafeInteger(year + 1)) {
+                yearInput.value = String(year + 1);
+            }
+        }
+
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
         removeBtn.textContent = '-';
