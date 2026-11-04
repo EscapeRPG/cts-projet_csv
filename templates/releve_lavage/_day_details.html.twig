@@ -10,6 +10,7 @@
     data-releve-state
     data-releve-editing="{{ editing ? '1' : '0' }}"
     data-releve-edit-url="{{ editUrl }}"
+    data-releve-print-url="{{ path('app_station_releves_print', { station: selectedStation.id, date: selectedDate|date('Y-m-d') }) }}"
     data-releve-activity="{{ activity }}"
 ></div>
 

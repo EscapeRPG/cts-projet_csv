@@ -1,0 +1,118 @@
+/* Match the other recap print pages: white panels, light borders, no screen chrome. */
+.print-variant-station-details .print-content {
+    font-size: 11px;
+}
+
+.print-variant-station-details .print-content .pro-stats-container,
+.print-variant-station-details .print-content .pro-stats-panel {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0;
+    border: none !important;
+    border-radius: 0;
+    min-height: 0;
+}
+
+.print-variant-station-details .print-content .pro-stats-container {
+    display: block;
+}
+
+.print-variant-station-details .print-content .pro-stats-panel {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 4mm;
+    margin-bottom: 4mm;
+    break-inside: avoid;
+}
+
+/* Screen styles make the last stats-wrapper span every column. */
+.print-variant-station-details .print-content .pro-stats-panel > * {
+    grid-column: auto !important;
+    grid-row: auto;
+    order: 0;
+    min-width: 0;
+    width: auto;
+    box-sizing: border-box;
+}
+
+.print-variant-station-details .print-content .summary {
+    min-width: 0;
+    width: 100%;
+    box-shadow: none !important;
+    background: transparent !important;
+    gap: 3mm;
+}
+
+.print-variant-station-details .print-content .stats-wrapper,
+.print-variant-station-details .print-content .ca-summary,
+.print-variant-station-details .print-content .pro-part-panel {
+    background: #fff !important;
+    color: #000;
+    border: 1px solid #d7d7d7 !important;
+    border-radius: 0;
+    box-shadow: none !important;
+    padding: 6px !important;
+    min-height: 0;
+}
+
+.print-variant-station-details .print-content .panel-tools,
+.print-variant-station-details .print-content h2,
+.print-variant-station-details .print-content td,
+.print-variant-station-details .print-content th {
+    background: #fff !important;
+    color: #000 !important;
+    position: static;
+}
+
+.print-variant-station-details .print-content h2 {
+    margin: 0 0 2mm;
+    padding: 0;
+}
+
+.print-variant-station-details .print-content table {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+}
+
+.print-variant-station-details .print-content .ca-summary strong {
+    font-size: 1.6em;
+}
+
+.print-variant-station-details .print-content .ca-summary .previous {
+    padding-top: 6px;
+    margin: 6px auto;
+}
+
+.print-variant-station-details .print-content .hovered-summary {
+    display: none;
+    position: static;
+    overflow: visible;
+    margin-top: 2mm;
+    flex: 0 0 auto;
+}
+
+.print-variant-station-details .print-content .chart-canvas-wrap {
+    height: 65mm !important;
+    min-height: 65mm;
+    width: 100%;
+    flex: 0 0 auto;
+}
+
+.print-variant-station-details .print-content .station-annual-revenue {
+    height: 40mm;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.print-variant-station-details .print-content ul {
+    margin: 1mm 0;
+    padding-left: 5mm;
+}
+
+.print-variant-station-details .print-content .col-part {
+    background: #fff !important;
+    border: 1px solid #000;
+    box-sizing: border-box;
+}

@@ -1,0 +1,68 @@
+{% extends 'shared/print/_analytics_base.html.twig' %}
+
+{% set printTitle = 'Relevés de la station de ' ~ selectedStation.ville %}
+{% set printOrientation = 'landscape' %}
+{% set printVariant = 'releves-period' %}
+{% set autoPrint = count > 0 %}
+{% set printFilters = [
+    {label: 'Du', value: from|date('d/m/Y')},
+    {label: 'Au', value: to|date('d/m/Y')},
+    {label: 'Relevés enregistrés', value: count},
+    {label: 'Validés', value: validatedCount},
+    {label: 'Brouillons', value: count - validatedCount}
+] %}
+
+{% block print_stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/print/print-releves.css') }}">
+{% endblock %}
+
+{% block content %}
+    {% if count == 0 %}
+        <p>Aucun relevé enregistré sur cette période.</p>
+    {% else %}
+        <h2>CA total de la période : {{ totalCents|money }}</h2>
+        {% for section in sections %}
+            {% set isEquipment = 'jetons' in section.fields|keys %}
+            <section class="print-releve-section">
+                <h2>{{ section.title }} — {{ section.totals.total|money }}</h2>
+                <table>
+                    <thead><tr>
+                        <th>Désignation</th>
+                        {% if isEquipment %}<th>Type</th>{% endif %}
+                        {% for label in section.fields %}<th>{{ label }}</th>{% endfor %}
+                        <th>Total</th>
+                    </tr></thead>
+                    <tbody>
+                        {% for row in section.rows %}
+                            <tr>
+                                <td>{{ row.label }}</td>
+                                {% if isEquipment %}<td>{{ {portique: 'Portique', borne: 'Borne', autre: 'Autre'}[row.category]|default(row.category) }}</td>{% endif %}
+                                {% for field, label in section.fields %}
+                                    <td class="amount">{{ field == 'jetons' ? row.values[field] : row.values[field]|money }}</td>
+                                {% endfor %}
+                                <td class="amount">{{ row.values.total|money }}</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="{{ section.fields|length + 2 + (isEquipment ? 1 : 0) }}">Aucune ligne enregistrée.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot><tr>
+                        <th {% if isEquipment %}colspan="2"{% endif %}>TOTAL</th>
+                        {% for field, label in section.fields %}
+                            <th class="amount">{{ field == 'jetons' ? section.totals[field] : section.totals[field]|money }}</th>
+                        {% endfor %}
+                        <th class="amount">{{ section.totals.total|money }}</th>
+                    </tr></tfoot>
+                </table>
+            </section>
+        {% endfor %}
+        {% if comments %}
+            <section class="print-releve-section">
+                <h2>Commentaires</h2>
+                {% for comment in comments %}
+                    <p><strong>{{ comment.date|date('d/m/Y') }}</strong> — {{ comment.text|nl2br }}</p>
+                {% endfor %}
+            </section>
+        {% endif %}
+    {% endif %}
+{% endblock %}

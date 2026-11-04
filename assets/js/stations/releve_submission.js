@@ -35,6 +35,13 @@ function synchronizeActions(root = document) {
 
     actions.replaceChildren();
 
+    const printLink = document.createElement('a');
+    printLink.href = state.dataset.relevePrintUrl;
+    printLink.className = 'btn-link';
+    printLink.textContent = 'Imprimer';
+    printLink.target = '_blank';
+    printLink.rel = 'noopener';
+
     if (state.dataset.releveEditing === '1') {
         actions.append(
             createButton('Enregistrer', 'btn-link', {
@@ -52,6 +59,7 @@ function synchronizeActions(root = document) {
                 'data-releve-intent': 'validate',
             }),
         );
+        actions.append(printLink);
         return;
     }
 
@@ -60,7 +68,7 @@ function synchronizeActions(root = document) {
         const editUrl = state.dataset.releveEditUrl;
         if (editUrl) replaceDayDetails(editUrl);
     });
-    actions.append(editButton);
+    actions.append(editButton, printLink);
 }
 
 function synchronizeActivity(root = document) {

@@ -1,0 +1,51 @@
+.print-period-selection {
+    width: min(850px, calc(100% - 40px));
+    margin: 30px auto;
+    padding: 20px;
+    box-sizing: border-box;
+    background: var(--blocks);
+    border-radius: 10px;
+}
+
+.print-period-selection form {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.print-variant-releves-period .print-content {
+    font-size: 11px;
+}
+
+.print-variant-releves-period .print-releve-section {
+    margin-bottom: 5mm;
+}
+
+.print-variant-releves-period .print-content h2 {
+    margin: 0 0 2mm;
+    break-after: avoid;
+}
+
+.print-variant-releves-period .print-content td,
+.print-variant-releves-period .print-content th {
+    background: white !important;
+    color: black !important;
+    font-size: 11px;
+    white-space: normal;
+}
+
+.print-variant-releves-period .print-content thead {
+    position: static;
+    background: white;
+}
+
+.print-variant-releves-period .print-content tr {
+    break-inside: avoid;
+}
+
+.print-variant-releves-period .amount {
+    text-align: right;
+    white-space: nowrap !important;
+}

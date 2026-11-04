@@ -1,0 +1,15 @@
+{% extends 'shared/print/_analytics_base.html.twig' %}
+
+{% set printTitle = 'Détails de la station de ' ~ selectedStation.ville %}
+{% set printOrientation = 'landscape' %}
+{% set printVariant = 'station-details' %}
+{% set autoPrint = true %}
+{% set printFilters = [{ label: 'Année de référence', value: referenceYear }] %}
+
+{% block print_stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/print/print-station.css') }}">
+{% endblock %}
+
+{% block content %}
+    {% include 'organisation/stations/_details_content.html.twig' %}
+{% endblock %}

@@ -7,6 +7,8 @@ use App\Organisation\Enum\TypeCentre;
 use App\Organisation\Repository\StationLavageRepository;
 use App\ReleveLavage\Service\ReleveDayViewBuilder;
 use App\ReleveLavage\Service\ReleveRevenueCalculator;
+use App\ReleveLavage\Service\RelevePeriodSummary;
+use App\ReleveLavage\Repository\ReleveJournalierRepository;
 use App\Utilisateur\Security\UserScopeResolver;
 use DateMalformedStringException;
 use Doctrine\DBAL\Exception;
@@ -110,6 +112,50 @@ final class ReleveJournalierController extends AbstractController
             'selectedDate' => $selectedDate,
             'annualRevenues' => $revenueCalculator->getAnnualRevenues($station, new \DateTimeImmutable()),
             ...$viewBuilder->build($station, $selectedDate, $user, $request),
+        ]);
+    }
+
+    #[Route('/astikoto/stations/releves/imprimer', name: 'app_station_releves_print', methods: ['GET'])]
+    public function printPeriod(
+        Request $request,
+        StationLavageRepository $stations,
+        ReleveJournalierRepository $releves,
+        RelevePeriodSummary $summary,
+    ): Response {
+        $station = $stations->findOneStationInScope(
+            $request->query->getInt('station'),
+            $this->scopeResolver->centreIds(TypeCentre::STATION_LAVAGE),
+        );
+        if ($station === null) {
+            throw $this->createNotFoundException(self::ERROR);
+        }
+
+        $start = $request->query->getString('debut');
+        $end = $request->query->getString('fin');
+        $error = null;
+        if ($request->query->has('debut') || $request->query->has('fin')) {
+            $from = \DateTimeImmutable::createFromFormat('!Y-m-d', $start);
+            $to = \DateTimeImmutable::createFromFormat('!Y-m-d', $end);
+            if (!$from || !$to || $from->format('Y-m-d') !== $start || $to->format('Y-m-d') !== $end) {
+                $error = 'Veuillez renseigner deux dates valides.';
+            } elseif ($from > $to) {
+                $error = 'La date de fin doit être égale ou postérieure à la date de début.';
+            } else {
+                return $this->render('releve_lavage/print/period.html.twig', [
+                    'selectedStation' => $station,
+                    'from' => $from,
+                    'to' => $to,
+                    ...$summary->build($releves->findForPeriod($station, $from, $to->modify('+1 day'))),
+                ]);
+            }
+        }
+
+        $referenceDate = $this->resolveSelectedDate($request->query->get('date'));
+        return $this->render('releve_lavage/print/select_period.html.twig', [
+            'selectedStation' => $station,
+            'start' => $start ?: $referenceDate->modify('first day of this month')->format('Y-m-d'),
+            'end' => $end ?: $referenceDate->modify('last day of this month')->format('Y-m-d'),
+            'error' => $error,
         ]);
     }
 

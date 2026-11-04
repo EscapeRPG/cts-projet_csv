@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Impression des relevés{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/print/print-releves.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="print-period-selection">
+        <h1>Imprimer les relevés — {{ selectedStation.ville }}</h1>
+        <p>Les dates de début et de fin sont incluses. Les relevés enregistrés, validés ou en brouillon, sont regroupés par équipement, produit et prestation.</p>
+        {% if error %}<p role="alert">{{ error }}</p>{% endif %}
+        <form method="get" action="{{ path('app_station_releves_print') }}" data-turbo="false">
+            <input type="hidden" name="station" value="{{ selectedStation.id }}">
+            <label for="print-period-start">Du</label>
+            <input id="print-period-start" type="date" name="debut" value="{{ start }}" required>
+            <label for="print-period-end">Au</label>
+            <input id="print-period-end" type="date" name="fin" value="{{ end }}" required>
+            <button type="submit" class="btn-link">Imprimer</button>
+        </form>
+        <p>Seules les valeurs enregistrées sont prises en compte.</p>
+    </div>
+{% endblock %}

@@ -200,8 +200,10 @@ final class StationLavageController extends AbstractController
     }
 
     #[Route("/astikoto/stations/details/{id}", name: 'app_station_details', methods: ['GET'])]
+    #[Route('/astikoto/stations/details/{id}/print', name: 'app_station_details_print', methods: ['GET'])]
     public function detailsStation(
         int $id,
+        Request $request,
         StationLavageRepository $repository,
         ReleveRevenueCalculator $revenueCalculator,
     ): Response
@@ -217,7 +219,11 @@ final class StationLavageController extends AbstractController
         $referenceYear = (int) $referenceDate->format('Y');
         $rows = $revenueCalculator->getMonthlyRevenues($station, $referenceDate);
 
-        return $this->render('organisation/stations/details.html.twig', [
+        $template = $request->attributes->get('_route') === 'app_station_details_print'
+            ? 'organisation/stations/print.html.twig'
+            : 'organisation/stations/details.html.twig';
+
+        return $this->render($template, [
             'station' => $station,
             'stations' => $repository->findStationsLavage(null, $centreIds),
             'selectedStation' => $station,
