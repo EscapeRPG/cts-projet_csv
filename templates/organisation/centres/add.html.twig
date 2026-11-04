@@ -125,7 +125,11 @@
         <small class="required-inputs right italic" style="width: 100%">(Format mm-aaaa)</small>
 
         {{ form_rest(form) }}
-        <button type="submit">Enregistrer</button>
+
+        <div class="filters-print-actions">
+            <button type="submit" class="add">Enregistrer</button>
+            <a href="{{ path('app_centres_list_uneditable') }}" class="btn-link">Retour</a>
+        </div>
         {{ form_end(form, { render_rest: false }) }}
     </div>
 {% endblock %}

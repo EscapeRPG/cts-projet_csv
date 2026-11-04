@@ -59,7 +59,8 @@
                         form="salaries-bulk-form"
                         disabled
                         data-row-save-button="1"
-                        data-bulk-save-button="1">Enregistrer</button>
+                        data-bulk-save-button="1"
+                        class="add">Enregistrer</button>
             {% endif %}
 
             <a class="btn-link"
@@ -68,6 +69,8 @@
                data-print-base-href="{{ path('app_salaries_list_uneditable_print') }}"
                target="_blank"
                rel="noopener">Imprimer</a>
+
+            <a href="{{ path('app_salaries_list_uneditable') }}" class="btn-link">Retour</a>
         </div>
     </div>
 

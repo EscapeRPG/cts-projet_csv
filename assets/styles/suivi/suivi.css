@@ -17,8 +17,8 @@
 
 .filters-print-actions {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: center !important;
+    justify-content: center !important;
     gap: 20px;
     height: fit-content;
     margin-top: 10px;
@@ -26,7 +26,7 @@
     button {
         margin: 0;
 
-        &.add {
+        &.add:not(:disabled) {
             background: #12ba12;
 
             &:hover {
@@ -46,7 +46,7 @@
     a {
         margin: 0;
 
-        &.add {
+        &.add:not(:disabled) {
             background: #12ba12;
 
             &:hover {

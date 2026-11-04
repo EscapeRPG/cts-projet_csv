@@ -31,7 +31,11 @@
         <small class="required-inputs">{{ form_help(form.logo) }}</small>
 
         {{ form_rest(form) }}
-        <button type="submit">Enregistrer</button>
+
+        <div class="filters-print-actions">
+            <button type="submit" class="add">Enregistrer</button>
+            <a href="{{ path('app_outils_list') }}" class="btn-link">Retour</a>
+        </div>
         {{ form_end(form, { render_rest: false }) }}
     </div>
 {% endblock %}

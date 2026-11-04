@@ -140,7 +140,10 @@
             {{ form_widget(form.isActive) }}
         </div>
 
-        <button type="submit">Enregistrer</button>
+        <div class="filters-print-actions">
+            <button type="submit" class="add">Enregistrer</button>
+            <a href="{{ path('app_salaries_list_uneditable') }}" class="btn-link">Retour</a>
+        </div>
         {{ form_end(form) }}
     </div>
 {% endblock %}

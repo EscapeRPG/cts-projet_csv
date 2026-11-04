@@ -40,10 +40,12 @@
                                 </select>
                             </td>
                             <td>
-                                <input type="text" name="changes[{{ rowId }}][reseauNom]" value="{{ station.reseauNom }}">
+                                <input type="text" name="changes[{{ rowId }}][reseauNom]"
+                                       value="{{ station.reseauNom }}">
                             </td>
                             <td>
-                                <input type="text" name="changes[{{ rowId }}][coordonnees]" value="{{ station.coordonnees }}">
+                                <input type="text" name="changes[{{ rowId }}][coordonnees]"
+                                       value="{{ station.coordonnees }}">
                             </td>
                             <td>
                                 <input type="text" name="changes[{{ rowId }}][cp]" value="{{ station.cp }}">
@@ -52,7 +54,8 @@
                                 <input type="text" name="changes[{{ rowId }}][ville]" value="{{ station.ville }}">
                             </td>
                             <td>
-                                <input type="text" name="changes[{{ rowId }}][telephone]" value="{{ station.telephone }}">
+                                <input type="text" name="changes[{{ rowId }}][telephone]"
+                                       value="{{ station.telephone }}">
                             </td>
                             <td>
                                 <input type="text" name="changes[{{ rowId }}][email]" value="{{ station.email }}"></td>
@@ -75,9 +78,12 @@
                     form="stations-bulk-form"
                     disabled
                     data-row-save-button="1"
-                    data-bulk-save-button="1">
+                    data-bulk-save-button="1"
+                    class="add">
                 Enregistrer
             </button>
+
+            <a href="{{ path('app_stations_list_uneditable') }}" class="btn-link">Retour</a>
         </div>
     </div>
 
