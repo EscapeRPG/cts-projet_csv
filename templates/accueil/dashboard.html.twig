@@ -16,8 +16,6 @@
 
             <div class="app-container">
                 <fieldset class="app-category">
-                    <legend>Listes</legend>
-
                     {% if is_granted('ROLE_ORGANIGRAM_VIEW') %}
                         <a href="{{ path('app_organigram') }}" class="app">
                             <img src="{{ asset('img/apps/organigrammes.png') }}" alt="organigrammes structurels">
@@ -74,69 +72,6 @@
                         </a>
                     {% endif %}
                 </fieldset>
-
-                {% if is_granted('ROLE_ADMIN')
-                    or is_granted('ROLE_ORGANIGRAM_ADD')
-                    or is_granted('ROLE_ENCOURS_ADD')
-                    or is_granted('ROLE_LIST_SOCIETES_ADD')
-                    or is_granted('ROLE_LIST_CENTRES_ADD')
-                    or is_granted('ROLE_LIST_VOITURES_ADD')
-                    or is_granted('ROLE_LIST_SALARIES_ADD')
-                    or is_granted('ROLE_ASTIKOTO')
-                    or is_granted('ROLE_TOOLS_VIEW') %}
-                    <fieldset class="app-category">
-                        <legend>Ajouts</legend>
-
-                        {% if is_granted('ROLE_ENCOURS_ADD') %}
-                            <a href="{{ path('app_encours_bancaires_add') }}" class="app">
-                                <img src="{{ asset('img/apps/ajout-encours.png') }}" alt="ajout d'encours bancaires">
-                                <div class="inner-div">+ Encours</div>
-                            </a>
-                        {% endif %}
-
-                        {% if is_granted('ROLE_LIST_SOCIETES_ADD') %}
-                            <a href="{{ path('app_societes_add') }}" class="app">
-                                <img src="{{ asset('img/apps/ajout-societe.png') }}" alt="ajout de société">
-                                <div class="inner-div">+ Société</div>
-                            </a>
-                        {% endif %}
-
-                        {% if is_granted('ROLE_LIST_CENTRES_ADD') %}
-                            <a href="{{ path('app_centres_add') }}" class="app">
-                                <img src="{{ asset('img/apps/ajout-centre.png') }}" alt="ajout de centre">
-                                <div class="inner-div">+ Centre</div>
-                            </a>
-                        {% endif %}
-
-                        {% if is_granted('ROLE_ASTIKOTO') %}
-                            <a href="{{ path('app_stations_add') }}" class="app">
-                                <img src="{{ asset('img/apps/ajout-station.png') }}" alt="ajout de station">
-                                <div class="inner-div">+ Station</div>
-                            </a>
-                        {% endif %}
-
-                        {% if is_granted('ROLE_LIST_VOITURES_ADD') %}
-                            <a href="{{ path('app_voitures_add') }}" class="app">
-                                <img src="{{ asset('img/apps/ajout-voiture.png') }}" alt="ajout de voiture">
-                                <div class="inner-div">+ Voiture</div>
-                            </a>
-                        {% endif %}
-
-                        {% if is_granted('ROLE_LIST_SALARIES_ADD') %}
-                            <a href="{{ path('app_salaries_add') }}" class="app">
-                                <img src="{{ asset('img/apps/ajout-controleur.png') }}" alt="ajout de salarié">
-                                <div class="inner-div">+ Salarié</div>
-                            </a>
-                        {% endif %}
-
-                        {% if is_granted('ROLE_TOOLS_VIEW') %}
-                            <a href="{{ path('app_outils_add') }}" class="app">
-                                <img src="{{ asset('img/apps/ajout-outil.png') }}" alt="ajout d'outil réseau">
-                                <div class="inner-div">+ Outil réseau</div>
-                            </a>
-                        {% endif %}
-                    </fieldset>
-                {% endif %}
             </div>
         </div>
     {% endif %}
