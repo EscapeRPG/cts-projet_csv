@@ -71,9 +71,7 @@ final readonly class CentreRowUpdater
         }
 
         $agrCentre = self::trimOrNull($fields['agrCentre'] ?? null);
-        if ($agrCentre === null) {
-            $errors[] = 'Agrément VL requis.';
-        } else {
+        if ($agrCentre !== null) {
             $centre->setAgrCentre($agrCentre);
         }
 
