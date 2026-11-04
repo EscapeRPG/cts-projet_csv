@@ -200,6 +200,17 @@ td.sticky-centre.total {
     background: var(--cts-main);
 }
 
+.salaries-list .encours-societe {
+    width: 160px !important;
+    min-width: 160px;
+    max-width: 160px !important;
+    box-sizing: border-box;
+}
+
+.salaries-list .sticky-second {
+    left: 159px;
+}
+
 .encours-table .encours-societe {
     width: 115px !important;
     min-width: 115px;

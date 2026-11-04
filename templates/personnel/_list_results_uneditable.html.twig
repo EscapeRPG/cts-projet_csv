@@ -1,11 +1,11 @@
 <table class="salaries-list">
     <thead>
     <tr>
+        <th class="sticky-salarie-name encours-societe">Nom</th>
+        <th class="sticky-salarie-name sticky-second">Prénom</th>
         <th>Société</th>
         <th>Agr</th>
         <th>Agr CL</th>
-        <th>Nom</th>
-        <th>Prénom</th>
         <th>Date de naissance</th>
         <th>Email</th>
         <th>Téléphone</th>
@@ -24,11 +24,11 @@
     <tbody>
     {% for salarie in salaries %}
         <tr>
+            <td class="sticky-salarie-name encours-societe">{{ salarie.nom }}</td>
+            <td class="sticky-salarie-name sticky-second">{{ salarie.prenom }}</td>
             <td>{{ salarie.societe.nom }}</td>
             <td>{{ salarie.agrControleur }}</td>
             <td>{{ salarie.agrClControleur }}</td>
-            <td>{{ salarie.nom }}</td>
-            <td>{{ salarie.prenom }}</td>
             <td class="right">{{ salarie.dateNaissance ? salarie.dateNaissance|date('d/m/Y') : '' }}</td>
             <td>{{ salarie.email }}</td>
             <td>{{ salarie.telephone }}</td>
