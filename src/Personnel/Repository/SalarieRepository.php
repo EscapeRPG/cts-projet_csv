@@ -193,6 +193,7 @@ class SalarieRepository extends ServiceEntityRepository
                     'LOWER(s.prenom) LIKE :' . $param,
                     'LOWER(s.agrControleur) LIKE :' . $param,
                     'LOWER(s.agrClControleur) LIKE :' . $param,
+                    'LOWER(so.nom) LIKE :' . $param,
                 )
             )->setParameter($param, $like);
         }
