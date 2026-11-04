@@ -11,12 +11,12 @@
 <table class="salaries-list" data-bulk-edit="1">
         <thead>
         <tr>
+            <th class="sticky-salarie-name encours-societe">Nom</th>
+            <th class="sticky-salarie-name sticky-second">Prénom</th>
             <th>Société</th>
             <th class="td-centres-selectlike">Centres</th>
             <th>Agr</th>
             <th>Agr CL</th>
-            <th>Nom</th>
-            <th>Prénom</th>
             <th>Date de naissance</th>
             <th>Email</th>
             <th>Téléphone</th>
@@ -42,6 +42,12 @@
                 {% endif %}
             {% endfor %}
             <tr>
+                <td class="sticky-salarie-name encours-societe">
+                    <input type="text" name="changes[{{ rowId }}][nom]" value="{{ salarie.nom }}">
+                </td>
+                <td class="sticky-salarie-name sticky-second">
+                    <input type="text" name="changes[{{ rowId }}][prenom]" value="{{ salarie.prenom }}">
+                </td>
                 <td>
                     <select name="changes[{{ rowId }}][societe]">
                         <option value="">- Choisir -</option>
@@ -70,14 +76,17 @@
                             {% if currentGroup is not null %}</optgroup>{% endif %}
                     </select>
                 </td>
-                <td><input type="text" name="changes[{{ rowId }}][agrControleur]" value="{{ salarie.agrControleur }}">
+                <td>
+                    <input type="text" name="changes[{{ rowId }}][agrControleur]" value="{{ salarie.agrControleur }}">
                 </td>
-                <td><input type="text" name="changes[{{ rowId }}][agrClControleur]"
-                           value="{{ salarie.agrClControleur }}"></td>
-                <td><input type="text" name="changes[{{ rowId }}][nom]" value="{{ salarie.nom }}"></td>
-                <td><input type="text" name="changes[{{ rowId }}][prenom]" value="{{ salarie.prenom }}"></td>
-                <td><input type="date" name="changes[{{ rowId }}][dateNaissance]"
-                           value="{{ salarie.dateNaissance ? salarie.dateNaissance|date('Y-m-d') : '' }}"></td>
+                <td>
+                    <input type="text" name="changes[{{ rowId }}][agrClControleur]"
+                           value="{{ salarie.agrClControleur }}">
+                </td>
+                <td>
+                    <input type="date" name="changes[{{ rowId }}][dateNaissance]"
+                           value="{{ salarie.dateNaissance ? salarie.dateNaissance|date('Y-m-d') : '' }}">
+                </td>
                 <td><input type="email" name="changes[{{ rowId }}][email]" value="{{ salarie.email }}"></td>
                 <td><input type="text" name="changes[{{ rowId }}][telephone]" value="{{ salarie.telephone }}"></td>
                 <td>
