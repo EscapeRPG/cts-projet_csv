@@ -201,16 +201,16 @@ td.sticky-centre.total {
 }
 
 .salaries-list .encours-societe {
-    width: 180px !important;
-    min-width: 180px;
-    max-width: 180px !important;
+    width: 190px !important;
+    min-width: 190px;
+    max-width: 190px !important;
     box-sizing: border-box;
-    z-index: 1000;
+    z-index: 1;
 }
 
 .salaries-list .sticky-second {
-    left: 179px;
-    z-index: 1000;
+    left: 185px;
+    z-index: 1;
 }
 
 .encours-table .encours-societe {
