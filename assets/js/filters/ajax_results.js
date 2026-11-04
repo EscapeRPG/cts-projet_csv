@@ -111,6 +111,29 @@ export async function refreshResults(form) {
         const doc = parser.parseFromString(html, 'text/html');
         const nextContainer = doc.querySelector('[data-ajax-results]');
         if (!nextContainer) return;
+        if (requestToken !== activeResultsRequestToken) return;
+
+        const societesOptions = form.querySelector('[data-encours-societes-options]');
+        const nextSocietesOptions = doc.querySelector('[data-encours-societes-options]');
+        if (societesOptions && nextSocietesOptions) {
+            const allowed = new Set(Array.from(nextSocietesOptions.querySelectorAll('input[name="societe[]"]'))
+                .map((input) => input.value));
+            let selectionChanged = false;
+            form.querySelectorAll('input[name="societe[]"]:checked').forEach((input) => {
+                if (!allowed.has(input.value)) {
+                    input.checked = false;
+                    selectionChanged = true;
+                }
+            });
+
+            // Fetch again with valid selections so the table and URL match the filter.
+            if (selectionChanged) {
+                await refreshResults(form);
+                return;
+            }
+
+            societesOptions.replaceChildren(...nextSocietesOptions.childNodes);
+        }
 
         currentContainer.replaceWith(nextContainer);
         document.dispatchEvent(new CustomEvent('suivi:results-updated'));

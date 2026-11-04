@@ -200,6 +200,17 @@ td.sticky-centre.total {
     background: var(--cts-main);
 }
 
+.encours-table .encours-societe {
+    width: 115px !important;
+    min-width: 115px;
+    max-width: 115px !important;
+    box-sizing: border-box;
+}
+
+.encours-table .sticky-second {
+    left: 114px;
+}
+
 table:not(.centre-activity-table) tbody {
     vertical-align: top;
 }

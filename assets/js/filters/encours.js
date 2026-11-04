@@ -28,24 +28,6 @@ export function initEncoursFilters(filtersRoot, form, currentRoute) {
         form.appendChild(input);
     };
 
-    const updateEncoursSocietesVisibility = () => {
-        const container = document.querySelector('[data-ajax-results]');
-        if (!(container instanceof HTMLElement)) return;
-        const raw = String(container.dataset.encoursSocietes ?? '').trim();
-        if (!raw) return;
-
-        const allowed = new Set(raw.split(',').map((v) => v.trim()).filter((v) => v !== ''));
-        const inputs = Array.from(filtersRoot.querySelectorAll('input[name="societe[]"]'))
-            .filter((el) => el instanceof HTMLInputElement);
-
-        inputs.forEach((input) => {
-            const label = input.closest('label');
-            if (!(label instanceof HTMLElement)) return;
-            const show = allowed.has(String(input.value));
-            label.style.display = show ? '' : 'none';
-        });
-    };
-
     typeLinks.forEach((link) => {
         link.addEventListener('click', async (event) => {
             event.preventDefault();
@@ -59,8 +41,5 @@ export function initEncoursFilters(filtersRoot, form, currentRoute) {
             await scheduleRefreshResults(form, 120);
         });
     });
-
-    updateEncoursSocietesVisibility();
-    document.addEventListener('suivi:results-updated', updateEncoursSocietesVisibility);
 }
 

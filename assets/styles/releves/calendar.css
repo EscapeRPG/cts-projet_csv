@@ -67,6 +67,7 @@ button.calendar-drop-btn:hover {
 .calendar-drop-menu button {
     padding: 20px;
     background: none;
+    color: var(--main-text);
 }
 
 .calendar-drop-menu button.now {
@@ -117,8 +118,8 @@ button.calendar-drop-btn:hover {
 }
 
 .calendar-days .days-container .weekend {
-    color: #9a9a9a;
-    background: #282828;
+    color: var(--weekend-text);
+    background: var(--weekend);
 }
 
 .calendar-days .days-container .day.today {

@@ -13,8 +13,8 @@
                 <table data-activity-table>
                     <thead>
                     <tr>
-                        <th class="sticky-salarie-name">Société</th>
-                        <th>Centre</th>
+                        <th class="sticky-salarie-name encours-societe">Société</th>
+                        <th class="sticky-salarie-name sticky-second">Centre</th>
 
                         {% for annee in anneesAffichees|default(annees) %}
                             <th>Solde {{ annee }}</th>
@@ -35,12 +35,12 @@
                         {% for ligne in groupe.lignes %}
                             <tr>
                                 {% if loop.first %}
-                                    <td rowspan="{{ groupe.lignes|length }}">
+                                    <td rowspan="{{ groupe.lignes|length }}" class="sticky-societe encours-societe">
                                         {{ societeNom }}
                                     </td>
                                 {% endif %}
 
-                                <td>{{ ligne.centre }}</td>
+                                <td class="sticky-societe sticky-second">{{ ligne.centre }}</td>
 
                                 {% for annee in anneesAffichees|default(annees) %}
                                     {% set montant = ligne.montants[annee]|default(null) %}
@@ -73,8 +73,8 @@
                         {% endfor %}
 
                         <tr class="total-row recap societe">
-                            <td class="sticky-societe">{{ societeNom }}</td>
-                            <td>TOTAL ENCOURS</td>
+                            <td class="sticky-societe encours-societe">{{ societeNom }}</td>
+                            <td class="sticky-societe sticky-second">TOTAL ENCOURS</td>
 
                             {% for annee in anneesAffichees|default(annees) %}
                                 {% set total = groupe.totauxParAnnee[annee]|default(0) %}
