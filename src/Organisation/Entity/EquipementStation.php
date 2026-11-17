@@ -5,6 +5,7 @@ namespace App\Organisation\Entity;
 use App\Organisation\Enum\CategorieEquipement;
 use App\Organisation\Repository\EquipementStationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use DomainException;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: EquipementStationRepository::class)]
@@ -182,15 +183,15 @@ class EquipementStation
     public function associerPortique(EquipementStation $portique): void
     {
         if ($this->categorie !== CategorieEquipement::BORNE) {
-            throw new \DomainException('Seule une borne peut être associée à un portique.');
+            throw new DomainException('Seule une borne peut être associée à un portique.');
         }
 
         if ($portique->getCategorie() !== CategorieEquipement::PORTIQUE) {
-            throw new \DomainException('L\'équipement associé doit être un portique.');
+            throw new DomainException('L\'équipement associé doit être un portique.');
         }
 
         if ($portique->getCentre() !== $this->centre) {
-            throw new \DomainException('La borne et le portique doivent appartenir au même centre.');
+            throw new DomainException('La borne et le portique doivent appartenir au même centre.');
         }
 
         $this->portiqueAssocie = $portique;
